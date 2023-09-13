@@ -1,9 +1,13 @@
 import path from "path";
-import webpack, {Configuration} from "webpack";
+import webpack, { Configuration as WebpackConfiguration } from "webpack";
+import { Configuration as WebpackDevServerConfiguration } from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
 import {TsconfigPathsPlugin} from "tsconfig-paths-webpack-plugin";
+interface Configuration extends WebpackConfiguration {
+    devServer?: WebpackDevServerConfiguration;
+}
 
 const webpackConfig = (env): Configuration => ({
     entry: "./src/index.tsx",
@@ -14,7 +18,11 @@ const webpackConfig = (env): Configuration => ({
     },
     output: {
         path: path.join(__dirname, "/dist"),
-        filename: "build.js"
+        filename: "build.js",
+        publicPath: '/'
+    },
+    devServer: {
+        historyApiFallback: true,
     },
     module: {
         rules: [
@@ -25,6 +33,14 @@ const webpackConfig = (env): Configuration => ({
                     transpileOnly: true
                 },
                 exclude: /dist/
+            },
+            {
+                test: /\.css$/,
+                use: [
+                    "style-loader",
+                    {loader: "css-loader", options: {importLoaders: 1}},
+                    "postcss-loader"
+                ]
             }
         ]
     },
