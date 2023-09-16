@@ -169,19 +169,13 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         try {
             // Create the memberData object to send in the POST request
             const expirationDate = new Date();
-            if (membershipDuration === "90") {
-                expirationDate.setDate(expirationDate.getDate() + 90); // 90 days from today
-            } else if (membershipDuration === "180") {
-                expirationDate.setDate(expirationDate.getDate() + 180); // 180 days from today
-            } else if (membershipDuration === "365") {
-                expirationDate.setDate(expirationDate.getDate() + 365); // 365 days from today
-            }
+            expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration));
 
             const memberData = {
                 name: fullName,
                 email: email,
                 phone_number: phoneNumber,
-                membership_status: membershipDuration + " Days",
+                membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
                 membership_expiration_date: expirationDate.toISOString()
             };
@@ -202,6 +196,94 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         }
 
         setSuccessMessage(`Welcome, ${fullName}! You have successfully signed up.`);
+
+        // Clear the form fields on successful submission
+        setFullName("");
+        setEmail("");
+        setReEnterEmail("");
+        setPhoneNumber("");
+        setValidationEnabled(false);
+        setStokedLevel("");
+        setHasWaiver("no");
+        setHasPaid("no");
+
+        // Schedule the removal of alerts after 5 seconds
+        setTimeout(() => {
+            setSuccessMessage(null);
+            setSubmitErrorMessage(null);
+        }, 5000); // 5000 milliseconds (5 seconds)
+    };
+
+    const handleRenew = async () => {
+        setValidationEnabled(true);
+        setSuccessMessage(null);
+        setSubmitErrorMessage(null);
+
+        if (
+            emailError !== null ||
+            reEnterEmail !== email ||
+            phoneNumberError !== null ||
+            !fullName ||
+            hasWaiver === "no" ||
+            hasPaid === "no"
+        ) {
+            let errorMessage = "";
+
+            if (hasWaiver === "no") {
+                errorMessage = "Please fill out the waiver.";
+            } else if (emailError !== null) {
+                errorMessage = "Please enter a valid email.";
+            } else if (reEnterEmail !== email) {
+                errorMessage = "Please make sure your emails match.";
+            } else if (phoneNumberError !== null) {
+                errorMessage = "Please enter a valid phone number.";
+            } else if (!fullName) {
+                errorMessage = "Please enter your full name.";
+            } else if (hasPaid === "no") {
+                errorMessage = "Please ensure the member has paid dues.";
+            }
+            setSubmitErrorMessage(errorMessage);
+
+            setTimeout(() => {
+                setSuccessMessage(null);
+                setSubmitErrorMessage(null);
+            }, 5000); // 5000 milliseconds (5 seconds)
+            return;
+        }
+
+        try {
+            const expirationDate = new Date();
+            expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration));
+
+            const memberData = {
+                name: fullName,
+                email: email,
+                newMembershipType: membershipStatus,
+                newMembershipDuration: parseInt(membershipDuration),
+                newMembershipExpiration: expirationDate.toISOString()
+            };
+
+            console.log(memberData);
+
+            // Send a POST request to your backend renewal endpoint
+            const response = await axios.post(
+                "http://localhost:9000/api/v1/members/renew",
+                memberData
+            );
+
+            // Handle success, e.g., show a success message to the user
+            console.log("Member renewed:", response.data);
+
+            // Reset the form or close the dialog
+            // You can add code here to reset the form or close the dialog
+        } catch (error) {
+            // Handle errors, e.g., show an error message to the user
+            console.error("Failed to renew member:", error);
+            setSubmitErrorMessage("Failed to renew member.");
+            return;
+        }
+
+        setSuccessMessage(`Membership renewed for ${fullName}`);
 
         // Clear the form fields on successful submission
         setFullName("");
@@ -387,7 +469,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
+                    <Button onClick={handleRenew}>Renew</Button>
                     <Button onClick={handleSubmit}>Sign Up</Button>
                 </DialogActions>
             </Dialog>

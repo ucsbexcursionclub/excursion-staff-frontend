@@ -8,8 +8,8 @@ const columns: GridColDef[] = [
     {field: "email", headerName: "Email", width: 200},
     {field: "phone_number", headerName: "Phone Number", width: 140},
     {
-        field: "membership_status",
-        headerName: "Membership Status",
+        field: "membership_duration",
+        headerName: "Membership Duration",
         width: 150
     },
     {
