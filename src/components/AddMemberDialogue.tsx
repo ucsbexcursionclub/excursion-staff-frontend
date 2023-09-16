@@ -37,6 +37,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
     const [submitErrorMessage, setSubmitErrorMessage] = React.useState<string | null>(null);
     const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
     const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
+    const [staffName, setStaffName] = React.useState("");
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -53,6 +54,10 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
     const handleStokedLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setStokedLevel(value);
+    };
+    const handleStaffNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setStaffName(value);
     };
     const handleMembershipStatusChange = (event) => {
         setMembershipStatus(event.target.value);
@@ -177,7 +182,11 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                membership_expiration_date: expirationDate.toISOString()
+                membership_expiration_date: expirationDate.toISOString(),
+                join_datetime: new Date().toLocaleString("en-US", {
+                    timeZone: "America/Los_Angeles"
+                }), // Set the current date and time in PST
+                signed_up_by: staffName
             };
 
             // Send a POST request to your backend endpoint
@@ -260,7 +269,11 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 email: email,
                 newMembershipType: membershipStatus,
                 newMembershipDuration: parseInt(membershipDuration),
-                newMembershipExpiration: expirationDate.toISOString()
+                newMembershipExpiration: expirationDate.toISOString(),
+                join_datetime: new Date().toLocaleString("en-US", {
+                    timeZone: "America/Los_Angeles"
+                }), // Set the current date and time in PST
+                signed_up_by: staffName
             };
 
             console.log(memberData);
@@ -444,6 +457,8 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                             id="staffer"
                             label="Staff Name"
                             type="text"
+                            value={staffName}
+                            onChange={handleStaffNameChange}
                             fullWidth
                             variant="standard"
                             required
