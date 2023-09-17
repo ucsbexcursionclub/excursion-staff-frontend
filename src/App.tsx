@@ -6,6 +6,7 @@ import "./index.css";
 import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
 import MembersPage from "./pages/MembersPage";
+import GearPage from "./pages/GearPage";
 
 function App() {
     const location = useLocation();
@@ -28,7 +29,7 @@ function App() {
                 title = "Links";
                 metaDescription = "";
                 break;
-            case "/memberspage":
+            case "/members":
                 title = "";
                 metaDescription = "";
                 break;
@@ -40,7 +41,7 @@ function App() {
                 title = "";
                 metaDescription = "";
                 break;
-            case "/gearpage":
+            case "/gear":
                 title = "";
                 metaDescription = "";
                 break;
@@ -74,6 +75,7 @@ function App() {
                 <Route index element={<HomePage />} />
                 <Route path="links/*" element={<LinkPage />} />
                 <Route path="members" element={<MembersPage />} />
+                <Route path="gear" element={<GearPage />} />
             </Route>
         </Routes>
     );

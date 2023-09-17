@@ -2,11 +2,11 @@ import React from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
-export default function MembersNav() {
+export default function GearNav() {
     return (
         <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
             <Toolbar className="flex justify-between items-center py-1">
-                <Typography variant="h4">Members</Typography>
+                <Typography variant="h4">Gear</Typography>
                 <div className="flex flex-col items-center">
                     <Typography
                         style={{userSelect: "none"}}
@@ -22,21 +22,21 @@ export default function MembersNav() {
                         </Button>
                     </div>
                     <Typography className="text-xs text-gray-200 italic">
-                        Name, Email, or Phone Number
+                        Gear Name or RFID
                     </Typography>
                 </div>
                 <div className="flex">
                     <Button color="inherit" className="mx-1">
-                        Add Member
+                        Check In
                     </Button>
                     <Button color="inherit" className="mx-1">
-                        Remove Member(s)
+                        Check Out
                     </Button>
-                    <Button color="inherit" className="mx-1">
-                        Edit Member
+                    <Button color="inherit" className="">
+                        Add Gear
                     </Button>
-                    <Button color="inherit" className="mx-1">
-                        Copy Email(s)
+                    <Button color="inherit" className="">
+                        Remove Gear
                     </Button>
                 </div>
             </Toolbar>
