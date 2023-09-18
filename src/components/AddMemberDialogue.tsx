@@ -139,6 +139,42 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         setSuccessMessage(null);
         setSubmitErrorMessage(null);
 
+        try {
+            const response = await axios.get(
+                `http://localhost:9000/api/v1/members/check?fullName=${fullName.toLowerCase()}&email=${email.toLowerCase()}&phoneNumber=${phoneNumber}`
+            );
+            console.log("checked!");
+
+            if (response.data.exists) {
+                let duplicateType = "";
+
+                if (response.data.duplicateFullName) {
+                    duplicateType = "Full Name";
+                } else if (response.data.duplicateEmail) {
+                    duplicateType = "Email";
+                } else if (response.data.duplicatePhoneNumber) {
+                    duplicateType = "Phone Number";
+                }
+
+                if (duplicateType) {
+                    setSubmitErrorMessage(
+                        `A member with the same ${duplicateType} already exists.`
+                    );
+                    setErrorMessageTimeout();
+                    return;
+                }
+            }
+        } catch (error) {
+            console.error("Failed to check member existence:", error);
+            if (error.response && error.response.status === 400) {
+                setSubmitErrorMessage("Invalid request data. Please check your input.");
+            } else {
+                setSubmitErrorMessage("Failed to check member existence. Please try again later.");
+            }
+            setErrorMessageTimeout();
+            return;
+        }
+
         if (
             emailError !== null ||
             reEnterEmail !== email ||
@@ -148,7 +184,6 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
             hasPaid === "no"
         ) {
             let errorMessage = "";
-
             if (hasWaiver === "no") {
                 errorMessage = "Please fill out the waiver.";
             } else if (emailError !== null) {
@@ -163,11 +198,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 errorMessage = "Please ensure the new member has paid dues.";
             }
             setSubmitErrorMessage(errorMessage);
-
-            setTimeout(() => {
-                setSuccessMessage(null);
-                setSubmitErrorMessage(null);
-            }, 5000); // 5000 milliseconds (5 seconds)
+            setErrorMessageTimeout();
             return;
         }
 
@@ -203,6 +234,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         }
 
         setSuccessMessage(`Welcome, ${fullName}! You have successfully signed up.`);
+        setErrorMessageTimeout();
 
         // Clear the form fields on successful submission
         setFullName("");
@@ -214,11 +246,11 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         setHasWaiver("no");
         setHasPaid("no");
 
-        // Schedule the removal of alerts after 5 seconds
-        setTimeout(() => {
-            setSuccessMessage(null);
-            setSubmitErrorMessage(null);
-        }, 5000); // 5000 milliseconds (5 seconds)
+        function setErrorMessageTimeout() {
+            setTimeout(() => {
+                setSubmitErrorMessage(null);
+            }, 5000); // 5000 milliseconds (5 seconds)
+        }
     };
 
     const handleRenew = async () => {
@@ -232,7 +264,11 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
             phoneNumberError !== null ||
             !fullName ||
             hasWaiver === "no" ||
-            hasPaid === "no"
+            hasPaid === "no" ||
+            !email ||
+            !membershipStatus ||
+            !membershipDuration ||
+            !staffName
         ) {
             let errorMessage = "";
 
@@ -248,13 +284,17 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 errorMessage = "Please enter your full name.";
             } else if (hasPaid === "no") {
                 errorMessage = "Please ensure the member has paid dues.";
+            } else if (!email) {
+                errorMessage = "Please enter an email.";
+            } else if (!membershipStatus) {
+                errorMessage = "Please select new or returningn member.";
+            } else if (!membershipDuration) {
+                errorMessage = "Please select 90, 180, or 365 days.";
+            } else if (!staffName) {
+                errorMessage = "Please enter staff name.";
             }
             setSubmitErrorMessage(errorMessage);
-
-            setTimeout(() => {
-                setSuccessMessage(null);
-                setSubmitErrorMessage(null);
-            }, 5000); // 5000 milliseconds (5 seconds)
+            setErrorMessageTimeout();
             return;
         }
 
@@ -263,12 +303,10 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
             expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration));
 
             const memberData = {
-                name: fullName,
-                email: email,
-                newMembershipType: membershipStatus,
+                name: fullName.toLowerCase(),
+                email: email.toLowerCase(),
                 newMembershipDuration: parseInt(membershipDuration),
-                newMembershipExpiration: expirationDate.toISOString(),
-                join_datetime: new Date().getTime() / 1000, // unix time stamp - utc, not pst
+                newMembershipType: membershipStatus,
                 signed_up_by: staffName
             };
 
@@ -286,13 +324,22 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
             // Reset the form or close the dialog
             // You can add code here to reset the form or close the dialog
         } catch (error) {
-            // Handle errors, e.g., show an error message to the user
-            console.error("Failed to renew member:", error);
-            setSubmitErrorMessage("Failed to renew member.");
-            return;
+            if (error.response && error.response.status === 404) {
+                setSubmitErrorMessage("Member not found. Please double check name and email.");
+                setErrorMessageTimeout();
+                console.error("Member not found for renewal:", error);
+                return;
+            } else {
+                // Handle errors, e.g., show an error message to the user
+                console.error("Failed to renew member:", error);
+                setSubmitErrorMessage("Failed to renew member.");
+                setErrorMessageTimeout();
+                return;
+            }
         }
 
         setSuccessMessage(`Membership renewed for ${fullName}`);
+        setErrorMessageTimeout();
 
         // Clear the form fields on successful submission
         setFullName("");
@@ -304,11 +351,11 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
         setHasWaiver("no");
         setHasPaid("no");
 
-        // Schedule the removal of alerts after 5 seconds
-        setTimeout(() => {
-            setSuccessMessage(null);
-            setSubmitErrorMessage(null);
-        }, 5000); // 5000 milliseconds (5 seconds)
+        function setErrorMessageTimeout() {
+            setTimeout(() => {
+                setSubmitErrorMessage(null);
+            }, 5000); // 5000 milliseconds (5 seconds)
+        }
     };
 
     return (
