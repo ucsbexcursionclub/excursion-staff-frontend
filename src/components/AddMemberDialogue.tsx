@@ -183,9 +183,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
                 membership_expiration_date: expirationDate.toISOString(),
-                join_datetime: new Date().toLocaleString("en-US", {
-                    timeZone: "America/Los_Angeles"
-                }), // Set the current date and time in PST
+                join_datetime: new Date().getTime() / 1000, // unix time stamp - utc, not pst
                 signed_up_by: staffName
             };
 
@@ -270,9 +268,7 @@ const AddMemberDialogue: React.FC<AddMemberDialogueProps> = ({open, onClose}) =>
                 newMembershipType: membershipStatus,
                 newMembershipDuration: parseInt(membershipDuration),
                 newMembershipExpiration: expirationDate.toISOString(),
-                join_datetime: new Date().toLocaleString("en-US", {
-                    timeZone: "America/Los_Angeles"
-                }), // Set the current date and time in PST
+                join_datetime: new Date().getTime() / 1000, // unix time stamp - utc, not pst
                 signed_up_by: staffName
             };
 
