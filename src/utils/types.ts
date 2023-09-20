@@ -14,6 +14,33 @@ export type GearProps = {
     gear_name: string;
     is_missing: boolean;
     is_broken: boolean;
+    date_added: number;
     description: string | null;
-    prev_description: string | null;
-  };
+    notes: string | null;
+    current_reservation: string | null;
+    previous_reservations: string[];
+    reservationDetails?: ReservationProps;
+    memberDetails?: MemberProps;
+};
+
+export type NewGearProps = Omit<
+    GearProps,
+    | "_id"
+    | "date_added"
+    | "is_missing"
+    | "is_broken"
+    | "current_reservation"
+    | "previous_reservations"
+    | "reservationDetails"
+    | "memberDetails"
+>;
+
+export type ReservationProps = {
+    _id: string;
+    reserved_gear: string[];
+    reserving_member: string;
+    due_date: number;
+    last_contacted: number | null;
+};
+
+export type NewReservationProps = Omit<ReservationProps, "_id" | "due_date" | "last_contacted">;

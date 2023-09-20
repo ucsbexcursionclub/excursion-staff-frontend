@@ -18,7 +18,7 @@ const tabs = [
     {label: "Links", href: "/links"},
     {label: "Members", href: "/members"},
     {label: "Gear", href: "/gear"},
-    {label: "Inventory", href: "/inventory"}
+    {label: "Reservations", href: "/reservations"}
 ];
 
 const settings = ["Profile", "Account", "Dashboard", "Logout"];

@@ -54,6 +54,7 @@
     "react-dom": "^18.0.0",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.15.0",
+    "react-window": "^1.8.9",
     "style-loader": "^3.3.3"
   }
 }
