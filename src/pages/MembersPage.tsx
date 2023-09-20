@@ -1,10 +1,10 @@
 import MembersNav from "components/MembersNav";
 import MembersTable from "components/MembersTable";
 import React from "react";
-import {useData} from "src/utils/DataProvider";
+import {useMembers} from "src/providers/MembersProvider";
 
 export default function MembersPage() {
-    const {membersData} = useData();
+    const {membersData} = useMembers();
 
     return (
         <>

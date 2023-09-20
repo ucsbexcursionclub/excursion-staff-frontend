@@ -8,6 +8,8 @@ export type MemberProps = {
     membership_expiration_date: number | null;
 };
 
+export type NewMemberProps = Omit<MemberProps, "_id" | "membership_expiration_date">;
+
 export type GearProps = {
     _id: string;
     rfid: number | null;

@@ -8,11 +8,11 @@ import {
     getGear,
     getMembers,
     updateGear
-} from "./api";
-import {GearProps, MemberProps, NewGearProps, NewReservationProps} from "./types";
+} from "../utils/api";
+import {GearProps, MemberProps, NewGearProps, NewReservationProps} from "../utils/types";
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 
-interface DataContextProps {
+interface GearContextProps {
     gearData: GearProps[];
     setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>;
     membersData: MemberProps[];
@@ -27,13 +27,13 @@ interface DataContextProps {
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
 }
 
-const DataContext = createContext<DataContextProps | undefined>(undefined);
+const DataContext = createContext<GearContextProps | undefined>(undefined);
 
 interface DataProviderProps {
     children: React.ReactNode;
 }
 
-export const DataProvider: React.FC<DataProviderProps> = ({children}) => {
+export const DataProviderDEPRECATED: React.FC<DataProviderProps> = ({children}) => {
     const queryClient = useQueryClient();
 
     const [initialGearData, setInitialGearData] = useState<GearProps[]>([]);
@@ -189,7 +189,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({children}) => {
     );
 };
 
-export const useData = (): DataContextProps => {
+export const useDataDEPRECATED = (): GearContextProps => {
     const context = useContext(DataContext);
     if (!context) {
         throw new Error("useData must be used within a DataProvider");

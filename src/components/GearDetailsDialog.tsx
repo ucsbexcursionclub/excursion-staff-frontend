@@ -1,17 +1,19 @@
-// GearDetailsDialog.tsx
 import React, {useEffect, useState} from "react";
 import {
     Dialog,
     DialogTitle,
     DialogActions,
     Button,
-    Typography,
     TextField,
     List,
-    ListItem
+    ListItem,
+    Tabs,
+    Tab,
+    Box,
+    Typography
 } from "@mui/material";
 import {GearProps} from "src/utils/types";
-import {useData} from "src/utils/DataProvider";
+import {useGear} from "src/providers/GearProvider";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -19,16 +21,14 @@ type GearDetailsDialogProps = {
     gear: GearProps | null;
 };
 
-/**
- * TODO: show checkout history of users
- * TODO: be able to edit all gear properties
- */
-
 const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gear}) => {
     const [notes, setNotes] = useState(gear?.notes || "");
     const [initialNotes, setInitialNotes] = useState(gear?.notes || "");
+    const [value, setValue] = useState(0);
 
-    const {handleGearUpdate} = useData();
+    const {handleGearUpdate} = useGear();
+
+    console.log(gear);
 
     useEffect(() => {
         setNotes(gear?.notes || "");
@@ -40,7 +40,6 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     };
 
     const handleNotesBlur = async () => {
-        // Only update if the notes have changed
         if (notes !== initialNotes) {
             try {
                 handleGearUpdate({...gear, notes});
@@ -50,52 +49,66 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
         }
     };
 
+    const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+        setValue(newValue);
+    };
+
     if (!gear) return null;
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"}>
+        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"} scroll={"paper"}>
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{gear.gear_name} Details</DialogTitle>
-            <List sx={{pt: 0, px: 2}}>
-                <ListItem>
-                    <Typography>
-                        <strong>RFID:</strong> {gear.rfid}
-                    </Typography>
-                </ListItem>
-                <ListItem>
-                    <Typography>
-                        <strong>Date Added:</strong>{" "}
-                        {new Date(gear.date_added).toLocaleDateString()}
-                    </Typography>
-                </ListItem>
-                <ListItem>
-                    <Typography>
-                        <strong>Missing:</strong> {gear.is_missing ? "Yes" : "No"}
-                    </Typography>
-                </ListItem>
-                <ListItem>
-                    <Typography>
-                        <strong>Broken:</strong> {gear.is_broken ? "Yes" : "No"}
-                    </Typography>
-                </ListItem>
-                <ListItem sx={{pb: 2}}>
-                    <Typography>
-                        <strong>Description:</strong> {gear.description}
-                    </Typography>
-                </ListItem>
-                <ListItem>
-                    <TextField
-                        label="Notes"
-                        variant="outlined"
-                        multiline
-                        rows={4}
-                        fullWidth
-                        value={notes}
-                        onChange={handleNotesChange}
-                        onBlur={handleNotesBlur}
-                    />
-                </ListItem>
-            </List>
-
+            <Box sx={{borderBottom: 1, borderColor: "divider"}}>
+                <Tabs value={value} onChange={handleTabChange} aria-label="gear details tabs">
+                    <Tab label="Details" {...a11yProps(0)} />
+                    <Tab label="History" {...a11yProps(1)} />
+                </Tabs>
+            </Box>
+            <CustomTabPanel value={value} index={0}>
+                <List sx={{pt: 0, px: 2}}>
+                    <ListItem>
+                        <Typography>
+                            <strong>RFID:</strong> {gear.rfid}
+                        </Typography>
+                    </ListItem>
+                    <ListItem>
+                        <Typography>
+                            <strong>Date Added:</strong>{" "}
+                            {new Date(gear.date_added).toLocaleDateString()}
+                        </Typography>
+                    </ListItem>
+                    <ListItem>
+                        <Typography>
+                            <strong>Missing:</strong> {gear.is_missing ? "Yes" : "No"}
+                        </Typography>
+                    </ListItem>
+                    <ListItem>
+                        <Typography>
+                            <strong>Broken:</strong> {gear.is_broken ? "Yes" : "No"}
+                        </Typography>
+                    </ListItem>
+                    <ListItem sx={{pb: 2}}>
+                        <Typography>
+                            <strong>Description:</strong> {gear.description}
+                        </Typography>
+                    </ListItem>
+                    <ListItem>
+                        <TextField
+                            label="Notes"
+                            variant="outlined"
+                            multiline
+                            rows={4}
+                            fullWidth
+                            value={notes}
+                            onChange={handleNotesChange}
+                            onBlur={handleNotesBlur}
+                        />
+                    </ListItem>
+                </List>
+            </CustomTabPanel>
+            <CustomTabPanel value={value} index={1}>
+                testing
+            </CustomTabPanel>
             <DialogActions>
                 <Button onClick={onClose} color="primary">
                     Close
@@ -104,5 +117,35 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
         </Dialog>
     );
 };
+
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+function CustomTabPanel(props: TabPanelProps) {
+    const {children, value, index, ...other} = props;
+
+    return (
+        <div
+            role="tabpanel"
+            style={{height: "50vh"}}
+            hidden={value !== index}
+            id={`simple-tabpanel-${index}`}
+            aria-labelledby={`simple-tab-${index}`}
+            {...other}
+        >
+            {value === index && <Box sx={{p: 3}}>{children}</Box>}
+        </div>
+    );
+}
+
+function a11yProps(index: number) {
+    return {
+        id: `simple-tab-${index}`,
+        "aria-controls": `simple-tabpanel-${index}`
+    };
+}
 
 export default GearDetailsDialog;

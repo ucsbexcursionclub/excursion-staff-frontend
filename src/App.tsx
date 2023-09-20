@@ -7,7 +7,8 @@ import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
 import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
-import {DataProvider} from "./utils/DataProvider";
+import {GearProvider} from "./providers/GearProvider";
+import {MembersProvider} from "./providers/MembersProvider";
 
 function App() {
     const location = useLocation();
@@ -71,16 +72,18 @@ function App() {
     }, [pathname]);
 
     return (
-        <DataProvider>
-            <Routes>
-                <Route path="/" element={<Layout />}>
-                    <Route index element={<HomePage />} />
-                    <Route path="links/*" element={<LinkPage />} />
-                    <Route path="members" element={<MembersPage />} />
-                    <Route path="gear" element={<GearPage />} />
-                </Route>
-            </Routes>
-        </DataProvider>
+        <MembersProvider>
+            <GearProvider>
+                <Routes>
+                    <Route path="/" element={<Layout />}>
+                        <Route index element={<HomePage />} />
+                        <Route path="links/*" element={<LinkPage />} />
+                        <Route path="members" element={<MembersPage />} />
+                        <Route path="gear" element={<GearPage />} />
+                    </Route>
+                </Routes>
+            </GearProvider>
+        </MembersProvider>
     );
 }
 export default App;

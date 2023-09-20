@@ -8,7 +8,7 @@ import {
     List,
     ListItem
 } from "@mui/material";
-import {useData} from "src/utils/DataProvider";
+import {useGear, useGearSelection} from "src/providers/GearProvider";
 
 type GearRemoveDialogProps = {
     open: boolean;
@@ -16,7 +16,8 @@ type GearRemoveDialogProps = {
 };
 
 const GearRemoveDialog: React.FC<GearRemoveDialogProps> = ({open, onClose}) => {
-    const {gearRowSelectionModel, retrieveGearItem, handleGearDelete} = useData();
+    const {retrieveGearItem, handleGearDelete} = useGear();
+    const {gearRowSelectionModel} = useGearSelection();
 
     const gearsToDelete = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 

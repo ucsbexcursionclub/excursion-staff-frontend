@@ -8,7 +8,7 @@ import {
     List,
     ListItem
 } from "@mui/material";
-import {useData} from "src/utils/DataProvider";
+import {useGear, useGearSelection} from "src/providers/GearProvider";
 
 type GearCheckInDialogProps = {
     open: boolean;
@@ -16,7 +16,8 @@ type GearCheckInDialogProps = {
 };
 
 const GearCheckInDialog: React.FC<GearCheckInDialogProps> = ({open, onClose}) => {
-    const {gearRowSelectionModel, retrieveGearItem, handleGearCheckin} = useData();
+    const {retrieveGearItem, handleGearCheckin} = useGear();
+    const {gearRowSelectionModel} = useGearSelection();
 
     const gearsToCheckIn = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 

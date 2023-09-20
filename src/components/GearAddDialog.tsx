@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Dialog, DialogTitle, DialogActions, Button, TextField} from "@mui/material";
-import {useData} from "src/utils/DataProvider";
+import {useGear} from "src/providers/GearProvider";
 
 type GearAddDialogProps = {
     open: boolean;
@@ -18,7 +18,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     const [description, setDescription] = useState<string | null>(null);
     const [notes, setNotes] = useState<string | null>(null);
 
-    const {handleGearAdd} = useData();
+    const {handleGearAdd} = useGear();
 
     const handleSubmit = () => {
         if (!gearName || !rfid) return; //TODO: User feedback for missing fields

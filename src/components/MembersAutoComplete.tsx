@@ -7,8 +7,8 @@ import Popper from "@mui/material/Popper";
 import {useTheme, styled} from "@mui/material/styles";
 import {VariableSizeList, ListChildComponentProps} from "react-window";
 import Typography from "@mui/material/Typography";
-import {useData} from "src/utils/DataProvider";
 import {MemberProps} from "src/utils/types";
+import {useMembers} from "src/providers/MembersProvider";
 
 const LISTBOX_PADDING = 8; // px
 
@@ -143,7 +143,7 @@ export default function MembersAutoComplete({
         setInputValue(newInputValue);
     };
 
-    const {membersData} = useData();
+    const {membersData} = useMembers();
 
     return (
         <Autocomplete

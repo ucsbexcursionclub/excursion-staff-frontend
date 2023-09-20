@@ -1,4 +1,4 @@
-import {GearProps, MemberProps, NewGearProps, NewReservationProps} from "./types";
+import {GearProps, MemberProps, NewGearProps, NewReservationProps, ReservationProps} from "./types";
 import axios from "axios";
 
 export async function getMembers(): Promise<MemberProps[]> {
@@ -6,6 +6,16 @@ export async function getMembers(): Promise<MemberProps[]> {
     const membersData: MemberProps[] = await response.data.data;
 
     return membersData;
+}
+
+export async function getMemberById(memberId: string): Promise<MemberProps> {
+    const endpoint = `http://localhost:9000/api/v1/members/${memberId}`;
+
+    const response = await axios.get(endpoint);
+
+    const memberData: MemberProps = response.data.data;
+
+    return memberData;
 }
 
 export async function getGear(): Promise<GearProps[]> {
@@ -20,6 +30,19 @@ export async function getGearById(id: string): Promise<GearProps> {
     const gearData: GearProps = await response.data.data;
 
     return gearData;
+}
+
+export async function getReservationsByGearId(gearId: string): Promise<ReservationProps[]> {
+    // Form the endpoint URL
+    const endpoint = `http://localhost:9000/api/v1/reservations/byGear/${gearId}`;
+
+    // Send the GET request
+    const response = await axios.get(endpoint);
+
+    // Extract and return the reservations data
+    const reservationsData: ReservationProps[] = await response.data.data;
+
+    return reservationsData;
 }
 
 export async function updateGear(updatedGear: GearProps): Promise<GearProps> {

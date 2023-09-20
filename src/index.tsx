@@ -13,6 +13,11 @@ const defaultQueryFunction = async ({queryKey}) => {
         console.log(`fetching gear ${id} from db`);
         return await getGearById(id);
     }
+
+    if (type === "memberItem" && id) {
+        console.log(`fetching member ${id} from db`);
+        return await getMemberById(id);
+    }
 };
 
 const queryClient = new QueryClient({
@@ -26,7 +31,7 @@ const queryClient = new QueryClient({
 
 import React from "react";
 import App from "./App";
-import {getGearById} from "./utils/api";
+import {getGearById, getMemberById} from "./utils/api";
 const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(
