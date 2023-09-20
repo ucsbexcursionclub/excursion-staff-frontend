@@ -6,10 +6,27 @@ import {QueryClient, QueryClientProvider} from "react-query";
 
 import "./index.css";
 
-const queryClient = new QueryClient();
+const defaultQueryFunction = async ({queryKey}) => {
+    const [type, id] = queryKey;
+
+    if (type === "gearItem" && id) {
+        console.log(`fetching gear ${id} from db`);
+        return await getGearById(id);
+    }
+};
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            refetchOnWindowFocus: false, // default: true
+            queryFn: defaultQueryFunction
+        }
+    }
+});
 
 import React from "react";
 import App from "./App";
+import {getGearById} from "./utils/api";
 const container = document.getElementById("root");
 const root = createRoot(container!);
 root.render(

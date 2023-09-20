@@ -1,16 +1,14 @@
 import GearNav from "components/GearNav";
 import GearTable from "components/GearTable";
-import React from "react";
-import {useQuery} from "react-query";
-import {getGear} from "src/utils/api";
-
+import React, {useState} from "react";
 export default function GearPage() {
-    const {data, isLoading} = useQuery("gear", getGear);
+    const [searchParams, setSearchParams] = useState<string>();
 
     return (
         <>
-            <GearNav />
-            {!isLoading && <GearTable initialData={data} />}
+            <GearNav setSearchParams={setSearchParams} />
+
+            <GearTable searchParams={searchParams} />
         </>
     );
 }

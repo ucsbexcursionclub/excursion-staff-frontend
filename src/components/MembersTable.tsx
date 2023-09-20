@@ -46,7 +46,7 @@ export default function MembersTable({initialData}: MemberTableProps) {
                 getRowId={(row) => row._id}
                 initialState={{
                     pagination: {
-                        paginationModel: {page: 0, pageSize: 10}
+                        paginationModel: {page: 0, pageSize: 25}
                     }
                 }}
                 pageSizeOptions={[10, 25, 50, 100]}
