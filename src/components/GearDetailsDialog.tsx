@@ -10,11 +10,12 @@ import {
     Tabs,
     Tab,
     Box,
-    Typography
+    Typography,
+    DialogContent
 } from "@mui/material";
 import {GearProps} from "src/utils/types";
 import {useGear} from "src/providers/GearProvider";
-import {useReservations} from "src/providers/ReservationProvider";
+import CheckoutHistory from "./CheckoutHistory";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -28,7 +29,6 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const [value, setValue] = useState(0);
 
     const {handleGearUpdate} = useGear();
-    const {retrieveReservation} = useReservations();
 
     useEffect(() => {
         setNotes(gear?.notes || "");
@@ -53,13 +53,6 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
         }
     };
 
-    useEffect(() => {
-        value === 0 &&
-            gear?.previous_reservations?.forEach((reservationId) => {
-                console.log(retrieveReservation(reservationId));
-            });
-    }, [value, retrieveReservation, gear?.previous_reservations]);
-
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
@@ -75,51 +68,53 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                     <Tab label="History" {...a11yProps(1)} />
                 </Tabs>
             </Box>
-            <CustomTabPanel value={value} index={0}>
-                <List sx={{pt: 0, px: 2}}>
-                    <ListItem>
-                        <Typography>
-                            <strong>RFID:</strong> {gear.rfid}
-                        </Typography>
-                    </ListItem>
-                    <ListItem>
-                        <Typography>
-                            <strong>Date Added:</strong>{" "}
-                            {new Date(gear.date_added).toLocaleDateString()}
-                        </Typography>
-                    </ListItem>
-                    <ListItem>
-                        <Typography>
-                            <strong>Missing:</strong> {gear.is_missing ? "Yes" : "No"}
-                        </Typography>
-                    </ListItem>
-                    <ListItem>
-                        <Typography>
-                            <strong>Broken:</strong> {gear.is_broken ? "Yes" : "No"}
-                        </Typography>
-                    </ListItem>
-                    <ListItem sx={{pb: 2}}>
-                        <Typography>
-                            <strong>Description:</strong> {gear.description}
-                        </Typography>
-                    </ListItem>
-                    <ListItem>
-                        <TextField
-                            label="Notes"
-                            variant="outlined"
-                            multiline
-                            rows={4}
-                            fullWidth
-                            value={notes}
-                            onChange={handleNotesChange}
-                            onBlur={handleNotesBlur}
-                        />
-                    </ListItem>
-                </List>
-            </CustomTabPanel>
-            <CustomTabPanel value={value} index={1}>
-                testing
-            </CustomTabPanel>
+            <DialogContent dividers={true}>
+                <CustomTabPanel value={value} index={0}>
+                    <List sx={{pt: 0, px: 2}}>
+                        <ListItem>
+                            <Typography>
+                                <strong>RFID:</strong> {gear.rfid}
+                            </Typography>
+                        </ListItem>
+                        <ListItem>
+                            <Typography>
+                                <strong>Date Added:</strong>{" "}
+                                {new Date(gear.date_added).toLocaleDateString()}
+                            </Typography>
+                        </ListItem>
+                        <ListItem>
+                            <Typography>
+                                <strong>Missing:</strong> {gear.is_missing ? "Yes" : "No"}
+                            </Typography>
+                        </ListItem>
+                        <ListItem>
+                            <Typography>
+                                <strong>Broken:</strong> {gear.is_broken ? "Yes" : "No"}
+                            </Typography>
+                        </ListItem>
+                        <ListItem sx={{pb: 2}}>
+                            <Typography>
+                                <strong>Description:</strong> {gear.description}
+                            </Typography>
+                        </ListItem>
+                        <ListItem>
+                            <TextField
+                                label="Notes"
+                                variant="outlined"
+                                multiline
+                                rows={4}
+                                fullWidth
+                                value={notes}
+                                onChange={handleNotesChange}
+                                onBlur={handleNotesBlur}
+                            />
+                        </ListItem>
+                    </List>
+                </CustomTabPanel>
+                <CustomTabPanel value={value} index={1}>
+                    <CheckoutHistory gearId={gear._id} />
+                </CustomTabPanel>
+            </DialogContent>
             <DialogActions>
                 <Button onClick={onClose} color="primary">
                     Close

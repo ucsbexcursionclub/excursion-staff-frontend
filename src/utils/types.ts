@@ -43,6 +43,10 @@ export type ReservationProps = {
     reserving_member: string;
     due_date: number;
     last_contacted: number | null;
+    memberDetails?: MemberProps;
 };
 
-export type NewReservationProps = Omit<ReservationProps, "_id" | "due_date" | "last_contacted">;
+export type NewReservationProps = Omit<
+    ReservationProps,
+    "_id" | "due_date" | "last_contacted" | "memberDetails"
+>;

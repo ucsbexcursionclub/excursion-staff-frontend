@@ -46,19 +46,6 @@ export async function getReservationById(id: string): Promise<ReservationProps> 
     return reservation;
 }
 
-export async function getReservationsByGearId(gearId: string): Promise<ReservationProps[]> {
-    // Form the endpoint URL
-    const endpoint = `http://localhost:9000/api/v1/reservations/byGear/${gearId}`;
-
-    // Send the GET request
-    const response = await axios.get(endpoint);
-
-    // Extract and return the reservations data
-    const reservationsData: ReservationProps[] = await response.data.data;
-
-    return reservationsData;
-}
-
 export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
     // Use the _id property from the updatedGear object for the endpoint URL
     const url = `http://localhost:9000/api/v1/gear/${updatedGear._id}`;

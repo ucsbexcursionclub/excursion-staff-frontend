@@ -11,7 +11,9 @@ interface ReservationsContextProps {
     handleReservationEnd: (reservationIds: string[]) => Promise<void>;
     reservationRowSelectionModel: GridRowSelectionModel;
     retrieveReservation: (id: string) => ReservationProps;
+    retrieveReservations: (ids: string[]) => ReservationProps[];
     setReservationRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
+    retrieveReservationsByGearId: (id: string) => ReservationProps[];
 }
 
 const useReservationsState = () => {
@@ -57,6 +59,14 @@ const useReservationsOperations = (
         return reservationsData.filter((reservation) => reservation._id === id)[0];
     };
 
+    const retrieveReservations = (ids: string[]) => {
+        return reservationsData.filter((reservation) => ids.includes(reservation._id));
+    };
+
+    const retrieveReservationsByGearId = (id: string) => {
+        return reservationsData.filter((reservation) => reservation.reserved_gear.includes(id));
+    };
+
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
         const newReservationData: NewReservationProps = {
             reserved_gear: selectedGear.map((gear) => gear._id),
@@ -91,7 +101,9 @@ const useReservationsOperations = (
     return {
         handleReservationAdd,
         handleReservationEnd,
-        retrieveReservation
+        retrieveReservation,
+        retrieveReservations,
+        retrieveReservationsByGearId
     };
 };
 
