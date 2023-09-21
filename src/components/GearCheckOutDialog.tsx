@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import MembersAutoComplete from "./MembersAutoComplete";
 import {MemberProps} from "src/utils/types";
-import {useGear, useGearSelection} from "src/providers/GearProvider";
+import {useGear} from "src/providers/GearProvider";
 
 type GearCheckOutDialogProps = {
     open: boolean;
@@ -28,8 +28,7 @@ TODO: handle overwrites to close reservations automatically with some notes mayb
 */
 
 const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) => {
-    const {retrieveGearItem, handleGearCheckout} = useGear();
-    const {gearRowSelectionModel} = useGearSelection();
+    const {retrieveGearItem, handleGearCheckout, gearRowSelectionModel} = useGear();
 
     const gearsToCheckOut = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 

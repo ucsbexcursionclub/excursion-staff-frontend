@@ -14,7 +14,7 @@ import {
 import * as React from "react";
 import {GearProps} from "src/utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
-import {useGear, useGearSelection} from "src/providers/GearProvider";
+import {useGear} from "src/providers/GearProvider";
 
 const columns: GridColDef[] = [
     {field: "_id", headerName: "ID"},
@@ -118,8 +118,7 @@ export default function GearTable({searchParams}: GearTableProps) {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [selectedGear, setSelectedGear] = React.useState<GearProps | null>(null);
 
-    const {gearData} = useGear();
-    const {gearRowSelectionModel, setGearRowSelectionModel} = useGearSelection();
+    const {gearData, gearRowSelectionModel, setGearRowSelectionModel} = useGear();
 
     const handleCellClick = (params: any) => {
         if (params.field === "gear_name") {

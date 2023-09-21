@@ -5,7 +5,7 @@ import GearRemoveDialog from "./GearRemoveDialog";
 import GearAddDialog from "./GearAddDialog";
 import GearCheckOutDialog from "./GearCheckOutDialog";
 import GearCheckInDialog from "./GearCheckInDialog";
-import {useGearSelection} from "src/providers/GearProvider";
+import {useGear} from "src/providers/GearProvider";
 
 type GearNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
@@ -17,7 +17,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const [checkOutDialogOpen, setCheckOutDialogOpen] = useState<boolean>(false);
     const [checkInDialogOpen, setCheckInDialogOpen] = useState<boolean>(false);
 
-    const {gearRowSelectionModel} = useGearSelection();
+    const {gearRowSelectionModel} = useGear();
 
     const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setSearchParams(event.currentTarget.value);

@@ -8,6 +8,13 @@ export async function getMembers(): Promise<MemberProps[]> {
     return membersData;
 }
 
+export async function getReservations(): Promise<ReservationProps[]> {
+    const response = await axios.get("http://localhost:9000/api/v1/reservations");
+    const reservations: ReservationProps[] = await response.data.data;
+
+    return reservations;
+}
+
 export async function getMemberById(memberId: string): Promise<MemberProps> {
     const endpoint = `http://localhost:9000/api/v1/members/${memberId}`;
 
@@ -30,6 +37,13 @@ export async function getGearById(id: string): Promise<GearProps> {
     const gearData: GearProps = await response.data.data;
 
     return gearData;
+}
+
+export async function getReservationById(id: string): Promise<ReservationProps> {
+    const response = await axios.get(`http://localhost:9000/api/v1/reservations/${id}`);
+    const reservation: ReservationProps = await response.data.data;
+
+    return reservation;
 }
 
 export async function getReservationsByGearId(gearId: string): Promise<ReservationProps[]> {
@@ -74,7 +88,18 @@ export async function addGear(newGearData: NewGearProps): Promise<GearProps> {
     return response.data.data;
 }
 
-export async function addReservation(newReservationData: NewReservationProps) {
+export async function getReservationsByIds(ids: string[]): Promise<ReservationProps[]> {
+    const response = await axios.get("http://localhost:9000/api/v1/reservations/by-ids", {
+        params: {
+            ids: ids.join(",")
+        }
+    });
+    return response.data.data;
+}
+
+export async function addReservation(
+    newReservationData: NewReservationProps
+): Promise<ReservationProps> {
     const response = await axios.post(
         "http://localhost:9000/api/v1/reservations",
         newReservationData

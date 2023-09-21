@@ -7,14 +7,9 @@ import {MemberProps, NewMemberProps} from "src/utils/types";
 interface MembersContextProps {
     membersData: MemberProps[];
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
+    memberRowSelectionModel: GridRowSelectionModel;
+    setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
 }
-
-export const useMembersSelection = () => {
-    const [memberRowSelectionModel, setMemberRowSelectionModel] = useState<GridRowSelectionModel>(
-        []
-    );
-    return {memberRowSelectionModel, setMemberRowSelectionModel};
-};
 
 const useMembersState = () => {
     const queryClient = useQueryClient();
@@ -40,9 +35,9 @@ const useMembersState = () => {
 
 const useMembersOperations = (
     membersData: MemberProps[],
-    setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>
+    setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>,
+    setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
-    const {setMemberRowSelectionModel} = useMembersSelection();
     const queryClient = useQueryClient();
 
     const recomputeAggregatedMembers = () => {
@@ -122,10 +117,21 @@ interface DataProviderProps {
 
 export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
     const {membersData, setMembersData} = useMembersState();
-    const memberOps = useMembersOperations(membersData, setMembersData);
+    const [memberRowSelectionModel, setMemberRowSelectionModel] = useState<GridRowSelectionModel>(
+        []
+    );
+    const memberOps = useMembersOperations(membersData, setMembersData, setMemberRowSelectionModel);
 
     return (
-        <MembersContext.Provider value={{membersData, setMembersData, ...memberOps}}>
+        <MembersContext.Provider
+            value={{
+                membersData,
+                setMembersData,
+                memberRowSelectionModel,
+                setMemberRowSelectionModel,
+                ...memberOps
+            }}
+        >
             {children}
         </MembersContext.Provider>
     );
@@ -134,7 +140,7 @@ export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
 export const useMembers = (): MembersContextProps => {
     const context = useContext(MembersContext);
     if (!context) {
-        throw new Error("useGear must be used within a GearProvider");
+        throw new Error("useMembers must be used within a MembersProvider");
     }
     return context;
 };

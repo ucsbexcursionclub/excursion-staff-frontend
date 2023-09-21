@@ -9,6 +9,7 @@ import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
 import {GearProvider} from "./providers/GearProvider";
 import {MembersProvider} from "./providers/MembersProvider";
+import {ReservationsProvider} from "./providers/ReservationProvider";
 
 function App() {
     const location = useLocation();
@@ -72,18 +73,20 @@ function App() {
     }, [pathname]);
 
     return (
-        <MembersProvider>
-            <GearProvider>
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route index element={<HomePage />} />
-                        <Route path="links/*" element={<LinkPage />} />
-                        <Route path="members" element={<MembersPage />} />
-                        <Route path="gear" element={<GearPage />} />
-                    </Route>
-                </Routes>
-            </GearProvider>
-        </MembersProvider>
+        <ReservationsProvider>
+            <MembersProvider>
+                <GearProvider>
+                    <Routes>
+                        <Route path="/" element={<Layout />}>
+                            <Route index element={<HomePage />} />
+                            <Route path="links/*" element={<LinkPage />} />
+                            <Route path="members" element={<MembersPage />} />
+                            <Route path="gear" element={<GearPage />} />
+                        </Route>
+                    </Routes>
+                </GearProvider>
+            </MembersProvider>
+        </ReservationsProvider>
     );
 }
 export default App;

@@ -1,15 +1,9 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {
-    addGear,
-    addReservation,
-    deleteGearItems,
-    endReservations,
-    getGear,
-    updateGear
-} from "src/utils/api";
-import {GearProps, MemberProps, NewGearProps, NewReservationProps} from "src/utils/types";
+import {addGear, deleteGearItems, getGear, updateGear} from "src/utils/api";
+import {GearProps, MemberProps, NewGearProps} from "src/utils/types";
+import {useReservations} from "./ReservationProvider";
 
 interface GearContextProps {
     gearData: GearProps[];
@@ -20,12 +14,9 @@ interface GearContextProps {
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
+    setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
+    gearRowSelectionModel: GridRowSelectionModel;
 }
-
-export const useGearSelection = () => {
-    const [gearRowSelectionModel, setGearRowSelectionModel] = useState<GridRowSelectionModel>([]);
-    return {gearRowSelectionModel, setGearRowSelectionModel};
-};
 
 const useGearState = () => {
     const queryClient = useQueryClient();
@@ -51,10 +42,12 @@ const useGearState = () => {
 
 const useGearOperations = (
     gearData: GearProps[],
-    setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>
+    setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>,
+    setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
-    const {setGearRowSelectionModel} = useGearSelection();
     const queryClient = useQueryClient();
+
+    const {handleReservationAdd, handleReservationEnd} = useReservations();
 
     const recomputeAggregatedGear = () => {
         const aggregatedGear = queryClient
@@ -106,13 +99,7 @@ const useGearOperations = (
     const handleGearCheckout = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
         setGearRowSelectionModel([]);
 
-        const newReservationData: NewReservationProps = {
-            reserved_gear: selectedGear.map((gear) => gear._id),
-            reserving_member: selectedMember._id
-        };
-
-        await addReservation(newReservationData);
-
+        await handleReservationAdd(selectedMember, selectedGear);
         await Promise.all(
             selectedGear.map(async (gear) => {
                 return await queryClient.refetchQueries({queryKey: ["gearItem", gear._id]});
@@ -127,7 +114,7 @@ const useGearOperations = (
 
         const reservationIds = [...new Set(selectedGear.map((gear) => gear.current_reservation))];
 
-        await endReservations(reservationIds);
+        await handleReservationEnd(reservationIds);
 
         await Promise.all(
             selectedGear.map(async (gear) => {
@@ -156,10 +143,19 @@ interface DataProviderProps {
 
 export const GearProvider: React.FC<DataProviderProps> = ({children}) => {
     const {gearData, setGearData} = useGearState();
-    const gearOps = useGearOperations(gearData, setGearData);
+    const [gearRowSelectionModel, setGearRowSelectionModel] = useState<GridRowSelectionModel>([]);
+    const gearOps = useGearOperations(gearData, setGearData, setGearRowSelectionModel);
 
     return (
-        <GearContext.Provider value={{gearData, setGearData, ...gearOps}}>
+        <GearContext.Provider
+            value={{
+                gearData,
+                setGearData,
+                gearRowSelectionModel,
+                setGearRowSelectionModel,
+                ...gearOps
+            }}
+        >
             {children}
         </GearContext.Provider>
     );

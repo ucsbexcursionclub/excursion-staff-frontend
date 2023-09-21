@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import {GearProps} from "src/utils/types";
 import {useGear} from "src/providers/GearProvider";
+import {useReservations} from "src/providers/ReservationProvider";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -27,13 +28,16 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const [value, setValue] = useState(0);
 
     const {handleGearUpdate} = useGear();
-
-    console.log(gear);
+    const {retrieveReservation} = useReservations();
 
     useEffect(() => {
         setNotes(gear?.notes || "");
         setInitialNotes(gear?.notes || "");
     }, [gear]);
+
+    useEffect(() => {
+        open && setValue(0);
+    }, [open]);
 
     const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setNotes(event.target.value);
@@ -48,6 +52,13 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
             }
         }
     };
+
+    useEffect(() => {
+        value === 0 &&
+            gear?.previous_reservations?.forEach((reservationId) => {
+                console.log(retrieveReservation(reservationId));
+            });
+    }, [value, retrieveReservation, gear?.previous_reservations]);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
