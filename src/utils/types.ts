@@ -12,7 +12,7 @@ export type NewMemberProps = Omit<MemberProps, "_id" | "membership_expiration_da
 
 export type GearProps = {
     _id: string;
-    rfid: number | null;
+    rfid: string | null;
     gear_name: string;
     is_missing: boolean;
     is_broken: boolean;
