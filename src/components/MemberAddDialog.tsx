@@ -1,5 +1,4 @@
 import * as React from "react";
-import {useQuery} from "react-query";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Dialog from "@mui/material/Dialog";
@@ -15,16 +14,12 @@ import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import {useMembers} from "src/providers/MembersProvider";
-import {getMembers} from "src/utils/api";
 import {MemberProps} from "src/utils/types";
+import MembersAutoComplete from "./MembersAutoComplete";
 
 interface MemberAddDialog {
     open: boolean;
     onClose: () => void;
-}
-
-function useMembersData() {
-    return useQuery("members", getMembers);
 }
 
 const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
@@ -43,7 +38,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [submitErrorMessage, setSubmitErrorMessage] = React.useState<string | null>(null);
     const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
     const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
-    const [staffName, setStaffName] = React.useState("");
+    const [signedStaff, setSignedStaff] = React.useState<MemberProps | null>(null);
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -60,10 +55,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const handleStokedLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setStokedLevel(value);
-    };
-    const handleStaffNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        setStaffName(value);
     };
     const handleMembershipStatusChange = (event) => {
         setMembershipStatus(event.target.value);
@@ -146,23 +137,24 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
         if (hasWaiver === "no") {
             errorMessage = "Please fill out the waiver.";
-        } else if (emailError !== null) {
+        } else if (emailError) {
             errorMessage = "Please enter a valid email.";
         } else if (reEnterEmail !== email) {
             errorMessage = "Please make sure your emails match.";
-        } else if (phoneNumberError !== null) {
+        } else if (phoneNumberError) {
             errorMessage = "Please enter a valid phone number.";
         } else if (!fullName) {
             errorMessage = "Please enter your full name.";
         } else if (hasPaid === "no") {
             errorMessage = "Please ensure the new member has paid dues.";
+        } else if (!signedStaff) {
+            errorMessage = "Please ensure the staff enters signed up by details.";
         }
 
         return errorMessage;
     };
 
-    const {handleMemberAdd} = useMembers();
-    const {data: allMembersData} = useMembersData();
+    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
 
     const handleSubmit = async () => {
         setValidationEnabled(true);
@@ -170,17 +162,15 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setSubmitErrorMessage(null);
 
         try {
-            const existingMembers = allMembersData || [];
-
-            const isDuplicateFullName = existingMembers.some(
+            const isDuplicateFullName = membersData.some(
                 (member) => member.name.toLowerCase() === fullName.toLowerCase()
             );
 
-            const isDuplicateEmail = existingMembers.some(
+            const isDuplicateEmail = membersData.some(
                 (member) => member.email.toLowerCase() === email.toLowerCase()
             );
 
-            const isDuplicatePhoneNumber = existingMembers.some(
+            const isDuplicatePhoneNumber = membersData.some(
                 (member) => member.phone_number === phoneNumber
             );
 
@@ -228,7 +218,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: staffName
+                signed_up_by: signedStaff._id
             });
         } catch (error) {
             console.error("Failed to add member:", error);
@@ -254,8 +244,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }, 5000); // 5000 milliseconds (5 seconds)
         }
     };
-    const {retrieveMemberItem} = useMembers();
-    const {handleMemberUpdate} = useMembers();
 
     const handleRenew = async () => {
         setValidationEnabled(true);
@@ -270,10 +258,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             return;
         }
 
-        const existingMembers = allMembersData || [];
-
         try {
-            const memberWithEmail = existingMembers.find(
+            const memberWithEmail = membersData.find(
                 (member) => member.email.toLowerCase() === email.toLowerCase()
             );
 
@@ -295,13 +281,13 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: staffName,
+                signed_up_by: signedStaff._id,
                 membership_expiration_date: expirationDate.getTime(),
                 join_datetime: new Date().getTime(),
                 notes: retrievedMemberData.notes
             };
 
-            handleMemberUpdate(memberData);
+            await handleMemberUpdate(memberData);
         } catch (error) {
             if (error.response && error.response.status === 404) {
                 setSubmitErrorMessage("Member not found. Please double check name and email.");
@@ -475,20 +461,13 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                         </RadioGroup>
                     </FormControl>
                     <Box sx={{my: 2, border: "1px solid black", p: 2}}>
-                        <DialogContentText style={{color: "black"}}>
+                        <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
                             For Staff Use Only:
                         </DialogContentText>
-                        <TextField
-                            margin="dense"
-                            id="staffer"
-                            label="Staff Name"
-                            type="text"
-                            value={staffName}
-                            onChange={handleStaffNameChange}
-                            fullWidth
-                            variant="standard"
-                            required
-                            aria-required="true"
+                        <MembersAutoComplete
+                            overrideLabel={"Select a staff"}
+                            setMemberVal={setSignedStaff}
+                            memberVal={signedStaff}
                         />
                         <div>
                             <p>Has this member paid you {calculatePrice()}?</p>

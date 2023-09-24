@@ -124,8 +124,9 @@ const StyledPopper = styled(Popper)({
 });
 
 type MembersAutoCompleteProps = {
-    error: boolean;
-    setError: React.Dispatch<React.SetStateAction<boolean>>;
+    error?: boolean;
+    setError?: React.Dispatch<React.SetStateAction<boolean>>;
+    overrideLabel?: string;
     memberVal: MemberProps;
     setMemberVal: React.Dispatch<React.SetStateAction<MemberProps | null>>;
 };
@@ -133,13 +134,14 @@ type MembersAutoCompleteProps = {
 export default function MembersAutoComplete({
     error,
     setError,
+    overrideLabel,
     memberVal,
     setMemberVal
 }: MembersAutoCompleteProps) {
     const [inputValue, setInputValue] = React.useState("");
 
     const updateInputVal = (event, newInputValue) => {
-        setError(false);
+        setError && setError(false);
         setInputValue(newInputValue);
     };
 
@@ -161,7 +163,9 @@ export default function MembersAutoComplete({
             ListboxComponent={ListboxComponent}
             options={membersData}
             getOptionLabel={(option) => option.name}
-            renderInput={(params) => <TextField {...params} label="Select A Member" />}
+            renderInput={(params) => (
+                <TextField {...params} label={overrideLabel ?? "Select A Member"} />
+            )}
             renderOption={(props, option, state) =>
                 [props, option.name, state.index] as React.ReactNode
             }

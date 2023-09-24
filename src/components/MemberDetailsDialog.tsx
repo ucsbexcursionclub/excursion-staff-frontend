@@ -65,7 +65,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                     <ListItem>
                         <Typography>
                             <strong>Membership Expiration: </strong>{" "}
-                            {member.membership_expiration_date}
+                            {new Date(member.membership_expiration_date).toLocaleDateString()}
                         </Typography>
                     </ListItem>
                     <ListItem>
@@ -91,7 +91,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                     </ListItem>
                     <ListItem>
                         <Typography>
-                            <strong>Membership Duration:</strong>
+                            <strong>Membership Duration: </strong>
                             {member.membership_duration} days
                         </Typography>
                     </ListItem>

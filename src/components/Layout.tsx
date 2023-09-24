@@ -6,7 +6,7 @@ export default function Layout() {
     return (
         <>
             <NavBar />
-            <div className="p-4" style={{padding: 0}}>
+            <div className="p-4">
                 <Outlet />
             </div>
         </>
