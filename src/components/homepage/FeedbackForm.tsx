@@ -1,41 +1,57 @@
-import React, {useState} from "react";
+import React, {useState, ChangeEvent, FormEvent} from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
+import {Button, Typography} from "@mui/material";
 
-export default function FeedbackForm({fontSize}) {
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [feedback, setFeedback] = useState("");
+interface Props {
+    fontSize: string;
+}
 
-    const handleNameChange = (e) => {
+export default function FeedbackForm({fontSize}: Props) {
+    const [name, setName] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [feedback, setFeedback] = useState<string>("");
+
+    const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
     };
 
-    const handleEmailChange = (e) => {
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
     };
 
-    const handleFeedbackChange = (e) => {
+    const handleFeedbackChange = (e: ChangeEvent<HTMLInputElement>) => {
         setFeedback(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        // Handle form submission
+        console.log("Name:", name);
+        console.log("Email:", email);
+        console.log("Feedback:", feedback);
     };
 
     return (
         <div>
             <form onSubmit={handleSubmit}>
-                <Box
-                    component="div"
-                    sx={{
-                        "& > :not(style)": {m: 1, width: "90%"} // Set width to 100% for TextField components
-                    }}
-                >
+                <Box className="flex flex-col">
+                    <Typography
+                        variant="body2"
+                        className="pb-2"
+                        style={{
+                            fontSize: `${parseInt(fontSize) + 6}px`,
+                            fontWeight: "bold",
+                            color: "black"
+                        }}
+                    >
+                        Contact Us
+                    </Typography>
                     <TextField
                         id="name"
                         label="Name"
                         variant="outlined"
+                        className="pb-2"
                         value={name}
                         onChange={handleNameChange}
                     />
@@ -43,6 +59,7 @@ export default function FeedbackForm({fontSize}) {
                         id="email"
                         label="Email"
                         variant="outlined"
+                        className="pb-2"
                         value={email}
                         onChange={handleEmailChange}
                     />
@@ -50,13 +67,20 @@ export default function FeedbackForm({fontSize}) {
                         id="feedback"
                         label="Feedback or Message"
                         variant="outlined"
+                        className="pb-2"
                         multiline
                         rows={4}
                         value={feedback}
                         onChange={handleFeedbackChange}
                     />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        sx={{width: "min-content", whiteSpace: "nowrap"}}
+                    >
+                        Submit Feedback
+                    </Button>
                 </Box>
-                <button type="submit">Submit Feedback</button>
             </form>
             <p style={{fontSize}}>
                 * All fields are optional. Send an anonymous message without filling out Name or
