@@ -2,19 +2,39 @@ import {TablePaginationProps} from "@mui/material";
 import MuiPagination from "@mui/material/Pagination";
 import {
     DataGrid,
+    GridCellParams,
     GridColDef,
+    GridFilterInputValue,
+    GridFilterItem,
     GridFilterModel,
     GridPagination,
-    GridToolbarContainer,
-    GridToolbarFilterButton,
     gridPageCountSelector,
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
-import * as React from "react";
+import React, {useState} from "react";
 import {GearProps} from "src/utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "src/providers/GearProvider";
+import CustomToolbar from "./GearToolbar";
+
+const dateOperators = [
+    {
+        value: "<",
+        getApplyFilterFn: (filterItem: GridFilterItem) => {
+            if (!filterItem.value) {
+                return;
+            }
+            return (params: GridCellParams<GearProps>) => {
+                const filterValue = new Date(Number(filterItem.value));
+                const cellValue = new Date(params.row?.reservationDetails?.due_date || Infinity);
+                return cellValue < filterValue;
+            };
+        },
+        InputComponent: GridFilterInputValue,
+        InputComponentProps: {type: "date"}
+    }
+];
 
 const columns: GridColDef[] = [
     {field: "_id", headerName: "ID"},
@@ -55,11 +75,12 @@ const columns: GridColDef[] = [
         valueGetter: (params) => params.row?.reservationDetails?.due_date,
         valueFormatter: (params) => {
             if (params.value) {
-                const date = new Date(params.value as number);
+                const date = new Date(params.value);
                 return date.toLocaleDateString();
             }
             return "";
-        }
+        },
+        filterOperators: dateOperators
     },
     {
         field: "date_last_contacted",
@@ -102,23 +123,18 @@ function CustomPagination(props: any) {
     return <GridPagination ActionsComponent={Pagination} {...props} />;
 }
 
-function CustomToolbar() {
-    return (
-        <GridToolbarContainer>
-            <GridToolbarFilterButton />
-        </GridToolbarContainer>
-    );
-}
-
 type GearTableProps = {
     searchParams: string;
 };
 
 export default function GearTable({searchParams}: GearTableProps) {
-    const [dialogOpen, setDialogOpen] = React.useState(false);
-    const [selectedGear, setSelectedGear] = React.useState<GearProps | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [selectedGear, setSelectedGear] = useState<GearProps | null>(null);
+    const [filterButtonEl, setFilterButtonEl] = React.useState<HTMLButtonElement | null>(null);
 
     const {gearData, gearRowSelectionModel, setGearRowSelectionModel} = useGear();
+
+    const [showOverdueOnly, setShowOverdueOnly] = useState<boolean>(false);
 
     const handleCellClick = (params: any) => {
         if (params.field === "gear_name") {
@@ -133,12 +149,19 @@ export default function GearTable({searchParams}: GearTableProps) {
     };
 
     const filterModel: GridFilterModel = React.useMemo(
-        () => ({
-            items: [],
-            quickFilterExcludeHiddenColumns: true,
-            quickFilterValues: [searchParams]
-        }),
-        [searchParams]
+        () => {
+            const items = [];
+            if (showOverdueOnly) {
+                // Ensure due_date is a number representing a date timestamp
+                items.push({id: 1, field: "due_date", operator: "<", value: Date.now()});
+            }
+            return {
+                items: items,
+                quickFilterExcludeHiddenColumns: true,
+                quickFilterValues: [searchParams]
+            };
+        },
+        [searchParams, showOverdueOnly] // Add showOverdue as a dependency
     );
 
     return (
@@ -171,6 +194,16 @@ export default function GearTable({searchParams}: GearTableProps) {
                 slots={{
                     toolbar: CustomToolbar,
                     pagination: CustomPagination
+                }}
+                slotProps={{
+                    panel: {
+                        anchorEl: filterButtonEl
+                    },
+                    toolbar: {
+                        searchParams: searchParams,
+                        setShowOverdueOnly: setShowOverdueOnly,
+                        setFilterButtonEl: setFilterButtonEl
+                    }
                 }}
             />
             <GearDetailsDialog open={dialogOpen} onClose={handleCloseDialog} gear={selectedGear} />
