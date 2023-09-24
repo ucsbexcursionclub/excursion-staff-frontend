@@ -1,6 +1,10 @@
 import React from "react";
 
-const PricingColumns = ({medFontSize}) => {
+type PricingColumnsProps = {
+    medFontSize: string;
+};
+
+const PricingColumns = ({medFontSize}: PricingColumnsProps) => {
     const leftColumnStyle = {
         backgroundColor: "#f1f1f1", // Left column background color
         padding: "20px",

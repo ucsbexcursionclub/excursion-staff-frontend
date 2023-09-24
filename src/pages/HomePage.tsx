@@ -13,7 +13,7 @@ import ResponsiveImageRow from "components/homepage/ResponsiveImageRow";
 const merchImageUrls = [
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleeveback.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/hat.png",
+    "http://d36olvmp8krees.cloudfront.net/resources/hat.jpg",
     "http://d36olvmp8krees.cloudfront.net/resources/longsleevefront.jpg",
     "http://d36olvmp8krees.cloudfront.net/resources/longsleeveback.jpg",
     "http://d36olvmp8krees.cloudfront.net/resources/headlamp.jpg"
@@ -176,9 +176,7 @@ export default function HomePage() {
                             <br />
                             <br />
                             In the 2022-2023 academic year, we led an average of{" "}
-                            <span style={{fontSize: "18px", fontWeight: "bold"}}>
-                                27 trips per week!
-                            </span>
+                            <strong>27 trips per week!</strong>
                         </p>
                         <p style={paragraphStyle}>
                             In addition to weekly trips, we have gear and equipment rentals
@@ -192,7 +190,7 @@ export default function HomePage() {
             <GearGrid columns={columns} labelFontSize={parseInt(medFontSize)} />
             <Card sx={cardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
+                    <div>
                         <Typography
                             variant="body2"
                             style={{
@@ -219,14 +217,14 @@ export default function HomePage() {
                             this site or DM us on instagram (@excursionclubucsb) and we will find a
                             time to sign you up!
                         </p>
-                    </Typography>
+                    </div>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
             </Card>
             <ResponsiveImageRow imageUrls={merchImageUrls} screenWidth={screenWidth} />
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
+                    <div>
                         <Typography
                             variant="body2"
                             style={{
@@ -247,7 +245,7 @@ export default function HomePage() {
                             <li>Hats - $15</li>
                             <li>Headlamps - $5</li>
                         </ul>
-                    </Typography>
+                    </div>
                     <p style={paragraphStyle}>
                         If your question is not answered on this page, send it to us using the form
                         above or by emailing us directly at info@excursionclubucsb.org
@@ -271,18 +269,7 @@ export default function HomePage() {
             </Card>
             <Card sx={cardStyle} square>
                 <CardContent>
-                    <Typography
-                        variant="body2"
-                        style={{
-                            fontSize: `${parseInt(medFontSize) + 1}px`,
-                            fontWeight: "bold",
-                            color: "black"
-                        }}
-                    >
-                        Contact Us
-                    </Typography>
-                    <FeedbackForm fontSize={`${parseInt(medFontSize) - 6}px`} />{" "}
-                    {/* Use the FeedbackForm component here */}
+                    <FeedbackForm fontSize={`${parseInt(medFontSize) - 6}px`} />
                 </CardContent>
             </Card>
         </div>
