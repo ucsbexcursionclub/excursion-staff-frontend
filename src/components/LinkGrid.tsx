@@ -25,7 +25,7 @@ interface Props {
 
 export default function LinkGrid({data}: Props) {
     return (
-        <Box className="w-full" sx={{px: 3}}>
+        <Box className="w-full" sx={{px: 1}}>
             <Typography
                 noWrap
                 sx={{fontSize: {xs: "24px", md: "42px", lg: "48px"}}}

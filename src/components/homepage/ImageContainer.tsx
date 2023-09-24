@@ -1,17 +1,17 @@
 import React from "react";
 
-const ImageContainer = ({imgurl, bigFontSize}) => {
+type ImageContainerProps = {
+    imgurl: string;
+    bigFontSize: string;
+};
+
+const ImageContainer = ({imgurl, bigFontSize}: ImageContainerProps) => {
     const imageStyle = {
-        width: "100%", // Make the image fill the width of the screen
-        height: "auto", // Maintain the image's aspect ratio
-        paddingBottom: "0",
-        margin: 0, // Remove margin
-        padding: 0 // Remove padding
+        width: "100%" // Make the image fill the width of the screen
     };
 
     const imageContainerStyle: React.CSSProperties = {
         position: "relative",
-        height: "auto",
         backgroundColor: "white"
     };
 
@@ -23,9 +23,7 @@ const ImageContainer = ({imgurl, bigFontSize}) => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "transparent",
-        height: "auto",
-        paddingBottom: "0"
+        backgroundColor: "transparent"
     };
 
     const textOverlayStyle: React.CSSProperties = {
@@ -41,7 +39,7 @@ const ImageContainer = ({imgurl, bigFontSize}) => {
         <div style={imageContainerStyle}>
             <img src={imgurl} alt="Homepage Image" style={imageStyle} />
             <div style={textOverlayContainerStyle}>
-                <div style={textOverlayStyle}>{"We Do it Outdoors"}</div>
+                <div style={textOverlayStyle}>We Do it Outdoors</div>
             </div>
         </div>
     );

@@ -2,71 +2,16 @@ import React from "react";
 import Paper from "@mui/material/Paper";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
+import {sampleGearItems} from "src/data/gear";
 
 const StyledPaper = Paper;
 
-// interface GearItem {
-//     imageUrl: string;
-//     title: string;
-// }
-
-interface Props {
+interface GearGridProps {
     columns: number;
     labelFontSize: number;
 }
 
-const gearItems = [
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/SleepingBag.jpg",
-        title: "Sleeping Bags"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/SleepingPad.jpg",
-        title: "Sleeping Pads"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Tent.jpg",
-        title: "Tents"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Backpack.jpg",
-        title: "Backpacks"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/ColemanStove.jpg",
-        title: "Camping Stoves"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/BackpackingStove.jpg",
-        title: "Backpacking Stoves"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Waterfilter.jpg",
-        title: "Water Filters"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Surfboards.jpg",
-        title: "Surfboards"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Kayak.jpg",
-        title: "Ocean Kayaks"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Wetsuits.jpg",
-        title: "Wetsuits"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/YogaMat.jpg",
-        title: "Yoga Mats"
-    },
-    {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Hammock.JPG",
-        title: "Hammocks"
-    }
-];
-
-export default function GearGrid({columns, labelFontSize}: Props) {
+export default function GearGrid({columns, labelFontSize}: GearGridProps) {
     // Calculate the width percentage for each column
     const columnWidthPercentage = `${100 / columns}%`;
 
@@ -83,7 +28,7 @@ export default function GearGrid({columns, labelFontSize}: Props) {
         fontSize: labelFontSize,
         fontWeight: "bold",
         textAlign: "center",
-        color: "rgba(42,49,39,255)"
+        color: "#829195"
     };
 
     return (
@@ -94,7 +39,7 @@ export default function GearGrid({columns, labelFontSize}: Props) {
                 className="flex bg-lime-200 justify-center align-start rounded-xl"
                 columnSpacing={1}
             >
-                {gearItems.map((item, index) => (
+                {sampleGearItems.map((item, index) => (
                     <Grid
                         item
                         key={index}

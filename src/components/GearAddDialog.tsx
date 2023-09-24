@@ -14,14 +14,25 @@ use Autocomplete MUI component
 
 const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     const [gearName, setGearName] = useState("");
-    const [rfid, setRfid] = useState<number | null>(null);
+    const [rfid, setRfid] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
     const [notes, setNotes] = useState<string | null>(null);
 
-    const {handleGearAdd} = useGear();
+    const {handleGearAdd, retrieveGearItemByRFID} = useGear();
+
+    const handleValidation = (): boolean => {
+        if (!gearName || !rfid) return false;
+
+        if (retrieveGearItemByRFID(rfid)) return false;
+
+        return true;
+    };
 
     const handleSubmit = () => {
-        if (!gearName || !rfid) return; //TODO: User feedback for missing fields
+        //TODO: User feedback for missing fields
+
+        if (!handleValidation()) return false;
+
         handleGearAdd({
             gear_name: gearName,
             rfid,
@@ -29,6 +40,14 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
             notes
         });
         onClose();
+    };
+
+    const handleRfidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+
+        if (value === "" || /^[0-9]+$/.test(value)) {
+            setRfid(value);
+        }
     };
 
     return (
@@ -41,12 +60,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
                     onChange={(e) => setGearName(e.target.value)}
                     fullWidth
                 />
-                <TextField
-                    label="RFID"
-                    value={rfid || ""}
-                    onChange={(e) => setRfid(Number(e.target.value))}
-                    fullWidth
-                />
+                <TextField label="RFID" value={rfid || ""} onChange={handleRfidChange} fullWidth />
                 <TextField
                     label="Description (optional)"
                     value={description || ""}

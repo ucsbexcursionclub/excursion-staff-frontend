@@ -1,6 +1,11 @@
 import React from "react";
 
-const ResponsiveImageRow = ({imageUrls, screenWidth}) => {
+type ResponsiveImageRowProps = {
+    imageUrls: string[];
+    screenWidth: number;
+};
+
+const ResponsiveImageRow = ({imageUrls, screenWidth}: ResponsiveImageRowProps) => {
     const numImages = imageUrls.length;
     const isMobileView = screenWidth <= 600;
 
