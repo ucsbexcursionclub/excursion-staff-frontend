@@ -185,6 +185,9 @@ export default function GearTable({searchParams}: GearTableProps) {
                             _id: false
                         }
                     },
+                    sorting: {
+                        sortModel: [{field: "due_date", sort: "asc"}]
+                    },
                     pagination: {
                         paginationModel: {page: 0, pageSize: 25}
                     }

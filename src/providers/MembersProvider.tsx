@@ -1,12 +1,16 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {getMembers} from "src/utils/api";
+import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
 import {MemberProps, NewMemberProps} from "src/utils/types";
 
 interface MembersContextProps {
     membersData: MemberProps[];
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
+    handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
+    retrieveMemberItem: (id: string) => MemberProps | undefined;
+    handleMemberDelete: (selectedMember: MemberProps[]) => Promise<void>;
+    handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
     memberRowSelectionModel: GridRowSelectionModel;
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
 }
@@ -49,14 +53,10 @@ const useMembersOperations = (
     };
 
     const handleMemberUpdate = async (modifiedMember: MemberProps) => {
-        modifiedMember; //temp just so eslint doesn't complain about unused vars
-        setMemberRowSelectionModel; //same as above
-        recomputeAggregatedMembers; //same as above
-        // //TODO: WRITE API, PATH, MONGODB FUNCTION REFERENCE GEAR UPDATE
-        // const updatedMember = await updateMember(modifiedMember);
+        const updatedMember = await updateMembers(modifiedMember);
 
-        // await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
-        // recomputeAggregatedMembers();
+        await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
+        recomputeAggregatedMembers();
     };
 
     /**
@@ -71,34 +71,35 @@ const useMembersOperations = (
 
     const handleMemberDelete = async (selectedMember: MemberProps[]) => {
         selectedMember;
-        // const memberIds = selectedMember.map((member) => member._id);
+        const memberIds = selectedMember.map((member) => member._id);
 
-        // setMemberRowSelectionModel([]);
+        setMemberRowSelectionModel([]);
 
-        // //TODO: WRITE API, PATH, MONGODB FUNCTION REFERENCE GEAR DELETE
-        // await deleteMembers(memberIds);
+        await deleteMembers(memberIds);
 
-        // await Promise.all(
-        //     memberIds.map(async (id) => {
-        //         return queryClient.removeQueries({queryKey: ["memberItem", id]});
-        //     })
-        // );
+        await Promise.all(
+            memberIds.map(async (id) => {
+                return queryClient.removeQueries({queryKey: ["memberItem", id]});
+            })
+        );
 
-        // recomputeAggregatedMembers();
+        recomputeAggregatedMembers();
     };
 
     const handleMemberAdd = async (newMemberData: NewMemberProps) => {
         newMemberData;
-        // //TODO: WRITE API, PATH, MONGODB FUNCTION REFERENCE GEAR ADD
-        // const addedMember = await addMember(newMemberData);
+        const addedMember = await addMember(newMemberData);
 
-        // queryClient.setQueryData(["gearItem", addedMember._id], addedMember);
-        // await queryClient.prefetchQuery(["gearItem", addedMember._id], {
-        //     initialData: addedMember,
-        //     staleTime: Infinity
-        // });
+        // Refetch the "members" query to get the updated data
+        await queryClient.refetchQueries({queryKey: "members"});
 
-        // recomputeAggregatedMembers();
+        queryClient.setQueryData(["memberData", addedMember._id], addedMember);
+        await queryClient.prefetchQuery(["memberData", addedMember._id], {
+            initialData: addedMember,
+            staleTime: Infinity
+        });
+
+        recomputeAggregatedMembers();
     };
 
     return {
