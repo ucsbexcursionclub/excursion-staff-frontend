@@ -3,12 +3,18 @@ export type MemberProps = {
     name: string;
     email: string;
     phone_number: string;
-    membership_status: "Three Months" | "Six Months" | "Full Year" | "Staff";
+    membership_duration: number;
     is_new_member: boolean;
+    signed_up_by: string;
     membership_expiration_date: number | null;
+    join_datetime: number;
+    notes: string | null;
 };
 
-export type NewMemberProps = Omit<MemberProps, "_id" | "membership_expiration_date">;
+export type NewMemberProps = Omit<
+    MemberProps,
+    "_id" | "membership_expiration_date" | "join_datetime" | "notes"
+>;
 
 export type GearProps = {
     _id: string;

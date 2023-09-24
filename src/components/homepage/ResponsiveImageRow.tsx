@@ -7,10 +7,6 @@ const ResponsiveImageRow = ({imageUrls, screenWidth}) => {
     // Calculate the image width based on the number of images and screen width
     const imageWidth =
         numImages === 6 && !isMobileView ? `16%` : numImages === 6 && isMobileView ? `33%` : "100%";
-    console.log("numImages:", numImages);
-    console.log("isMobileView:", isMobileView);
-    console.log("Image Width:", imageWidth);
-    console.log("Screen Width:", screenWidth);
 
     const rowStyle: React.CSSProperties = {
         display: "flex",

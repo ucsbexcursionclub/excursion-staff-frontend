@@ -1,4 +1,11 @@
-import {GearProps, MemberProps, NewGearProps, NewReservationProps, ReservationProps} from "./types";
+import {
+    GearProps,
+    MemberProps,
+    NewGearProps,
+    NewReservationProps,
+    ReservationProps,
+    NewMemberProps
+} from "./types";
 import axios from "axios";
 
 export async function getMembers(): Promise<MemberProps[]> {
@@ -59,6 +66,17 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
     return newGear;
 }
 
+export async function updateMembers(updatedMember: MemberProps): Promise<MemberProps> {
+    // Determine whether it's a MemberProps or NewMemberProps
+    if (~("_id" in updatedMember)) {
+        // stub!
+    }
+    const url = `http://localhost:9000/api/v1/members/${updatedMember._id}`;
+    const response = await axios.patch(url, updatedMember);
+    const newMember: MemberProps = response.data.data;
+    return newMember;
+}
+
 export async function deleteGearItems(ids: string[]): Promise<number> {
     const response = await axios.delete("http://localhost:9000/api/v1/gear/bulk-delete", {
         data: {ids}
@@ -70,8 +88,24 @@ export async function deleteGearItems(ids: string[]): Promise<number> {
     return deletedCount;
 }
 
+export async function deleteMembers(ids: string[]): Promise<number> {
+    const response = await axios.delete("http://localhost:9000/api/v1/members/bulk-delete", {
+        data: {ids}
+    });
+
+    // Assuming the server returns the count of deleted items
+    const deletedCount: number = response.data.data;
+
+    return deletedCount;
+}
+
 export async function addGear(newGearData: NewGearProps): Promise<GearProps> {
     const response = await axios.post("http://localhost:9000/api/v1/gear", newGearData);
+    return response.data.data;
+}
+
+export async function addMember(newMemberData: NewMemberProps): Promise<MemberProps> {
+    const response = await axios.post("http://localhost:9000/api/v1/members", newMemberData);
     return response.data.data;
 }
 

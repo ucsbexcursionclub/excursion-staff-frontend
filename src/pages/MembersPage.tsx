@@ -1,15 +1,14 @@
 import MembersNav from "components/MembersNav";
 import MembersTable from "components/MembersTable";
-import React from "react";
-import {useMembers} from "src/providers/MembersProvider";
+import React, {useState} from "react";
 
 export default function MembersPage() {
-    const {membersData} = useMembers();
+    const [searchParams, setSearchParams] = useState<string>();
 
     return (
         <>
-            <MembersNav />
-            {<MembersTable initialData={membersData} />}
+            <MembersNav setSearchParams={setSearchParams} />
+            {<MembersTable searchParams={searchParams} />}
         </>
     );
 }

@@ -21,11 +21,6 @@ export default function FeedbackForm({fontSize}) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Here, you can handle the form submission, including sending feedback.
-        console.log("Name:", name);
-        console.log("Email:", email);
-        console.log("Feedback:", feedback);
-        // You might need to set up a backend server to store or process feedback.
     };
 
     return (
