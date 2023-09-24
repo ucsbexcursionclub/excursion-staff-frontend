@@ -10,6 +10,7 @@ interface GearContextProps {
     setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>;
     handleGearUpdate: (modifiedGear: GearProps) => Promise<void>;
     retrieveGearItem: (id: string) => GearProps | undefined;
+    retrieveGearItemByRFID: (rfid: string) => GearProps | undefined;
     handleGearDelete: (selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
@@ -66,6 +67,10 @@ const useGearOperations = (
 
     const retrieveGearItem = (id: string) => {
         return gearData.filter((gear) => gear._id === id)[0];
+    };
+
+    const retrieveGearItemByRFID = (rfid: string) => {
+        return gearData.filter((gear) => gear.rfid === rfid)[0];
     };
 
     const handleGearDelete = async (selectedGear: GearProps[]) => {
@@ -128,6 +133,7 @@ const useGearOperations = (
     return {
         handleGearUpdate,
         retrieveGearItem,
+        retrieveGearItemByRFID,
         handleGearDelete,
         handleGearAdd,
         handleGearCheckout,
