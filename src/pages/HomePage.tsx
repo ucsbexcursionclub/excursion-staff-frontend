@@ -116,7 +116,7 @@ export default function HomePage() {
                         paddingLeft: "15px"
                     }}
                 >
-                    <Typography variant="body2">
+                    <div>
                         <Typography
                             variant="body2"
                             style={{
@@ -139,7 +139,7 @@ export default function HomePage() {
                             opportunities, and support to step outside of their comfort zone and
                             experience the great outdoors they’ve been missing out on.
                         </p>
-                    </Typography>
+                    </div>
                     <iframe
                         width={`${screenWidth * 0.9}px`}
                         height={`${0.5625 * (screenWidth * 0.9)}px`}
@@ -154,7 +154,7 @@ export default function HomePage() {
             </Card>
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
+                    <div>
                         <Typography
                             variant="body2"
                             style={{
@@ -184,7 +184,7 @@ export default function HomePage() {
                             availability, and members are allowed to check them out for a limited
                             time on a first-come, first-serve basis.
                         </p>
-                    </Typography>
+                    </div>
                 </CardContent>
             </Card>
             <GearGrid columns={columns} labelFontSize={parseInt(medFontSize)} />
