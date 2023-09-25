@@ -4,6 +4,7 @@ import {
     DataGrid,
     GridCellParams,
     GridColDef,
+    GridComparatorFn,
     GridFilterInputValue,
     GridFilterItem,
     GridFilterModel,
@@ -26,8 +27,8 @@ const dateOperators = [
                 return;
             }
             return (params: GridCellParams<GearProps>) => {
-                const filterValue = new Date(Number(filterItem.value));
-                const cellValue = new Date(params.row?.reservationDetails?.due_date || Infinity);
+                const filterValue = filterItem.value;
+                const cellValue = params.row?.reservationDetails?.due_date || Infinity;
                 return cellValue < filterValue;
             };
         },
@@ -35,6 +36,8 @@ const dateOperators = [
         InputComponentProps: {type: "date"}
     }
 ];
+
+const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - (v2 || Infinity);
 
 const columns: GridColDef[] = [
     {field: "_id", headerName: "ID"},
@@ -80,6 +83,7 @@ const columns: GridColDef[] = [
             }
             return "";
         },
+        sortComparator: dateComparator,
         filterOperators: dateOperators
     },
     {

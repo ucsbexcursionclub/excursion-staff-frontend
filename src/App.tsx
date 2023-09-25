@@ -16,44 +16,25 @@ function App() {
     const pathname = location.pathname;
 
     useEffect(() => {
+        const root = "Excursion Club - ";
         let title = "";
         let metaDescription = "";
 
         switch (pathname) {
             case "/":
-                title = "Home";
-                metaDescription = "";
-                break;
-            case "/qrcodelarge":
-                title = "";
+                title = root + "Home";
                 metaDescription = "";
                 break;
             case "/links":
-                title = "Links";
+                title = root + "Links";
                 metaDescription = "";
                 break;
             case "/members":
-                title = "";
-                metaDescription = "";
-                break;
-            case "/renewmemberpage":
-                title = "";
-                metaDescription = "";
-                break;
-            case "/addmemberspage":
-                title = "";
+                title = root + "Members";
                 metaDescription = "";
                 break;
             case "/gear":
-                title = "";
-                metaDescription = "";
-                break;
-            case "/inventory":
-                title = "";
-                metaDescription = "";
-                break;
-            case "/leftside":
-                title = "";
+                title = root + "Gear";
                 metaDescription = "";
                 break;
         }

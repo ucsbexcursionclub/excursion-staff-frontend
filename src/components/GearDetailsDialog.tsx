@@ -59,6 +59,8 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
 
     if (!gear) return null;
 
+    const isOverdue = (gear.reservationDetails?.due_date || Infinity) < new Date().getTime();
+
     return (
         <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"} scroll={"paper"}>
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{gear.gear_name} Details</DialogTitle>
@@ -70,6 +72,9 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
             </Box>
             <DialogContent dividers={true}>
                 <CustomTabPanel value={value} index={0}>
+                    <Typography variant="h6" sx={{marginBottom: "1rem"}}>
+                        <strong>Item Details</strong>
+                    </Typography>
                     <List sx={{pt: 0, px: 2}}>
                         <ListItem>
                             <Typography>
@@ -110,6 +115,61 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                             />
                         </ListItem>
                     </List>
+                    {gear.memberDetails && (
+                        <>
+                            <Typography variant="h6" sx={{marginBottom: "1rem"}}>
+                                <strong>Reservations Details</strong>
+                            </Typography>
+                            <List sx={{pt: 0, px: 2}}>
+                                <ListItem>
+                                    <Typography>
+                                        <strong>Member: </strong>
+                                        {gear.memberDetails.name}
+                                    </Typography>
+                                </ListItem>
+                                <ListItem>
+                                    <Typography>
+                                        <strong>Email: </strong>
+                                        {gear.memberDetails.email}
+                                    </Typography>
+                                </ListItem>
+                                <ListItem>
+                                    <Typography>
+                                        <strong>Phone Number: </strong>
+                                        {gear.memberDetails.phone_number}
+                                    </Typography>
+                                </ListItem>
+                                <ListItem>
+                                    <Typography color={isOverdue ? "red" : "black"}>
+                                        <strong>Due Date: </strong>
+                                        {new Date(
+                                            gear.reservationDetails?.due_date
+                                        ).toLocaleDateString()}
+                                    </Typography>
+                                </ListItem>
+                                <ListItem>
+                                    <Typography
+                                        sx={{
+                                            whiteSpace: "nowrap",
+                                            fontStyle: "bold",
+                                            marginRight: "8px"
+                                        }}
+                                    >
+                                        <strong>Last Contacted: </strong>
+                                    </Typography>
+                                    <TextField
+                                        margin="dense"
+                                        id="lastContacted"
+                                        type="date"
+                                        fullWidth
+                                        variant="standard"
+                                        required
+                                        aria-required="true"
+                                    />
+                                </ListItem>
+                            </List>
+                        </>
+                    )}
                 </CustomTabPanel>
                 <CustomTabPanel value={value} index={1}>
                     <CheckoutHistory gearId={gear._id} />

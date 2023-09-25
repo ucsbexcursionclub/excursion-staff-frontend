@@ -17,11 +17,10 @@ const tabs = [
     {label: "Home", href: "/"},
     {label: "Links", href: "/links"},
     {label: "Members", href: "/members"},
-    {label: "Gear", href: "/gear"},
-    {label: "Reservations", href: "/reservations"}
+    {label: "Gear", href: "/gear"}
 ];
 
-const settings = ["Profile", "Account", "Dashboard", "Logout"];
+const settings = ["Profile", "Logout"];
 
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);

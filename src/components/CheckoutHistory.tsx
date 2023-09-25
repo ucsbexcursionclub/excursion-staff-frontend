@@ -51,9 +51,13 @@ export default function CheckoutHistory({gearId}: CheckoutHistoryProps) {
 
     return (
         <Stack>
-            {reservations.map((reservation) => (
-                <ReservationDetails key={reservation._id} reservation={reservation} />
-            ))}
+            {reservations.length > 0 ? (
+                reservations.map((reservation) => (
+                    <ReservationDetails key={reservation._id} reservation={reservation} />
+                ))
+            ) : (
+                <Typography>No Reservation History</Typography>
+            )}
         </Stack>
     );
 }
