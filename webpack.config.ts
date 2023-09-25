@@ -1,6 +1,7 @@
 import path from "path";
 import webpack, {Configuration as WebpackConfiguration} from "webpack";
 import {Configuration as WebpackDevServerConfiguration} from "webpack-dev-server";
+import CopyWebpackPlugin from "copy-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
@@ -54,7 +55,10 @@ const webpackConfig = (env): Configuration => ({
             "process.env.VERSION": JSON.stringify(require("./package.json").version)
         }),
         new ForkTsCheckerWebpackPlugin(),
-        new ESLintPlugin({files: "./src/**/*.{ts,tsx,js,jsx}"})
+        new ESLintPlugin({files: "./src/**/*.{ts,tsx,js,jsx}"}),
+        new CopyWebpackPlugin({
+            patterns: [{from: "meta", to: "meta"}]
+        })
     ]
 });
 
