@@ -1,6 +1,6 @@
 import path from "path";
-import webpack, { Configuration as WebpackConfiguration } from "webpack";
-import { Configuration as WebpackDevServerConfiguration } from "webpack-dev-server";
+import webpack, {Configuration as WebpackConfiguration} from "webpack";
+import {Configuration as WebpackDevServerConfiguration} from "webpack-dev-server";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
@@ -19,10 +19,10 @@ const webpackConfig = (env): Configuration => ({
     output: {
         path: path.join(__dirname, "/dist"),
         filename: "build.js",
-        publicPath: '/'
+        publicPath: "/"
     },
     devServer: {
-        historyApiFallback: true,
+        historyApiFallback: true
     },
     module: {
         rules: [

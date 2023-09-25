@@ -6,7 +6,7 @@
     "repository": "https://github.com/GR34SE/react-typescript-starter.git",
     "license": "MIT",
     "scripts": {
-        "start": "webpack-cli serve --mode=development --env development --open --hot",
+        "start": "webpack serve --mode=development --env development --open --hot",
         "build": "webpack --mode=production --env production --progress",
         "lint": "eslint './src/**/*.{ts,tsx,js,jsx}'",
         "lint:fix": "eslint './src/**/*.{ts,tsx,js,jsx}' --fix"
@@ -35,7 +35,6 @@
         "tsconfig-paths-webpack-plugin": "^4.1.0",
         "typescript": "4.9.5",
         "webpack": "^5.88.2",
-        "webpack-cli": "^5.1.4",
         "webpack-dev-server": "^4.15.1"
     },
     "dependencies": {
