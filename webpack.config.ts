@@ -5,6 +5,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import ESLintPlugin from "eslint-webpack-plugin";
+import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import {TsconfigPathsPlugin} from "tsconfig-paths-webpack-plugin";
 interface Configuration extends WebpackConfiguration {
     devServer?: WebpackDevServerConfiguration;
@@ -23,17 +24,27 @@ const webpackConfig = (env): Configuration => ({
         publicPath: "/"
     },
     devServer: {
-        historyApiFallback: true
+        historyApiFallback: true,
+        hot: true
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: "ts-loader",
-                options: {
-                    transpileOnly: true
-                },
-                exclude: /dist/
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: [
+                            "@babel/preset-env",
+                            "@babel/preset-react",
+                            "@babel/preset-typescript"
+                        ],
+                        plugins: [env.development && require.resolve("react-refresh/babel")].filter(
+                            Boolean
+                        )
+                    }
+                }
             },
             {
                 test: /\.css$/,
@@ -58,7 +69,8 @@ const webpackConfig = (env): Configuration => ({
         new ESLintPlugin({files: "./src/**/*.{ts,tsx,js,jsx}"}),
         new CopyWebpackPlugin({
             patterns: [{from: "meta", to: "meta"}]
-        })
+        }),
+        env.development && new ReactRefreshWebpackPlugin()
     ]
 });
 

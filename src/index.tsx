@@ -1,10 +1,16 @@
 import {createRoot} from "react-dom/client";
-import {CssBaseline} from "@mui/material";
+import {CssBaseline, ThemeProvider, createTheme} from "@mui/material";
 import {BrowserRouter as Router} from "react-router-dom";
 import {StyledEngineProvider} from "@mui/material/styles";
 import {QueryClient, QueryClientProvider} from "react-query";
+import {GoogleOAuthProvider} from "@react-oauth/google";
+
+import React from "react";
+import App from "./App";
+import {getGearById, getMemberById, getReservationById} from "./utils/api";
 
 import "./index.css";
+import {LoginProvider} from "./providers/LoginProvider";
 
 const defaultQueryFunction = async ({queryKey}) => {
     const [type, id] = queryKey;
@@ -29,20 +35,50 @@ const queryClient = new QueryClient({
         }
     }
 });
+const clientId = "846327511628-l2ro940djl5mk5cc1i1hq3jstuhh9u81.apps.googleusercontent.com";
 
-import React from "react";
-import App from "./App";
-import {getGearById, getMemberById, getReservationById} from "./utils/api";
 const container = document.getElementById("root");
 const root = createRoot(container!);
+
+const theme = createTheme({
+    components: {
+        MuiPopover: {
+            defaultProps: {
+                container: container
+            }
+        },
+        MuiPopper: {
+            defaultProps: {
+                container: container
+            }
+        },
+        MuiDialog: {
+            defaultProps: {
+                container: container
+            }
+        },
+        MuiModal: {
+            defaultProps: {
+                container: container
+            }
+        }
+    }
+});
+
 root.render(
-    <QueryClientProvider client={queryClient}>
-        <Router>
-            <StyledEngineProvider injectFirst>
-                <CssBaseline>
-                    <App />
-                </CssBaseline>
-            </StyledEngineProvider>
-        </Router>
-    </QueryClientProvider>
+    <GoogleOAuthProvider clientId={clientId}>
+        <LoginProvider>
+            <QueryClientProvider client={queryClient}>
+                <Router>
+                    <StyledEngineProvider injectFirst>
+                        <ThemeProvider theme={theme}>
+                            <CssBaseline>
+                                <App />
+                            </CssBaseline>
+                        </ThemeProvider>
+                    </StyledEngineProvider>
+                </Router>
+            </QueryClientProvider>
+        </LoginProvider>
+    </GoogleOAuthProvider>
 );

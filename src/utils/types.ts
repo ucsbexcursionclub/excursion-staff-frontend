@@ -4,6 +4,7 @@ export type MemberProps = {
     email: string;
     phone_number: string;
     membership_duration: number;
+    membership_status: "member" | "staff" | "admin";
     is_new_member: boolean;
     signed_up_by: string;
     membership_expiration_date: number | null;
@@ -13,7 +14,7 @@ export type MemberProps = {
 
 export type NewMemberProps = Omit<
     MemberProps,
-    "_id" | "membership_expiration_date" | "join_datetime" | "notes"
+    "_id" | "membership_expiration_date" | "join_datetime" | "notes" | "membership_status"
 >;
 
 export type GearProps = {

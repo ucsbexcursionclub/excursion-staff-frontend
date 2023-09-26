@@ -3,6 +3,7 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {addReservation, endReservations, getReservations} from "src/utils/api";
 import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "src/utils/types";
+import {useLogin} from "./LoginProvider";
 
 interface ReservationsContextProps {
     reservationsData: ReservationProps[];
@@ -19,8 +20,11 @@ interface ReservationsContextProps {
 const useReservationsState = () => {
     const queryClient = useQueryClient();
     const [reservationsData, setReservationsData] = useState<ReservationProps[]>([]);
+    const {isLoggedIn} = useLogin();
 
-    const {data: fetchReservationsData} = useQuery("reservations", getReservations);
+    const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
+        enabled: isLoggedIn
+    });
 
     useEffect(() => {
         if (fetchReservationsData) {

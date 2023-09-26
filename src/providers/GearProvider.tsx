@@ -4,6 +4,7 @@ import {useQuery, useQueryClient} from "react-query";
 import {addGear, deleteGearItems, getGear, updateGear} from "src/utils/api";
 import {GearProps, MemberProps, NewGearProps} from "src/utils/types";
 import {useReservations} from "./ReservationProvider";
+import {useLogin} from "./LoginProvider";
 
 interface GearContextProps {
     gearData: GearProps[];
@@ -22,8 +23,9 @@ interface GearContextProps {
 const useGearState = () => {
     const queryClient = useQueryClient();
     const [gearData, setGearData] = useState<GearProps[]>([]);
+    const {isLoggedIn} = useLogin();
 
-    const {data: fetchGearData} = useQuery("gear", getGear);
+    const {data: fetchGearData} = useQuery("gear", getGear, {enabled: isLoggedIn});
 
     useEffect(() => {
         if (fetchGearData) {

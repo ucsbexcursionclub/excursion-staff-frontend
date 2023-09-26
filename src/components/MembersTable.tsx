@@ -3,13 +3,35 @@ import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
 import {MemberProps} from "src/utils/types";
 import {useMembers} from "src/providers/MembersProvider";
 import MemberDetailsDialog from "src/components/MemberDetailsDialog";
+import {capitalizeFirstLetter} from "src/utils/utils";
 
 const getColumns = (getMemberById: (memberId) => MemberProps) => {
     const columns: GridColDef[] = [
         {field: "_id", headerName: "ID", width: 90},
-        {field: "name", headerName: "Name", width: 150},
+        {
+            field: "name",
+            headerName: "Name",
+            width: 150,
+            valueFormatter: (params) => {
+                if (params.value) {
+                    return capitalizeFirstLetter(params.value);
+                }
+                return "N/A";
+            }
+        },
         {field: "email", headerName: "Email", width: 200},
         {field: "phone_number", headerName: "Phone Number", width: 140},
+        {
+            field: "membership_status",
+            headerName: "Status",
+            width: 140,
+            valueFormatter: (params) => {
+                if (params.value) {
+                    return capitalizeFirstLetter(params.value);
+                }
+                return "N/A";
+            }
+        },
         {
             field: "membership_expiration_date",
             headerName: "Expiration Date",

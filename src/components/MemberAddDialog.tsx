@@ -16,6 +16,7 @@ import Box from "@mui/material/Box";
 import {useMembers} from "src/providers/MembersProvider";
 import {MemberProps} from "src/utils/types";
 import MembersAutoComplete from "./MembersAutoComplete";
+import {useLogin} from "src/providers/LoginProvider";
 
 interface MemberAddDialog {
     open: boolean;
@@ -46,6 +47,13 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setSubmitErrorMessage(null);
         onClose();
     };
+
+    const {user} = useLogin();
+
+    React.useEffect(() => {
+        setSignedStaff(user);
+    }, [user]);
+
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
     };
@@ -280,6 +288,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
+                membership_status: "member",
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: signedStaff._id,
                 membership_expiration_date: expirationDate.getTime(),

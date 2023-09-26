@@ -3,6 +3,7 @@ import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
 import {MemberProps, NewMemberProps} from "src/utils/types";
+import {useLogin} from "./LoginProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
@@ -18,8 +19,9 @@ interface MembersContextProps {
 const useMembersState = () => {
     const queryClient = useQueryClient();
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
+    const {isLoggedIn} = useLogin();
 
-    const {data: fetchMembersData} = useQuery("members", getMembers);
+    const {data: fetchMembersData} = useQuery("members", getMembers, {enabled: isLoggedIn});
 
     useEffect(() => {
         if (fetchMembersData) {
