@@ -29,14 +29,25 @@ const columnRightStyle = {
     paddingRight: "40px" // Add right padding to create space
 };
 
-export default function StokedDefinitionCard() {
+interface StokedDefinitionCardProps {
+    fontsize: string;
+}
+
+export default function StokedDefinitionCard(props: StokedDefinitionCardProps) {
+    const {fontsize} = props;
+
     return (
         <Card sx={cardStyle} square>
             <CardContent style={columnLeftStyle}>
-                <Typography variant="h5" component="div">
+                <Typography variant="h5" component="div" fontSize={`${parseInt(fontsize) + 2}px`}>
                     stoked
                 </Typography>
-                <Typography variant="body2" sx={{mb: 1.5}} color="text.secondary">
+                <Typography
+                    variant="body2"
+                    sx={{mb: 1.5}}
+                    color="text.secondary"
+                    fontSize={`${parseInt(fontsize) + 2}px`}
+                >
                     /stōkt/
                     <br />
                     adjective
@@ -44,7 +55,7 @@ export default function StokedDefinitionCard() {
             </CardContent>
             <div style={dividerStyle}></div> {/* Vertical Line */}
             <CardContent style={columnRightStyle}>
-                <Typography variant="body2">
+                <Typography variant="body2" fontSize={fontsize}>
                     To be stoked is to be completely and intensely enthusiastic, exhilarated, or
                     excited about something. Those who are stoked all of the time know this; being
                     stoked is the epitome of all being. When one is stoked, there is no limit to

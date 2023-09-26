@@ -1,7 +1,7 @@
 import {Route, useLocation, Routes} from "react-router-dom";
 import React, {useEffect} from "react";
 import HomePage from "./pages/HomePage";
-
+import StaffPage from "./pages/StaffPage";
 import "./index.css";
 import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
@@ -28,6 +28,8 @@ function App() {
 
         if (pathname === "/") {
             title = root + "Home";
+        } else if (pathname === "/staff") {
+            title = root + "Staff";
         } else if (loggedIn) {
             switch (pathname) {
                 case "/links":
@@ -63,6 +65,7 @@ function App() {
                     <Routes>
                         <Route path="/" element={<Layout />}>
                             <Route index element={<HomePage />} />
+                            <Route path="staff" element={<StaffPage />} />
                             {isLoggedIn ? (
                                 <>
                                     <Route path="links/*" element={<LinkPage />} />

@@ -4,7 +4,9 @@ import {
     NewGearProps,
     NewReservationProps,
     ReservationProps,
-    NewMemberProps
+    NewMemberProps,
+    StaffMemberProps,
+    NewStaffMemberProps
 } from "./types";
 import axios from "axios";
 
@@ -232,4 +234,72 @@ export async function verifyJWTToken(jwt: string): Promise<{user: MemberProps} |
         console.error("Error verifying token:", error);
         return null;
     }
+}
+
+export async function getStaffMembers(): Promise<StaffMemberProps[]> {
+    const response = await axios.get(`${baseURL}/api/v1/staff`, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    const staffData: StaffMemberProps[] = response.data.data;
+
+    return staffData;
+}
+
+export async function getStaffMemberById(staffMemberId: string): Promise<StaffMemberProps> {
+    const endpoint = `${baseURL}/api/v1/staff/${staffMemberId}`;
+
+    const response = await axios.get(endpoint, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    const staffMemberData: StaffMemberProps = response.data.data;
+
+    return staffMemberData;
+}
+
+export async function updateStaffMember(
+    updatedStaffMember: StaffMemberProps
+): Promise<StaffMemberProps> {
+    const url = `${baseURL}/api/v1/staff/${updatedStaffMember._id}`;
+
+    const response = await axios.patch(url, updatedStaffMember, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    const newStaffMember: StaffMemberProps = response.data.data;
+
+    return newStaffMember;
+}
+
+export async function deleteStaffMembers(ids: string[]): Promise<number> {
+    const response = await axios.delete(`${baseURL}/api/v1/staff/bulk-delete`, {
+        data: {ids},
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    // Assuming the server returns the count of deleted staff members
+    const deletedCount: number = response.data.data;
+
+    return deletedCount;
+}
+
+export async function addStaffMember(
+    newStaffMemberData: NewStaffMemberProps
+): Promise<StaffMemberProps> {
+    const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffMemberData, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    return response.data.data;
 }

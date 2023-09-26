@@ -70,42 +70,89 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
         handleOpenDeleteDialog();
     };
 
-    return (
-        <>
-            <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                <Toolbar className="flex justify-between items-center py-1">
-                    <Typography variant="h4">Members</Typography>
-                    <div className="flex flex-col items-center">
-                        <Typography
-                            style={{userSelect: "none"}}
-                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                        >
-                            s
-                        </Typography>
-                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg">
-                            <SearchIcon className="absolute left-2" color="inherit" />
-                            <InputBase onChange={updateSearch} className="pl-10" />
-                            <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                Search
-                            </Button>
+    const renderAppBar = () => {
+        if (screenWidth < 700) {
+            // Render AppBar with buttons below on smaller screens
+            return (
+                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
+                    <Toolbar className="flex justify-between items-center py-1">
+                        <Typography variant="h4">Members</Typography>
+                        <div className="flex flex-col items-center">
+                            <Typography
+                                style={{userSelect: "none"}}
+                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                            >
+                                s
+                            </Typography>
+                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg">
+                                <SearchIcon className="absolute left-2" color="inherit" />
+                                <InputBase onChange={updateSearch} className="pl-10" />
+                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
+                                    Search
+                                </Button>
+                            </div>
+                            <Typography className="text-xs text-gray-200 italic">
+                                Name, Email, or Phone Number
+                            </Typography>
                         </div>
-                        <Typography className="text-xs text-gray-200 italic">
-                            Name, Email, or Phone Number
-                        </Typography>
-                    </div>
-                    <div className="flex">
-                        <Button color="inherit" className="" onClick={handleOpenAddDialog}>
+                    </Toolbar>
+                    <div className="flex flex justify-center">
+                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
                             Add/Renew Member
                         </Button>
-                        <Button color="inherit" className="" onClick={handleRemoveClick}>
+                        <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                             Remove Member(s)
                         </Button>
                         <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
                             Copy Email(s)
                         </Button>
                     </div>
-                </Toolbar>
-            </AppBar>
+                </AppBar>
+            );
+        } else {
+            // Render AppBar with buttons in the same row on wider screens
+            return (
+                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
+                    <Toolbar className="flex justify-between items-center py-1">
+                        <Typography variant="h4">Members</Typography>
+                        <div className="flex flex-col items-center">
+                            <Typography
+                                style={{userSelect: "none"}}
+                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                            >
+                                s
+                            </Typography>
+                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg">
+                                <SearchIcon className="absolute left-2" color="inherit" />
+                                <InputBase onChange={updateSearch} className="pl-10" />
+                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
+                                    Search
+                                </Button>
+                            </div>
+                            <Typography className="text-xs text-gray-200 italic">
+                                Name, Email, or Phone Number
+                            </Typography>
+                        </div>
+                        <div className="flex">
+                            <Button color="inherit" className="" onClick={handleOpenAddDialog}>
+                                Add/Renew Member
+                            </Button>
+                            <Button color="inherit" className="" onClick={handleRemoveClick}>
+                                Remove Member(s)
+                            </Button>
+                            <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
+                                Copy Email(s)
+                            </Button>
+                        </div>
+                    </Toolbar>
+                </AppBar>
+            );
+        }
+    };
+
+    return (
+        <>
+            {renderAppBar()}
             <MemberAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <MemberRemoveDialog open={removeDialogOpen} onClose={handleCloseDeleteDialog} />
             <FailMemberRemoveDialog

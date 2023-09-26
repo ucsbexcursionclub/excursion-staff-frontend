@@ -13,7 +13,10 @@ import MenuItem from "@mui/material/MenuItem";
 import LoginButton from "./LoginButton";
 import {useLogin} from "src/providers/LoginProvider";
 
-const baseTabs = [{label: "Home", href: "/"}];
+const baseTabs = [
+    {label: "Home", href: "/"},
+    {label: "Staff", href: "/staff"}
+];
 
 const loggedInTabs = [
     {label: "Links", href: "/links"},
