@@ -140,16 +140,6 @@ const StaffPage: React.FC = () => {
                     }}
                 >
                     <Typography variant="body2">
-                        {/* <Typography
-                            variant="body2"
-                            style={{
-                                fontSize: `${parseInt(smallFontSize) + 5}px`,
-                                fontWeight: "bold",
-                                color: "black",
-                                paddingRight: "15px",
-                                paddingLeft: "15px"
-                            }}
-                        ></Typography> */}
                         <p style={paragraphStyle}>
                             These rad people are the cogs that make the club tick! This club is 100%
                             run by volunteer staff who are dedicated to getting our members stoked,
