@@ -288,7 +288,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
-                membership_status: "member",
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: signedStaff._id,
                 membership_expiration_date: expirationDate.getTime(),
