@@ -32,7 +32,8 @@ const StaffGrid: React.FC<StaffGridProps> = ({numColumns, staff}) => {
             "Head of Water Sports": 2,
             "Head of Medicine": 2,
             "Social Media Head": 2,
-            "General Staff": 3,
+            "Gear Fairy": 2,
+            "Full Staff": 3,
             "Prospective Staff": 4
         };
 

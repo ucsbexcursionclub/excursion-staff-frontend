@@ -22,12 +22,12 @@ export type StaffMemberProps = {
     name: string;
     email: string;
     phone_number: string;
-    is_new_member: boolean;
-    membership_expiration_date: number | null;
-    membership_duration: number;
-    join_datetime: number;
-    signed_up_by: string | null;
-    notes: string;
+    is_new_member?: boolean;
+    membership_expiration_date?: number | null;
+    membership_duration?: number;
+    join_datetime?: number;
+    signed_up_by?: string | null;
+    notes?: string;
     staff_details: {
       _id: string;
       member_id: string;

@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {useGoogleLogin, TokenResponse} from "@react-oauth/google";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -11,14 +11,16 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
 import {useLogin} from "src/providers/LoginProvider";
+import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
 
 const cookies = new Cookies();
 
 type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "error_uri">;
 
 function LoginButton() {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
     const open = Boolean(anchorEl);
 
     const {isLoggedIn, login, user} = useLogin();
@@ -51,6 +53,15 @@ function LoginButton() {
         }
     };
 
+    const handleEditProfileOpen = () => {
+        setIsEditProfileOpen(true);
+        setAnchorEl(null); // Close the menu when opening the Edit Profile dialog
+    };
+
+    const handleEditProfileClose = () => {
+        setIsEditProfileOpen(false);
+    };
+
     return (
         <>
             {isLoggedIn ? (
@@ -81,6 +92,11 @@ function LoginButton() {
                             <Avatar sx={{width: 40, height: 40}} className="mr-2" />
                             <span>{user.email}</span>
                         </MenuItem>
+                        <MenuItem onClick={handleEditProfileOpen}>
+                            {" "}
+                            {/* Open Edit Profile Dialog */}
+                            Edit Profile
+                        </MenuItem>
                         <MenuItem onClick={() => handleLogout()}>
                             <ListItemIcon>
                                 <Logout fontSize="small" />
@@ -88,6 +104,11 @@ function LoginButton() {
                             Logout
                         </MenuItem>
                     </Menu>
+                    <EditProfileFormDialog
+                        isOpen={isEditProfileOpen}
+                        onClose={handleEditProfileClose}
+                        user={user}
+                    />
                 </>
             ) : isLoading ? (
                 <CircularProgress color="inherit" size={40} />

@@ -2,6 +2,7 @@ import {Route, useLocation, Routes} from "react-router-dom";
 import React, {useEffect} from "react";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/StaffPage";
+import EditStaffPage from "./pages/EditStaffPage";
 import "./index.css";
 import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
@@ -66,6 +67,7 @@ function App() {
                         <Route path="/" element={<Layout />}>
                             <Route index element={<HomePage />} />
                             <Route path="staff" element={<StaffPage />} />
+                            <Route path="editstaff" element={<EditStaffPage />} />
                             {isLoggedIn ? (
                                 <>
                                     <Route path="links/*" element={<LinkPage />} />

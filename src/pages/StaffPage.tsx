@@ -12,7 +12,15 @@ const generateFakeStaffMembers = (count) => {
         "Treasurer",
         "General Board",
         "Web Developer",
-        "General Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
+        "Full Staff",
         "Prospective Staff"
     ];
 
@@ -35,7 +43,7 @@ const generateFakeStaffMembers = (count) => {
             staff_details: {
                 _id: `staff_details_${i}`,
                 member_id: `staff_${i}`,
-                profileImageUrl: `https://example.com/profile_${i}.jpg`,
+                profileImageUrl: ``,
                 bio: `Bio of Staff Member ${i}`,
                 positions: [randomPosition]
             }
@@ -46,7 +54,7 @@ const generateFakeStaffMembers = (count) => {
 };
 
 // Sample user data
-const staffMembers = generateFakeStaffMembers(10); // Generate 10 fake staff members
+const staffMembers = generateFakeStaffMembers(15); // Generate 10 fake staff members
 
 const pageContainerStyle: React.CSSProperties = {
     display: "flex",
@@ -102,13 +110,10 @@ const StaffPage: React.FC = () => {
         // Check if the screenWidth is less than 720
         const bigCalculatedFontSize = `${(screenWidth / 12).toFixed(0)}px`;
         setBigFontSize(bigCalculatedFontSize);
-
-        if (screenWidth <= 600) {
-            setColumns(2);
-        } else if (screenWidth <= 800) {
-            setColumns(3);
+        if (screenWidth <= 1320) {
+            setColumns(Math.ceil(screenWidth / 290));
         } else {
-            setColumns(4);
+            setColumns(6);
         }
     }, [screenWidth]);
 
@@ -139,18 +144,18 @@ const StaffPage: React.FC = () => {
                         paddingLeft: "15px"
                     }}
                 >
-                    <Typography variant="body2">
-                        <p style={paragraphStyle}>
+                    <Typography variant="body2" component="div">
+                        <div style={paragraphStyle}>
                             These rad people are the cogs that make the club tick! This club is 100%
                             run by volunteer staff who are dedicated to getting our members stoked,
                             whether that means running office hours, taking care of gear or leading
                             super sick trips! If you are interested in becoming a staffer yourself,
                             scroll to the bottom of this page!
-                        </p>
-                        <p style={asteriskNoteStyle}>
+                        </div>
+                        <div style={asteriskNoteStyle}>
                             *Please DO NOT contact anyone with solicitations or items not related to
                             The Excursion Club.
-                        </p>
+                        </div>
                     </Typography>
                 </CardContent>
             </Card>
@@ -170,7 +175,7 @@ const StaffPage: React.FC = () => {
                     >
                         How to Join Staff
                     </Typography>
-                    <p style={paragraphStyle}>
+                    <div style={paragraphStyle}>
                         Being a staffer is an experience unlike any other. Not only does it feel
                         incredible to lead awesome trips, but you will also be welcomed into a
                         community of outdoor enthusiasts with open arms while gaining valuable
@@ -180,7 +185,7 @@ const StaffPage: React.FC = () => {
                         member. This means you&apos;ll attend our staff meetings, help out on other
                         staffers&apos; trips, and see what we&apos;re all about before you take the
                         plunge to full staff.
-                    </p>
+                    </div>
                     <ol>
                         <li style={paragraphStyle}>
                             Are you already a member of the club? For how long? What sort of trips
@@ -200,7 +205,7 @@ const StaffPage: React.FC = () => {
                         </li>
                         <li style={paragraphStyle}>
                             Have you ever found yourself in an intense or emergency situation in the
-                            outdoors, and if so, how did you handle it?
+                            outdoors, and if so, how did you handle it?{" "}
                         </li>
                         <li style={paragraphStyle}>
                             If needed, are you willing to volunteer your time for other activities
@@ -214,11 +219,11 @@ const StaffPage: React.FC = () => {
                             The most important question: how stoked are you to join staff?
                         </li>
                     </ol>
-                    <p style={paragraphStyle}>
+                    <div style={paragraphStyle}>
                         You can copy and paste these questions into an email addressed to
                         info@excursionclubucsb.org, or you can answer them in some other creative
                         form, and then email that application to info@excursionclubucsb.org.
-                    </p>
+                    </div>
                 </CardContent>
             </Card>
         </div>
