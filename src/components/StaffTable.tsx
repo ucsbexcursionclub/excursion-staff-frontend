@@ -1,7 +1,7 @@
 import * as React from "react";
 import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
 import {capitalizeFirstLetter} from "src/utils/utils";
-import {StaffMemberProps} from "src/utils/types";
+import {StaffProps} from "src/utils/types";
 
 const getColumns = () => {
     const columns: GridColDef[] = [
@@ -44,7 +44,9 @@ export default function StaffTable({searchParams}: StaffTableProps) {
     // const {staffRowSelectionModel, setStaffRowSelectionModel} = useStaff();
 
     // Sample fake data for testing
-    const initialStaffData: StaffMemberProps[] = [
+
+    //TODO: this will be changed to a bunch of StaffProps objects see types.ts
+    const initialStaffData: StaffProps[] = [
         {
             _id: "1",
             name: "John Doe",

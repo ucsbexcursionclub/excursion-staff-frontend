@@ -16,6 +16,18 @@ interface EditProfileFormDialogProps {
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
     const {user} = useLogin();
 
+    //const {retriveStaff} = useStaff();
+
+    //TODO: this needs to be updated to use StaffProvider and not data from user.staffDetails
+
+    //TODO: we need to modify staffDetails to become staffId?: string and that will hold the id of the staff object
+
+    //TODO: we use staffId to call StaffProvider to get the latest staffData for that staff, preferably by using a
+    //retrieve staff member method, which locally retrieves it from the saved data cache.
+
+    //TODO: create a useEffect that calls StaffProvider's retrieveStaff method given the id, and have it be retriggered everytime
+    // isOpen is triggered.
+
     const [name, setName] = useState<string>(user.name || "");
     const [bio, setBio] = useState<string>(user.staffDetails?.bio || "");
     const [profilePic, setProfilePic] = useState<File | null>(null);
@@ -46,8 +58,12 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     };
 
     const handleSave = () => {
-        profilePic;
-        // Handle the saving of the profile info, including uploading the image.
+        profilePic; //TODO: need to upload profilePic to s3 using handleImageUpload. get back a link
+
+        //TODO: then we need to use that link as the new profileImageUrl, if you are developing this marisha
+        // before this part is setup just pass a dummy profileImgLink.
+
+        //TODO:  once we have all modified data we call handleStaffUpdate
         onClose();
     };
 

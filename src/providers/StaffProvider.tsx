@@ -5,8 +5,8 @@ import {StaffProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
 
 interface StaffContextProps {
-    // staffData: StaffMemberProps[];
-    // setStaffData: React.Dispatch<React.SetStateAction<StaffMemberProps[]>>;
+    staffData: StaffProps[];
+    setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>;
     // Add any other functions or data you need here
 }
 
@@ -49,22 +49,32 @@ const useStaffOperations = (
 
     const queryClient = useQueryClient();
 
+    //TODO: we need a method to retrieveStaffMember which will look through staffData for a match in id
+
+    //TODO: need a handleStaffAdd
+
+    //TODO: need a handleStaffRemove
+
     const handleStaffUpdate = async (modifiedStaff: StaffProps) => {
-        const updatedStaff = await updateStaff(modifiedStaff);
+        //TODO: Fill this in
+        //const updatedStaff = await updateStaff(modifiedStaff);
 
         await queryClient.refetchQueries({queryKey: ["staffItem", modifiedStaff._id]});
         recomputeAggregatedStaff();
     };
 
-    const handleProfileImageUpload = async (staffId: string, uploadedFile) {
-        
-    }
+    const handleFileUpload = async (uploadedFile) => {
+        //need this to upload the image to the backend, backend uploads the image to s3 and cloudfront
+        //and then return back the link
+    };
+
+    return [handleStaffUpdate, handleFileUpload];
 };
 
 const StaffContext = createContext<StaffContextProps | undefined>(undefined);
 
 interface StaffProviderProps {
-    children: React.ReactNode; // Explicitly specify children prop
+    children: React.ReactNode;
 }
 
 export const StaffProvider: React.FC<StaffProviderProps> = ({children}) => {
@@ -75,7 +85,8 @@ export const StaffProvider: React.FC<StaffProviderProps> = ({children}) => {
         <StaffContext.Provider
             value={{
                 staffData,
-                setStaffData
+                setStaffData,
+                ...staffOps
             }}
         >
             {children}
