@@ -16,7 +16,6 @@ import Box from "@mui/material/Box";
 import {useMembers} from "src/providers/MembersProvider";
 import {MemberProps} from "src/utils/types";
 import MembersAutoComplete from "./MembersAutoComplete";
-import {useLogin} from "src/providers/LoginProvider";
 
 interface MemberAddDialog {
     open: boolean;
@@ -48,11 +47,17 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {user} = useLogin();
+    const {
+        handleMemberAdd,
+        membersData,
+        handleMemberUpdate,
+        retrieveMemberItem,
+        currentMemberData
+    } = useMembers();
 
     React.useEffect(() => {
-        setSignedStaff(user);
-    }, [user]);
+        setSignedStaff(currentMemberData);
+    }, [currentMemberData]);
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
@@ -161,8 +166,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
         return errorMessage;
     };
-
-    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
 
     const handleSubmit = async () => {
         setValidationEnabled(true);

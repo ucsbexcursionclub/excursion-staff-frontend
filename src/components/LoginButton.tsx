@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {useGoogleLogin, TokenResponse} from "@react-oauth/google";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -11,16 +11,22 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
 import {useLogin} from "src/providers/LoginProvider";
+import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
+import {Edit} from "@mui/icons-material";
+import {useMembers} from "src/providers/MembersProvider";
 
 const cookies = new Cookies();
 
 type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "error_uri">;
 
 function LoginButton() {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
     const open = Boolean(anchorEl);
 
-    const {isLoggedIn, login, user, isFetching} = useLogin();
+    const {isLoggedIn, login, isFetching} = useLogin();
+
+    const {currentMemberData} = useMembers();
 
     function handleSuccess(tokenResponse: tokenResponseProps) {
         login(tokenResponse.access_token);
@@ -44,6 +50,15 @@ function LoginButton() {
             cookies.remove("jwt");
             window.location.reload();
         }
+    };
+
+    const handleEditProfileOpen = () => {
+        setIsEditProfileOpen(true);
+        setAnchorEl(null); // Close the menu when opening the Edit Profile dialog
+    };
+
+    const handleEditProfileClose = () => {
+        setIsEditProfileOpen(false);
     };
 
     return (
@@ -74,7 +89,13 @@ function LoginButton() {
                     >
                         <MenuItem>
                             <Avatar sx={{width: 40, height: 40}} className="mr-2" />
-                            <span>{user.email}</span>
+                            <span>{currentMemberData?.email || ""}</span>
+                        </MenuItem>
+                        <MenuItem onClick={handleEditProfileOpen}>
+                            <ListItemIcon>
+                                <Edit fontSize="small" />
+                            </ListItemIcon>
+                            Edit Profile
                         </MenuItem>
                         <MenuItem onClick={() => handleLogout()}>
                             <ListItemIcon>
@@ -83,6 +104,10 @@ function LoginButton() {
                             Logout
                         </MenuItem>
                     </Menu>
+                    <EditProfileFormDialog
+                        isOpen={isEditProfileOpen}
+                        onClose={handleEditProfileClose}
+                    />
                 </>
             ) : isFetching ? (
                 <CircularProgress color="inherit" size={40} />

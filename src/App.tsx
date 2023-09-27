@@ -1,7 +1,8 @@
 import {Route, useLocation, Routes} from "react-router-dom";
 import React, {useEffect} from "react";
 import HomePage from "./pages/HomePage";
-
+import StaffPage from "./pages/StaffPage";
+import EditStaffPage from "./pages/EditStaffPage";
 import "./index.css";
 import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
@@ -12,6 +13,7 @@ import {GearProvider} from "./providers/GearProvider";
 import {MembersProvider} from "./providers/MembersProvider";
 import {ReservationsProvider} from "./providers/ReservationProvider";
 import {useLogin} from "./providers/LoginProvider";
+import {StaffProvider} from "./providers/StaffProvider";
 
 function App() {
     const location = useLocation();
@@ -28,6 +30,8 @@ function App() {
 
         if (pathname === "/") {
             title = root + "Home";
+        } else if (pathname === "/staff") {
+            title = root + "Staff";
         } else if (loggedIn) {
             switch (pathname) {
                 case "/links":
@@ -59,22 +63,26 @@ function App() {
     return (
         <ReservationsProvider>
             <MembersProvider>
-                <GearProvider>
-                    <Routes>
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<HomePage />} />
-                            {isLoggedIn ? (
-                                <>
-                                    <Route path="links/*" element={<LinkPage />} />
-                                    <Route path="members" element={<MembersPage />} />
-                                    <Route path="gear" element={<GearPage />} />
-                                </>
-                            ) : (
-                                <Route path="*" element={<UnauthorizedPage />} />
-                            )}
-                        </Route>
-                    </Routes>
-                </GearProvider>
+                <StaffProvider>
+                    <GearProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<HomePage />} />
+                                <Route path="staff" element={<StaffPage />} />
+                                {isLoggedIn ? (
+                                    <>
+                                        <Route path="links/*" element={<LinkPage />} />
+                                        <Route path="members" element={<MembersPage />} />
+                                        <Route path="gear" element={<GearPage />} />
+                                        <Route path="editstaff" element={<EditStaffPage />} />
+                                    </>
+                                ) : (
+                                    <Route path="*" element={<UnauthorizedPage />} />
+                                )}
+                            </Route>
+                        </Routes>
+                    </GearProvider>
+                </StaffProvider>
             </MembersProvider>
         </ReservationsProvider>
     );

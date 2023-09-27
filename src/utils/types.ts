@@ -9,11 +9,13 @@ export type MemberProps = {
     membership_expiration_date: number | null;
     join_datetime: number;
     notes: string | null;
-    staffDetails?: StaffProps;
+    staff_id?: string;
 };
 
 export type StaffProps = {
     _id: string;
+    memberId: string;
+    memberDetails?: MemberProps;
     positions: string[];
     profileImageUrl: string;
     bio: string;
@@ -23,6 +25,11 @@ export type NewMemberProps = Omit<
     MemberProps,
     "_id" | "membership_expiration_date" | "join_datetime" | "notes"
 >;
+
+export type NewStaffProps = {
+    positions: string[];
+    memberId: string;
+};
 
 export type GearProps = {
     _id: string;

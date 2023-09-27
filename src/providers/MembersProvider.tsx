@@ -1,5 +1,5 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
-import React, {createContext, useContext, useEffect, useState} from "react";
+import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
 import {MemberProps, NewMemberProps} from "src/utils/types";
@@ -7,6 +7,7 @@ import {useLogin} from "./LoginProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
+    currentMemberData: MemberProps | null;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
     handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
     retrieveMemberItem: (id: string) => MemberProps | undefined;
@@ -19,6 +20,7 @@ interface MembersContextProps {
 const useMembersState = () => {
     const queryClient = useQueryClient();
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
+    const [currentMemberData, setCurrentMemberData] = useState<MemberProps | null>();
     const {isLoggedIn} = useLogin();
 
     const {data: fetchMembersData} = useQuery("members", getMembers, {enabled: isLoggedIn});
@@ -36,15 +38,18 @@ const useMembersState = () => {
         }
     }, [fetchMembersData, queryClient]);
 
-    return {membersData, setMembersData};
+    return {membersData, setMembersData, currentMemberData, setCurrentMemberData};
 };
 
 const useMembersOperations = (
     membersData: MemberProps[],
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>,
-    setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
+    setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>,
+    setCurrentMemberData: React.Dispatch<React.SetStateAction<MemberProps>>
 ) => {
     const queryClient = useQueryClient();
+
+    const {userId} = useLogin();
 
     const recomputeAggregatedMembers = () => {
         const aggregatedMembers = queryClient
@@ -67,13 +72,20 @@ const useMembersOperations = (
      * @returns a member from the local database, different from getMember which fetches from mongodb
      * . Doing to limit unnecessary api calls.
      */
-    const retrieveMemberItem = (id: string) => {
-        return membersData.filter((member) => member._id === id)[0];
-    };
+    const retrieveMemberItem = useCallback(
+        (id: string) => {
+            return membersData.filter((member) => member._id === id)[0];
+        },
+        [membersData]
+    );
 
-    const handleMemberDelete = async (selectedMember: MemberProps[]) => {
-        selectedMember;
-        const memberIds = selectedMember.map((member) => member._id);
+    useEffect(() => {
+        console.log("triggering");
+        setCurrentMemberData(retrieveMemberItem(userId));
+    }, [userId, retrieveMemberItem, setCurrentMemberData]);
+
+    const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
+        const memberIds = selectedMembers.map((member) => member._id);
 
         setMemberRowSelectionModel([]);
 
@@ -92,11 +104,8 @@ const useMembersOperations = (
         newMemberData;
         const addedMember = await addMember(newMemberData);
 
-        // Refetch the "members" query to get the updated data
-        await queryClient.refetchQueries({queryKey: "members"});
-
-        queryClient.setQueryData(["memberData", addedMember._id], addedMember);
-        await queryClient.prefetchQuery(["memberData", addedMember._id], {
+        queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
+        await queryClient.prefetchQuery(["memberItem", addedMember._id], {
             initialData: addedMember,
             staleTime: Infinity
         });
@@ -119,17 +128,24 @@ interface DataProviderProps {
 }
 
 export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
-    const {membersData, setMembersData} = useMembersState();
+    const {membersData, setMembersData, currentMemberData, setCurrentMemberData} =
+        useMembersState();
     const [memberRowSelectionModel, setMemberRowSelectionModel] = useState<GridRowSelectionModel>(
         []
     );
-    const memberOps = useMembersOperations(membersData, setMembersData, setMemberRowSelectionModel);
+    const memberOps = useMembersOperations(
+        membersData,
+        setMembersData,
+        setMemberRowSelectionModel,
+        setCurrentMemberData
+    );
 
     return (
         <MembersContext.Provider
             value={{
                 membersData,
                 setMembersData,
+                currentMemberData,
                 memberRowSelectionModel,
                 setMemberRowSelectionModel,
                 ...memberOps

@@ -55,6 +55,7 @@ const PricingColumns = ({medFontSize}: PricingColumnsProps) => {
                 <h3>Pricing for Continuing</h3>
                 <ul style={ulStyle}>
                     <li style={liStyle}>For 365 Days: $40</li>
+                    <li style={liStyle}>For 180 Days: $30</li>
                     <li style={liStyle}>For 90 Days: $20</li>
                 </ul>
             </div>

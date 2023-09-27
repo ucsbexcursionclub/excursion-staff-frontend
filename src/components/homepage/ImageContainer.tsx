@@ -3,9 +3,10 @@ import React from "react";
 type ImageContainerProps = {
     imgurl: string;
     bigFontSize: string;
+    textInput?: string;
 };
 
-const ImageContainer = ({imgurl, bigFontSize}: ImageContainerProps) => {
+const ImageContainer = ({imgurl, bigFontSize, textInput}: ImageContainerProps) => {
     const imageStyle = {
         width: "100%" // Make the image fill the width of the screen
     };
@@ -39,7 +40,7 @@ const ImageContainer = ({imgurl, bigFontSize}: ImageContainerProps) => {
         <div style={imageContainerStyle}>
             <img src={imgurl} alt="Homepage Image" style={imageStyle} />
             <div style={textOverlayContainerStyle}>
-                <div style={textOverlayStyle}>We Do it Outdoors</div>
+                <div style={textOverlayStyle}>{textInput}</div>
             </div>
         </div>
     );
