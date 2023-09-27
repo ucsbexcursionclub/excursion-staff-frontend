@@ -1,10 +1,10 @@
 import React from "react";
 import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import {StaffMemberProps} from "src/utils/types";
+import {StaffProps} from "src/utils/types";
 
 interface StaffCardProps {
-    staffMember: StaffMemberProps;
+    staff: StaffProps;
 }
 
 const StyledStaffCard = styled("div")(({theme}) => ({
@@ -25,6 +25,8 @@ const StyledStaffCard = styled("div")(({theme}) => ({
     padding: `10px` // Add some padding
 }));
 
+StyledStaffCard;
+
 const StyledAvatar = styled("img")({
     maxWidth: "100%",
     width: "150px",
@@ -34,31 +36,34 @@ const StyledAvatar = styled("img")({
     marginBottom: "8px" // Add some space between the image and text
 });
 
-const StaffCard: React.FC<StaffCardProps> = ({staffMember}) => {
+const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
     return (
-        <StyledStaffCard className="staff-card">
+        <div>
             <StyledAvatar
-                src={staffMember.staff_details.profileImageUrl}
-                alt={staffMember.name}
+                src={
+                    staff.profileImageUrl ||
+                    "https://static2.bigstockphoto.com/2/7/3/large1500/372579397.jpg"
+                }
+                alt={staff.memberDetails?.name}
                 className="avatar"
             />
             <div className="info">
                 <Typography variant="h6" className="font-bold">
-                    {staffMember.name}
+                    {staff.memberDetails?.name}
                 </Typography>
                 <div className="positions">
                     <Typography variant="body2" className="position">
-                        {staffMember.staff_details.positions.join(", ")}
+                        {staff.positions.join(", ")}
                     </Typography>
                 </div>
                 <Typography variant="body2" className="bio">
-                    {staffMember.staff_details.bio}
+                    {staff.bio}
                 </Typography>
                 <Typography variant="body2" className="email">
-                    {staffMember.email}
+                    {staff.memberDetails?.email}
                 </Typography>
             </div>
-        </StyledStaffCard>
+        </div>
     );
 };
 

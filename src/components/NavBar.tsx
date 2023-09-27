@@ -24,12 +24,18 @@ const loggedInTabs = [
     {label: "Gear", href: "/gear"}
 ];
 
+const adminTabs = [{label: "Admin", href: "/editstaff"}];
+
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
 
-    const {isLoggedIn} = useLogin();
+    const {isLoggedIn, isAdmin} = useLogin();
 
-    const tabs = isLoggedIn ? [...baseTabs, ...loggedInTabs] : baseTabs;
+    let tabs = baseTabs;
+
+    isLoggedIn && (tabs = [...tabs, ...loggedInTabs]);
+
+    isAdmin && (tabs = [...tabs, ...adminTabs]);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);

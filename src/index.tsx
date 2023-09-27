@@ -7,7 +7,7 @@ import {GoogleOAuthProvider} from "@react-oauth/google";
 
 import React from "react";
 import App from "./App";
-import {getGearById, getMemberById, getReservationById} from "./utils/api";
+import {getGearById, getMemberById, getReservationById, getStaffById} from "./utils/api";
 
 import "./index.css";
 import {LoginProvider} from "./providers/LoginProvider";
@@ -24,6 +24,9 @@ const defaultQueryFunction = async ({queryKey}) => {
     } else if (type === "reservationItem" && id) {
         console.log(`fetching reservation ${id} from db`);
         return await getReservationById(id);
+    } else if (type === "staffItem" && id) {
+        console.log(`fetching staff ${id} from db`);
+        return await getStaffById(id);
     }
 };
 

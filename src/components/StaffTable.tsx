@@ -1,93 +1,54 @@
 import * as React from "react";
 import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
 import {capitalizeFirstLetter} from "src/utils/utils";
-import {StaffProps} from "src/utils/types";
+import {useStaff} from "src/providers/StaffProvider";
 
-const getColumns = () => {
-    const columns: GridColDef[] = [
-        {field: "_id", headerName: "ID", width: 90},
-        {
-            field: "name",
-            headerName: "Name",
-            width: 150,
-            valueFormatter: (params) => {
-                if (params.value) {
-                    return capitalizeFirstLetter(params.value);
-                }
-                return "N/A";
+const columns: GridColDef[] = [
+    {field: "_id", headerName: "ID", width: 90},
+    {
+        field: "name",
+        headerName: "Name",
+        width: 150,
+        valueGetter: (params) => params.row?.memberDetails?.name,
+        valueFormatter: (params) => {
+            if (params.value) {
+                return capitalizeFirstLetter(params.value);
             }
-        },
-        {field: "email", headerName: "Email", width: 200},
-        {field: "phone_number", headerName: "Phone Number", width: 140},
-        {
-            field: "staff_details.positions",
-            headerName: "Positions",
-            width: 200,
-            valueFormatter: (params) => {
-                if (params.value && Array.isArray(params.value)) {
-                    return params.value.join(", ");
-                }
-                return "Fix: Not showing positions";
-            }
+            return "N/A";
         }
-    ];
-
-    return columns;
-};
+    },
+    {
+        field: "email",
+        headerName: "Email",
+        width: 200,
+        valueGetter: (params) => params.row?.memberDetails?.email
+    },
+    {
+        field: "phone_number",
+        headerName: "Phone Number",
+        width: 140,
+        valueGetter: (params) => params.row?.memberDetails?.phone_number
+    },
+    {
+        field: "positions",
+        headerName: "Positions",
+        width: 200,
+        valueFormatter: (params) => {
+            if (params.value && Array.isArray(params.value)) {
+                return params.value.join(", ");
+            }
+            return "Fix: Not showing positions";
+        }
+    }
+];
 
 type StaffTableProps = {
     searchParams: string;
 };
 
 export default function StaffTable({searchParams}: StaffTableProps) {
-    // const [selectedMember, setSelectedMember] = React.useState<StaffMemberProps | null>(null);
-    // const {staffRowSelectionModel, setStaffRowSelectionModel} = useStaff();
-
-    // Sample fake data for testing
-
-    //TODO: this will be changed to a bunch of StaffProps objects see types.ts
-    const initialStaffData: StaffProps[] = [
-        {
-            _id: "1",
-            name: "John Doe",
-            email: "john@example.com",
-            phone_number: "123-456-7890",
-            staff_details: {
-                _id: "2",
-                member_id: "1",
-                profileImageUrl: "4",
-                bio: "beep boop",
-                positions: ["Director"]
-            }
-        },
-        {
-            _id: "2",
-            name: "Jane Smith",
-            email: "jane@example.com",
-            phone_number: "987-654-3210",
-            staff_details: {
-                _id: "2",
-                member_id: "1",
-                profileImageUrl: "4",
-                bio: "beep boop",
-                positions: ["Web Developer", "General Staff"]
-            }
-        },
-        {
-            _id: "3",
-            name: "Jane Smith 2",
-            email: "jane@example.com",
-            phone_number: "987-654-3210",
-            staff_details: {
-                _id: "2",
-                member_id: "1",
-                profileImageUrl: "4",
-                bio: "beep boop",
-                positions: ["General Staff"]
-            }
-        }
-        // Add more sample data as needed
-    ];
+    //const [selectedStaff, setSelectedStaff] = React.useState<StaffProps | null>(null);
+    const {staffData, staffRowSelectionModel, setStaffRowSelectionModel} = useStaff();
 
     const filterModel: GridFilterModel = React.useMemo(
         () => ({
@@ -98,16 +59,16 @@ export default function StaffTable({searchParams}: StaffTableProps) {
         [searchParams]
     );
 
-    const columns = getColumns();
+    console.log(staffData);
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
-                rows={initialStaffData}
+                rows={staffData}
                 getRowHeight={() => "auto"}
                 columns={columns}
+                disableRowSelectionOnClick
                 getRowId={(row) => row._id}
-                // disableRowSelectionOnClick
                 filterModel={filterModel}
                 initialState={{
                     columns: {
@@ -124,16 +85,11 @@ export default function StaffTable({searchParams}: StaffTableProps) {
                 }}
                 pageSizeOptions={[10, 25, 50, 100]}
                 checkboxSelection
-                // onRowSelectionModelChange={(newRowSelectionModel) => {
-                //     setStaffRowSelectionModel(newRowSelectionModel);
-                // }}
-                // rowSelectionModel={staffRowSelectionModel}
+                onRowSelectionModelChange={(newRowSelectionModel) => {
+                    setStaffRowSelectionModel(newRowSelectionModel);
+                }}
+                rowSelectionModel={staffRowSelectionModel}
             />
-            {/* <StaffDetailsDialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          member={selectedMember}
-      /> */}
         </div>
     );
 }

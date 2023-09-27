@@ -1,4 +1,4 @@
-import React, {useState, ChangeEvent} from "react";
+import React, {useState, ChangeEvent, useEffect} from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -6,7 +6,9 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Avatar from "@mui/material/Avatar";
-import {useLogin} from "src/providers/LoginProvider";
+import {useStaff} from "src/providers/StaffProvider";
+import {StaffProps} from "src/utils/types";
+import {useMembers} from "src/providers/MembersProvider";
 
 interface EditProfileFormDialogProps {
     isOpen: boolean;
@@ -14,28 +16,31 @@ interface EditProfileFormDialogProps {
 }
 
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
-    const {user} = useLogin();
+    const {handleMemberUpdate, currentMemberData} = useMembers();
+    const {retrieveStaffItem, handleFileUpload, handleStaffUpdate} = useStaff();
 
-    //const {retriveStaff} = useStaff();
+    const [staffDetails, setStaffDetails] = useState<StaffProps>();
 
-    //TODO: this needs to be updated to use StaffProvider and not data from user.staffDetails
+    useEffect(() => {
+        if (!currentMemberData) return;
 
-    //TODO: we need to modify staffDetails to become staffId?: string and that will hold the id of the staff object
+        setName(currentMemberData.name);
+        const retrievedStaff = retrieveStaffItem(currentMemberData.staff_id);
 
-    //TODO: we use staffId to call StaffProvider to get the latest staffData for that staff, preferably by using a
-    //retrieve staff member method, which locally retrieves it from the saved data cache.
+        setStaffDetails(retrievedStaff);
+    }, [currentMemberData, retrieveStaffItem]);
 
-    //TODO: create a useEffect that calls StaffProvider's retrieveStaff method given the id, and have it be retriggered everytime
-    // isOpen is triggered.
-
-    const [name, setName] = useState<string>(user.name || "");
-    const [bio, setBio] = useState<string>(user.staffDetails?.bio || "");
+    const [name, setName] = useState<string>(currentMemberData?.name || "");
+    const [bio, setBio] = useState<string>(staffDetails?.bio);
     const [profilePic, setProfilePic] = useState<File | null>(null);
-
-    // Initial set to existing profile image or blank avatar
     const [profilePicPreview, setProfilePicPreview] = useState<string>(
-        user.staffDetails?.profileImageUrl || "/path/to/blank/avatar.png"
+        staffDetails?.profileImageUrl || ""
     );
+
+    useEffect(() => {
+        setBio(staffDetails?.bio);
+        setProfilePicPreview(staffDetails?.profileImageUrl);
+    }, [staffDetails]);
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
@@ -57,13 +62,16 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         }
     };
 
-    const handleSave = () => {
-        profilePic; //TODO: need to upload profilePic to s3 using handleImageUpload. get back a link
+    const handleSave = async () => {
+        const profileImageUrl = await handleFileUpload(profilePic);
+        if (currentMemberData && name !== currentMemberData.name) {
+            await handleMemberUpdate({...currentMemberData, name});
+        }
 
-        //TODO: then we need to use that link as the new profileImageUrl, if you are developing this marisha
-        // before this part is setup just pass a dummy profileImgLink.
+        if (staffDetails && bio !== staffDetails?.bio) {
+            await handleStaffUpdate({...staffDetails, bio, profileImageUrl});
+        }
 
-        //TODO:  once we have all modified data we call handleStaffUpdate
         onClose();
     };
 

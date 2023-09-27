@@ -13,6 +13,7 @@ import {GearProvider} from "./providers/GearProvider";
 import {MembersProvider} from "./providers/MembersProvider";
 import {ReservationsProvider} from "./providers/ReservationProvider";
 import {useLogin} from "./providers/LoginProvider";
+import {StaffProvider} from "./providers/StaffProvider";
 
 function App() {
     const location = useLocation();
@@ -62,24 +63,26 @@ function App() {
     return (
         <ReservationsProvider>
             <MembersProvider>
-                <GearProvider>
-                    <Routes>
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<HomePage />} />
-                            <Route path="staff" element={<StaffPage />} />
-                            <Route path="editstaff" element={<EditStaffPage />} />
-                            {isLoggedIn ? (
-                                <>
-                                    <Route path="links/*" element={<LinkPage />} />
-                                    <Route path="members" element={<MembersPage />} />
-                                    <Route path="gear" element={<GearPage />} />
-                                </>
-                            ) : (
-                                <Route path="*" element={<UnauthorizedPage />} />
-                            )}
-                        </Route>
-                    </Routes>
-                </GearProvider>
+                <StaffProvider>
+                    <GearProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<HomePage />} />
+                                <Route path="staff" element={<StaffPage />} />
+                                {isLoggedIn ? (
+                                    <>
+                                        <Route path="links/*" element={<LinkPage />} />
+                                        <Route path="members" element={<MembersPage />} />
+                                        <Route path="gear" element={<GearPage />} />
+                                        <Route path="editstaff" element={<EditStaffPage />} />
+                                    </>
+                                ) : (
+                                    <Route path="*" element={<UnauthorizedPage />} />
+                                )}
+                            </Route>
+                        </Routes>
+                    </GearProvider>
+                </StaffProvider>
             </MembersProvider>
         </ReservationsProvider>
     );

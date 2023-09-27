@@ -1,13 +1,20 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {getStaffMembers} from "src/utils/api"; // Adjust the API functions as needed
-import {StaffProps} from "src/utils/types";
+import {addStaff, deleteStaff, getStaff, updateStaff} from "src/utils/api"; // Adjust the API functions as needed
+import {NewStaffProps, StaffProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
+import {GridRowSelectionModel} from "@mui/x-data-grid";
 
 interface StaffContextProps {
     staffData: StaffProps[];
     setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>;
-    // Add any other functions or data you need here
+    staffRowSelectionModel: GridRowSelectionModel;
+    setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
+    retrieveStaffItem: (id: string) => StaffProps;
+    handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
+    handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
+    handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
+    handleFileUpload: (uploadedFile: any) => Promise<string>;
 }
 
 const useStaffState = () => {
@@ -15,17 +22,17 @@ const useStaffState = () => {
     const [staffData, setStaffData] = useState<StaffProps[]>([]);
     const {isLoggedIn} = useLogin();
 
-    const {data: fetchStaffData} = useQuery("staff", getStaffMembers, {
+    const {data: fetchStaffData} = useQuery("staff", getStaff, {
         enabled: isLoggedIn
     });
 
     useEffect(() => {
         if (fetchStaffData) {
             setStaffData(fetchStaffData);
-            fetchStaffData.forEach(async (staffMember) => {
-                queryClient.setQueryData(["staffItem", staffMember._id], staffMember);
-                await queryClient.prefetchQuery(["staffItem", staffMember._id], {
-                    initialData: staffMember,
+            fetchStaffData.forEach(async (staff) => {
+                queryClient.setQueryData(["staffItem", staff._id], staff);
+                await queryClient.prefetchQuery(["staffItem", staff._id], {
+                    initialData: staff,
                     staleTime: Infinity
                 });
             });
@@ -37,7 +44,8 @@ const useStaffState = () => {
 
 const useStaffOperations = (
     staffData: StaffProps[],
-    setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>
+    setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>,
+    setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
     const recomputeAggregatedStaff = () => {
         const aggregatedStaff = queryClient
@@ -49,26 +57,58 @@ const useStaffOperations = (
 
     const queryClient = useQueryClient();
 
-    //TODO: we need a method to retrieveStaffMember which will look through staffData for a match in id
+    const retrieveStaffItem = (id: string) => {
+        return staffData.filter((staff) => staff._id === id)[0];
+    };
 
-    //TODO: need a handleStaffAdd
+    const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
+        const staffIds = selectedStaff.map((staff) => staff._id);
 
-    //TODO: need a handleStaffRemove
+        setStaffRowSelectionModel([]);
 
+        await deleteStaff(staffIds);
+
+        await Promise.all(
+            staffIds.map(async (id) => {
+                return queryClient.removeQueries({queryKey: ["staffItem", id]});
+            })
+        );
+
+        recomputeAggregatedStaff();
+    };
+
+    const handleStaffAdd = async (newStaffData: NewStaffProps) => {
+        const addedStaff = await addStaff(newStaffData);
+
+        queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
+        await queryClient.prefetchQuery(["staffItem", addedStaff._id], {
+            initialData: addedStaff,
+            staleTime: Infinity
+        });
+
+        recomputeAggregatedStaff();
+    };
     const handleStaffUpdate = async (modifiedStaff: StaffProps) => {
-        //TODO: Fill this in
-        //const updatedStaff = await updateStaff(modifiedStaff);
+        const updatedStaff = await updateStaff(modifiedStaff);
 
-        await queryClient.refetchQueries({queryKey: ["staffItem", modifiedStaff._id]});
+        await queryClient.refetchQueries({queryKey: ["staffItem", updatedStaff._id]});
         recomputeAggregatedStaff();
     };
 
     const handleFileUpload = async (uploadedFile) => {
+        uploadedFile;
+        return "";
         //need this to upload the image to the backend, backend uploads the image to s3 and cloudfront
         //and then return back the link
     };
 
-    return [handleStaffUpdate, handleFileUpload];
+    return {
+        handleStaffUpdate,
+        handleFileUpload,
+        retrieveStaffItem,
+        handleStaffDelete,
+        handleStaffAdd
+    };
 };
 
 const StaffContext = createContext<StaffContextProps | undefined>(undefined);
@@ -79,13 +119,16 @@ interface StaffProviderProps {
 
 export const StaffProvider: React.FC<StaffProviderProps> = ({children}) => {
     const {staffData, setStaffData} = useStaffState();
-    const staffOps = useStaffOperations(staffData, setStaffData);
+    const [staffRowSelectionModel, setStaffRowSelectionModel] = useState<GridRowSelectionModel>([]);
+    const staffOps = useStaffOperations(staffData, setStaffData, setStaffRowSelectionModel);
 
     return (
         <StaffContext.Provider
             value={{
                 staffData,
                 setStaffData,
+                staffRowSelectionModel,
+                setStaffRowSelectionModel,
                 ...staffOps
             }}
         >

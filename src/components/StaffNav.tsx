@@ -48,7 +48,7 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
         if (screenWidth > 700) {
             return (
                 <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar>
+                    <Toolbar className="flex justify-between items-center py-1">
                         <Typography variant="h4">Edit Staff</Typography>
                         <div className="flex items-center">
                             <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg">

@@ -6,56 +6,6 @@ import ImageContainer from "components/homepage/ImageContainer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
-const generateFakeStaffMembers = (count) => {
-    const positions = [
-        "Director",
-        "Treasurer",
-        "General Board",
-        "Web Developer",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Full Staff",
-        "Prospective Staff"
-    ];
-
-    const fakeStaffMembers = [];
-    for (let i = 0; i < count; i++) {
-        const randomPositionIndex = Math.floor(Math.random() * positions.length);
-        const randomPosition = positions[randomPositionIndex];
-
-        const fakeStaffMember = {
-            _id: `staff_${i}`,
-            name: `Staff Member ${i}`,
-            email: `staff${i}@example.com`,
-            phone_number: `555-555-555${i}`,
-            is_new_member: i % 2 === 0, // Just an example of boolean value
-            membership_expiration_date: Date.now() + i * 10000000, // Example date
-            membership_duration: i + 1,
-            join_datetime: Date.now() - i * 10000000, // Example date
-            signed_up_by: `Admin ${i}`,
-            notes: `Some notes about Staff Member ${i}`,
-            staff_details: {
-                _id: `staff_details_${i}`,
-                member_id: `staff_${i}`,
-                profileImageUrl: ``,
-                bio: `Bio of Staff Member ${i}`,
-                positions: [randomPosition]
-            }
-        };
-        fakeStaffMembers.push(fakeStaffMember);
-    }
-    return fakeStaffMembers;
-};
-
-// Sample user data
-const staffMembers = generateFakeStaffMembers(15); // Generate 10 fake staff members
-
 const pageContainerStyle: React.CSSProperties = {
     display: "flex",
     flexDirection: "column",
@@ -89,7 +39,6 @@ const StaffPage: React.FC = () => {
     const [smallFontSize, setSmallFontSize] = useState("18px");
     const [bigFontSize, setBigFontSize] = useState("24px");
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-    const [columns, setColumns] = useState(4);
 
     useEffect(() => {
         const handleResize = () => {
@@ -110,11 +59,6 @@ const StaffPage: React.FC = () => {
         // Check if the screenWidth is less than 720
         const bigCalculatedFontSize = `${(screenWidth / 12).toFixed(0)}px`;
         setBigFontSize(bigCalculatedFontSize);
-        if (screenWidth <= 1320) {
-            setColumns(Math.ceil(screenWidth / 290));
-        } else {
-            setColumns(6);
-        }
     }, [screenWidth]);
 
     const paragraphStyle = {
@@ -161,7 +105,7 @@ const StaffPage: React.FC = () => {
             </Card>
             <Card square style={cardStyle}>
                 <CardContent>
-                    <StaffGrid numColumns={columns} staff={staffMembers} />
+                    <StaffGrid />
                 </CardContent>
             </Card>
             <Card>

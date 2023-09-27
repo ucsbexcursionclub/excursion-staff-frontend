@@ -9,7 +9,7 @@ export type MemberProps = {
     membership_expiration_date: number | null;
     join_datetime: number;
     notes: string | null;
-    staffId?: string;
+    staff_id?: string;
 };
 
 export type StaffProps = {
@@ -26,11 +26,9 @@ export type NewMemberProps = Omit<
     "_id" | "membership_expiration_date" | "join_datetime" | "notes"
 >;
 
-export type NewStaffMemberProps = {
-    name: string;
-    staff_details: {
-        positions: string[];
-    };
+export type NewStaffProps = {
+    positions: string[];
+    memberId: string;
 };
 
 export type GearProps = {

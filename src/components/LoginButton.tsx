@@ -13,6 +13,7 @@ import {CircularProgress} from "@mui/material";
 import {useLogin} from "src/providers/LoginProvider";
 import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
 import {Edit} from "@mui/icons-material";
+import {useMembers} from "src/providers/MembersProvider";
 
 const cookies = new Cookies();
 
@@ -23,7 +24,9 @@ function LoginButton() {
     const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
     const open = Boolean(anchorEl);
 
-    const {isLoggedIn, login, user, isFetching} = useLogin();
+    const {isLoggedIn, login, isFetching} = useLogin();
+
+    const {currentMemberData} = useMembers();
 
     function handleSuccess(tokenResponse: tokenResponseProps) {
         login(tokenResponse.access_token);
@@ -86,7 +89,7 @@ function LoginButton() {
                     >
                         <MenuItem>
                             <Avatar sx={{width: 40, height: 40}} className="mr-2" />
-                            <span>{user.email}</span>
+                            <span>{currentMemberData?.email || ""}</span>
                         </MenuItem>
                         <MenuItem onClick={handleEditProfileOpen}>
                             <ListItemIcon>
