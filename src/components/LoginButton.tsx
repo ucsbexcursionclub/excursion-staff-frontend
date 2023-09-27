@@ -19,18 +19,13 @@ type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "e
 
 function LoginButton() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
     const open = Boolean(anchorEl);
 
-    const {isLoggedIn, login, user} = useLogin();
+    const {isLoggedIn, login, user, isFetching} = useLogin();
 
-    async function handleSuccess(tokenResponse: tokenResponseProps) {
-        setIsLoading(true);
-
-        await login(tokenResponse.access_token);
-
-        setIsLoading(false);
+    function handleSuccess(tokenResponse: tokenResponseProps) {
+        login(tokenResponse.access_token);
     }
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -110,7 +105,7 @@ function LoginButton() {
                         user={user}
                     />
                 </>
-            ) : isLoading ? (
+            ) : isFetching ? (
                 <CircularProgress color="inherit" size={40} />
             ) : (
                 <IconButton onClick={() => handleLogin()} aria-label="login">

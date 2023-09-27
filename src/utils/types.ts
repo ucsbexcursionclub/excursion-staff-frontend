@@ -4,17 +4,24 @@ export type MemberProps = {
     email: string;
     phone_number: string;
     membership_duration: number;
-    membership_status: "member" | "staff" | "admin";
     is_new_member: boolean;
     signed_up_by: string;
     membership_expiration_date: number | null;
     join_datetime: number;
     notes: string | null;
+    staffDetails?: StaffProps;
+};
+
+export type StaffProps = {
+    _id: string;
+    positions: string[];
+    profileImageUrl: string;
+    bio: string;
 };
 
 export type NewMemberProps = Omit<
     MemberProps,
-    "_id" | "membership_expiration_date" | "join_datetime" | "notes" | "membership_status"
+    "_id" | "membership_expiration_date" | "join_datetime" | "notes"
 >;
 
 export type StaffMemberProps = {

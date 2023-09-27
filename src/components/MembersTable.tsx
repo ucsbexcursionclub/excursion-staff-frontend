@@ -22,17 +22,6 @@ const getColumns = (getMemberById: (memberId) => MemberProps) => {
         {field: "email", headerName: "Email", width: 200},
         {field: "phone_number", headerName: "Phone Number", width: 140},
         {
-            field: "membership_status",
-            headerName: "Status",
-            width: 140,
-            valueFormatter: (params) => {
-                if (params.value) {
-                    return capitalizeFirstLetter(params.value);
-                }
-                return "N/A";
-            }
-        },
-        {
             field: "membership_expiration_date",
             headerName: "Expiration Date",
             type: "date",
