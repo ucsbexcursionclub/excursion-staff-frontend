@@ -12,6 +12,7 @@ import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
 import {useLogin} from "src/providers/LoginProvider";
 import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
+import {Edit} from "@mui/icons-material";
 
 const cookies = new Cookies();
 
@@ -88,8 +89,9 @@ function LoginButton() {
                             <span>{user.email}</span>
                         </MenuItem>
                         <MenuItem onClick={handleEditProfileOpen}>
-                            {" "}
-                            {/* Open Edit Profile Dialog */}
+                            <ListItemIcon>
+                                <Edit fontSize="small" />
+                            </ListItemIcon>
                             Edit Profile
                         </MenuItem>
                         <MenuItem onClick={() => handleLogout()}>
@@ -102,7 +104,6 @@ function LoginButton() {
                     <EditProfileFormDialog
                         isOpen={isEditProfileOpen}
                         onClose={handleEditProfileClose}
-                        user={user}
                     />
                 </>
             ) : isFetching ? (

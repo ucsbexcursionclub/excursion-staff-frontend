@@ -1,49 +1,78 @@
-import React, {useState} from "react";
+import React, {useState, ChangeEvent} from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
 import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
+import Avatar from "@mui/material/Avatar";
+import {useLogin} from "src/providers/LoginProvider";
 
-function EditProfileFormDialog({isOpen, onClose, user}) {
-    const [name, setName] = useState(user.name || ""); // State for the user's name
-    const [bio, setBio] = useState(user.bio || ""); // State for the user's bio
-    const [profilePicUrl, setProfilePicUrl] = useState(""); // State for the profile picture URL
+interface EditProfileFormDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+}
 
-    const handleNameChange = (event) => {
+const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
+    const {user} = useLogin();
+
+    const [name, setName] = useState<string>(user.name || "");
+    const [bio, setBio] = useState<string>(user.staffDetails?.bio || "");
+    const [profilePic, setProfilePic] = useState<File | null>(null);
+
+    // Initial set to existing profile image or blank avatar
+    const [profilePicPreview, setProfilePicPreview] = useState<string>(
+        user.staffDetails?.profileImageUrl || "/path/to/blank/avatar.png"
+    );
+
+    const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
     };
 
-    const handleBioChange = (event) => {
+    const handleBioChange = (event: ChangeEvent<HTMLInputElement>) => {
         setBio(event.target.value);
     };
 
-    const handleProfilePicUrlChange = (event) => {
-        setProfilePicUrl(event.target.value);
+    const handleProfilePicChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setProfilePic(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfilePicPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSave = () => {
-        // Here, you can handle saving the updated profile information to your backend or wherever it's stored.
-        // You can send an API request to update the user's profile with the new data.
-        // After saving, you can close the dialog.
-
-        // For example, you can call an updateProfile function:
-        // updateProfile({ name, bio, profilePicUrl });
-
-        // Close the dialog
+        profilePic;
+        // Handle the saving of the profile info, including uploading the image.
         onClose();
     };
 
     const handleClose = () => {
-        // Close the dialog without saving changes
         onClose();
     };
 
     return (
-        <Dialog open={isOpen} onClose={handleClose}>
-            <DialogTitle>Edit Profile</DialogTitle>
-            <DialogContent>
+        <Dialog fullWidth maxWidth={"sm"} open={isOpen} onClose={handleClose}>
+            <DialogTitle className="text-center">Edit Profile</DialogTitle>
+            <DialogContent className="flex flex-col items-center">
+                <Avatar
+                    src={profilePicPreview}
+                    className="mb-4 mt-2"
+                    style={{width: 100, height: 100}}
+                />
+                <label htmlFor="raised-button-file" className="mb-2">
+                    <Button
+                        variant="contained"
+                        className="border-2 rounded-2xl font-bold"
+                        component="span"
+                    >
+                        Upload Image
+                    </Button>
+                </label>
                 <TextField
                     autoFocus
                     margin="dense"
@@ -58,6 +87,7 @@ function EditProfileFormDialog({isOpen, onClose, user}) {
                     margin="dense"
                     id="bio"
                     label="Bio"
+                    helperText="Enter your bio that is to be displayed on the staff page!"
                     type="text"
                     fullWidth
                     multiline
@@ -65,26 +95,29 @@ function EditProfileFormDialog({isOpen, onClose, user}) {
                     value={bio}
                     onChange={handleBioChange}
                 />
-                <TextField
-                    margin="dense"
-                    id="profilePicUrl"
-                    label="Profile Picture URL"
-                    type="text"
-                    fullWidth
-                    value={profilePicUrl}
-                    onChange={handleProfilePicUrlChange}
+                <input
+                    accept="image/*"
+                    style={{display: "none"}}
+                    id="raised-button-file"
+                    type="file"
+                    onChange={handleProfilePicChange}
                 />
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} color="primary">
+                <Button
+                    onClick={handleClose}
+                    variant="outlined"
+                    className="border-2"
+                    color="primary"
+                >
                     Cancel
                 </Button>
-                <Button onClick={handleSave} color="primary">
+                <Button onClick={handleSave} variant="contained" color="primary">
                     Save
                 </Button>
             </DialogActions>
         </Dialog>
     );
-}
+};
 
 export default EditProfileFormDialog;

@@ -24,30 +24,10 @@ export type NewMemberProps = Omit<
     "_id" | "membership_expiration_date" | "join_datetime" | "notes"
 >;
 
-export type StaffMemberProps = {
-    _id: string;
-    name: string;
-    email: string;
-    phone_number: string;
-    is_new_member?: boolean;
-    membership_expiration_date?: number | null;
-    membership_duration?: number;
-    join_datetime?: number;
-    signed_up_by?: string | null;
-    notes?: string;
-    staff_details: {
-      _id: string;
-      member_id: string;
-      profileImageUrl: string;
-      bio: string;
-      positions: string[];
-    };
-  };  
-
 export type NewStaffMemberProps = {
     name: string;
     staff_details: {
-      positions: string[];
+        positions: string[];
     };
 };
 
