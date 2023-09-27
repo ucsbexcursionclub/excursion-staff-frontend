@@ -85,11 +85,15 @@ export async function getReservationById(id: string): Promise<ReservationProps> 
 }
 
 export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
+    const copiedGear = {...updatedGear};
+    delete copiedGear.reservationDetails;
+    delete copiedGear.memberDetails;
+
     // Use the _id property from the updatedGear object for the endpoint URL
-    const url = `${baseURL}/api/v1/gear/${updatedGear._id}`;
+    const url = `${baseURL}/api/v1/gear/${copiedGear._id}`;
 
     // Send the entire updatedGear object as the request payload
-    const response = await axios.patch(url, updatedGear, {
+    const response = await axios.patch(url, copiedGear, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
@@ -102,12 +106,11 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
 }
 
 export async function updateMembers(updatedMember: MemberProps): Promise<MemberProps> {
-    // Determine whether it's a MemberProps or NewMemberProps
-    if (~("_id" in updatedMember)) {
-        // stub!
-    }
-    const url = `${baseURL}/api/v1/members/${updatedMember._id}`;
-    const response = await axios.patch(url, updatedMember, {
+    const copiedMember = {...updatedMember};
+    delete copiedMember.staffDetails;
+
+    const url = `${baseURL}/api/v1/members/${copiedMember._id}`;
+    const response = await axios.patch(url, copiedMember, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
