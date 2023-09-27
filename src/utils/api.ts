@@ -37,8 +37,8 @@ export async function getReservations(): Promise<ReservationProps[]> {
     return reservations;
 }
 
-export async function getMemberById(memberId: string): Promise<MemberProps> {
-    const endpoint = `${baseURL}/api/v1/members/${memberId}`;
+export async function getMemberById(id: string): Promise<MemberProps> {
+    const endpoint = `${baseURL}/api/v1/members/${id}`;
 
     const response = await axios.get(endpoint, {
         headers: {

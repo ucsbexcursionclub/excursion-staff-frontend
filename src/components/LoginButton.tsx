@@ -18,17 +18,12 @@ type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "e
 
 function LoginButton() {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const open = Boolean(anchorEl);
 
-    const {isLoggedIn, login, user} = useLogin();
+    const {isLoggedIn, login, user, isFetching} = useLogin();
 
-    async function handleSuccess(tokenResponse: tokenResponseProps) {
-        setIsLoading(true);
-
-        await login(tokenResponse.access_token);
-
-        setIsLoading(false);
+    function handleSuccess(tokenResponse: tokenResponseProps) {
+        login(tokenResponse.access_token);
     }
 
     const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -89,7 +84,7 @@ function LoginButton() {
                         </MenuItem>
                     </Menu>
                 </>
-            ) : isLoading ? (
+            ) : isFetching ? (
                 <CircularProgress color="inherit" size={40} />
             ) : (
                 <IconButton onClick={() => handleLogin()} aria-label="login">
