@@ -65,7 +65,7 @@ export default function StaffAddDialog({open, onClose}) {
 
         // Create the staff member object with name and positions
         const newStaffData = {
-            memberId,
+            member_id: memberId,
             memberDetails: selectedMember || {},
             positions: selectedPositions,
             profileImageUrl: "", // You can add the profile image URL here
@@ -89,7 +89,7 @@ export default function StaffAddDialog({open, onClose}) {
         // Create the staff member object with updated data while maintaining existing values
         const updatedStaff = {
             ...existingStaff, // Maintain existing values
-            memberId: selectedMember._id, // Use the member ID
+            member_id: selectedMember._id, // Use the member ID
             memberDetails: selectedMember, // Use the member details
             positions: selectedPositions
         };
