@@ -11,6 +11,7 @@ interface StaffContextProps {
     staffRowSelectionModel: GridRowSelectionModel;
     setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     retrieveStaffItem: (id: string) => StaffProps;
+    retrieveStaffByMemberID: (memberID: string) => StaffProps | null;
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
     handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
@@ -61,6 +62,10 @@ const useStaffOperations = (
         return staffData.filter((staff) => staff._id === id)[0];
     };
 
+    const retrieveStaffByMemberID = (memberID: string) => {
+        return staffData.find((staff) => staff.memberDetails?._id === memberID) || null;
+    };
+
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
         const staffIds = selectedStaff.map((staff) => staff._id);
 
@@ -78,6 +83,7 @@ const useStaffOperations = (
     };
 
     const handleStaffAdd = async (newStaffData: NewStaffProps) => {
+        console.log("StaffProvider newStaffData:", newStaffData); //test
         const addedStaff = await addStaff(newStaffData);
 
         queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
@@ -106,6 +112,7 @@ const useStaffOperations = (
         handleStaffUpdate,
         handleFileUpload,
         retrieveStaffItem,
+        retrieveStaffByMemberID,
         handleStaffDelete,
         handleStaffAdd
     };

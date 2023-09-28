@@ -283,9 +283,26 @@ export async function getStaffById(staffId: string): Promise<StaffProps> {
     return staffData;
 }
 
+export async function getStaffByMemberID(memberID: string): Promise<StaffProps | null> {
+    const endpoint = `${baseURL}/api/v1/staff/member/${memberID}`;
+
+    const response = await axios.get(endpoint, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    const staffData: StaffProps = response.data.data;
+
+    return staffData;
+}
+
 export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps> {
     const copiedStaff = {...updatedStaff};
     delete copiedStaff.memberDetails;
+
+    console.log(copiedStaff); //test
+    console.log("id:", copiedStaff._id); //test
 
     const url = `${baseURL}/api/v1/staff/${copiedStaff._id}`;
 
@@ -315,11 +332,12 @@ export async function deleteStaff(ids: string[]): Promise<number> {
 }
 
 export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps> {
+    console.log("api call newStaffProps:", newStaffProps); //test
     const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffProps, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
     });
-
+    console.log(response.data.data);
     return response.data.data;
 }

@@ -33,12 +33,7 @@ const columns: GridColDef[] = [
         field: "positions",
         headerName: "Positions",
         width: 200,
-        valueFormatter: (params) => {
-            if (params.value && Array.isArray(params.value)) {
-                return params.value.join(", ");
-            }
-            return "Fix: Not showing positions";
-        }
+        valueGetter: (params) => params.row?.positions.join(", ") || "N/A" // Join positions array with commas
     }
 ];
 
@@ -47,7 +42,6 @@ type StaffTableProps = {
 };
 
 export default function StaffTable({searchParams}: StaffTableProps) {
-    //const [selectedStaff, setSelectedStaff] = React.useState<StaffProps | null>(null);
     const {staffData, staffRowSelectionModel, setStaffRowSelectionModel} = useStaff();
 
     const filterModel: GridFilterModel = React.useMemo(
@@ -58,8 +52,6 @@ export default function StaffTable({searchParams}: StaffTableProps) {
         }),
         [searchParams]
     );
-
-    console.log(staffData);
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
