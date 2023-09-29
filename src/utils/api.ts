@@ -315,11 +315,12 @@ export async function deleteStaff(ids: string[]): Promise<number> {
 }
 
 export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps> {
+    console.log("api call newStaffProps:", newStaffProps); //test
     const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffProps, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
     });
-
+    console.log(response.data.data);
     return response.data.data;
 }

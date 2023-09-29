@@ -16,6 +16,7 @@ import {
 import {GearProps} from "src/utils/types";
 import {useGear} from "src/providers/GearProvider";
 import CheckoutHistory from "./CheckoutHistory";
+import {BlurBackDrop} from "./HelperComponents";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -29,6 +30,10 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const [value, setValue] = useState(0);
 
     const {handleGearUpdate} = useGear();
+
+    const handleClose = () => {
+        onClose();
+    };
 
     useEffect(() => {
         setNotes(gear?.notes || "");
@@ -62,7 +67,20 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const isOverdue = (gear.reservationDetails?.due_date || Infinity) < new Date().getTime();
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"} scroll={"paper"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"sm"}
+            scroll={"paper"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{gear.gear_name} Details</DialogTitle>
             <Box sx={{borderBottom: 1, borderColor: "divider"}}>
                 <Tabs value={value} onChange={handleTabChange} aria-label="gear details tabs">
@@ -176,7 +194,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                 </CustomTabPanel>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Close
                 </Button>
             </DialogActions>

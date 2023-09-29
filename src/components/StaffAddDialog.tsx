@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import MembersAutoComplete from "src/components/MembersAutoComplete";
 import {MemberProps} from "src/utils/types";
 import {
@@ -10,35 +10,26 @@ import {
     FormControlLabel,
     Checkbox
 } from "@mui/material";
+import {useStaff} from "src/providers/StaffProvider";
+import {positionOptions} from "src/utils/constants";
+import {BlurBackDrop} from "./HelperComponents";
 
-interface StaffAddDialog {
+type StaffAddDialogProps = {
     open: boolean;
     onClose: () => void;
-}
-const positionOptions = [
-    "Director",
-    "Treasurer",
-    "General Board",
-    "Web Developer",
-    "Camping Gear Head",
-    "Climbing Gear Head",
-    "Head of Water Sports",
-    "Head of Medicine",
-    "Social Media Head",
-    "Gear Fairy",
-    "Full Staff",
-    "Prospective Staff"
-];
+};
 
-export default function StaffAddDialog({open, onAdd, onClose}) {
+export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     const [selectedPositions, setSelectedPositions] = useState([]);
-    const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
+    const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
     const [error, setError] = useState<boolean>(false);
+    const [disableAdd, setDisableAdd] = useState<boolean>(false);
 
-    // Step 4: Callback function to handle member selection
-    // const handleMemberChange = (newValue: MemberProps | null) => {
-    //     setSelectedMember(newValue);
-    // };
+    const {handleStaffAdd, handleStaffUpdate, retrieveStaffById} = useStaff();
+
+    const handleClose = () => {
+        onClose();
+    };
 
     const handleCheckboxChange = (event) => {
         const position = event.target.name;
@@ -49,30 +40,83 @@ export default function StaffAddDialog({open, onAdd, onClose}) {
         );
     };
 
-    const handleAddStaffMember = () => {
-        // STUB TO DO
-        // Create the staff member object with name and positions
+    useEffect(() => {
+        const staffId = selectedMember?.staff_id;
+        const existingStaff = staffId && retrieveStaffById(staffId);
 
-        // Call the onAdd callback to add the staff member
-        onAdd();
+        setDisableAdd(!!existingStaff);
+
+        setSelectedPositions(existingStaff?.positions || []);
+    }, [selectedMember, retrieveStaffById]);
+
+    const handleAddStaffMember = async () => {
+        if (!selectedMember) return;
+
+        const memberId = selectedMember._id;
+
+        // Create the staff member object with name and positions
+        const newStaffData = {
+            member_id: memberId,
+            positions: selectedPositions,
+            profileImageUrl: "", // You can add the profile image URL here
+            bio: "" // You can add the bio here
+        };
+
+        // Call the handleStaffAdd function to add the staff member
+        await handleStaffAdd(newStaffData);
 
         // Reset the form fields
         setSelectedPositions([]);
+        setSelectedMember(null);
 
         // Close the dialog
-        onClose();
+        handleClose();
+    };
+
+    const handleUpdateStaffMember = async () => {
+        if (!selectedMember) return;
+
+        const existingStaff = retrieveStaffById(selectedMember.staff_id);
+
+        // Create the staff member object with updated data while maintaining existing values
+        const updatedStaff = {
+            ...existingStaff,
+            positions: selectedPositions
+        };
+
+        // Call the handleStaffUpdate function to update the staff member
+        await handleStaffUpdate(updatedStaff);
+
+        // Reset the form fields
+        setSelectedPositions([]);
+        setSelectedMember(null);
+
+        // Close the dialog
+        handleClose();
     };
 
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Add Staff Member</DialogTitle>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
+            <DialogTitle>Add/Update Staff Member</DialogTitle>
             <DialogContent>
-                <MembersAutoComplete
-                    error={error}
-                    setError={setError}
-                    setMemberVal={setSelectedMember}
-                    memberVal={selectedMember}
-                />
+                <div className="mt-2">
+                    <MembersAutoComplete
+                        error={error}
+                        setError={setError}
+                        setMemberVal={setSelectedMember}
+                        memberVal={selectedMember}
+                    />
+                </div>
                 <div>
                     <p>Positions:</p>
                     {positionOptions.map((position) => (
@@ -91,8 +135,20 @@ export default function StaffAddDialog({open, onAdd, onClose}) {
                 </div>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose}>Cancel</Button>
-                <Button onClick={handleAddStaffMember} color="primary">
+                <Button
+                    disabled={!disableAdd}
+                    variant="outlined"
+                    onClick={handleUpdateStaffMember}
+                    color="primary"
+                >
+                    Update
+                </Button>
+                <Button
+                    disabled={disableAdd}
+                    variant="outlined"
+                    onClick={handleAddStaffMember}
+                    color="primary"
+                >
                     Add
                 </Button>
             </DialogActions>

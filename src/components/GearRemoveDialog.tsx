@@ -9,6 +9,7 @@ import {
     ListItem
 } from "@mui/material";
 import {useGear} from "src/providers/GearProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type GearRemoveDialogProps = {
     open: boolean;
@@ -18,15 +19,31 @@ type GearRemoveDialogProps = {
 const GearRemoveDialog: React.FC<GearRemoveDialogProps> = ({open, onClose}) => {
     const {retrieveGearItem, handleGearDelete, gearRowSelectionModel} = useGear();
 
+    const handleClose = () => {
+        onClose();
+    };
+
     const gearsToDelete = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 
     async function handleConfirmDelete() {
         await handleGearDelete(gearsToDelete);
-        onClose();
+        handleClose();
     }
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"xs"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"xs"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                 Confirm Deletion
             </DialogTitle>
@@ -40,7 +57,7 @@ const GearRemoveDialog: React.FC<GearRemoveDialogProps> = ({open, onClose}) => {
             </List>
 
             <DialogActions>
-                <Button onClick={onClose} variant="contained" color="primary">
+                <Button onClick={handleClose} variant="contained" color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleConfirmDelete} variant="contained" color="error">

@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import {Dialog, DialogTitle, DialogActions, Button, TextField} from "@mui/material";
 import {useGear} from "src/providers/GearProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type GearAddDialogProps = {
     open: boolean;
@@ -17,6 +18,10 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     const [rfid, setRfid] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
     const [notes, setNotes] = useState<string | null>(null);
+
+    const handleClose = () => {
+        onClose();
+    };
 
     const {handleGearAdd, retrieveGearItemByRFID} = useGear();
 
@@ -39,7 +44,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
             description,
             notes
         });
-        onClose();
+        handleClose();
     };
 
     const handleRfidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +56,19 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"sm"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle>Add New Gear</DialogTitle>
             <div>
                 <TextField
@@ -75,7 +92,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
                 />
             </div>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleSubmit} color="primary">

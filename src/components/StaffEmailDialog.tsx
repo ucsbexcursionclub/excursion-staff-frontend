@@ -2,24 +2,24 @@ import React from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Typography from "@mui/material/Typography";
-import {useMembers} from "src/providers/MembersProvider";
+import {useStaff} from "src/providers/StaffProvider"; // Import the staff provider
 import TextField from "@mui/material/TextField";
 import {BlurBackDrop} from "./HelperComponents";
 
-type MemberEmailDialogProps = {
+type StaffEmailDialogProps = {
     open: boolean;
     onClose: () => void;
     screenwidth: number; // Custom screen width parameter
 };
 
-const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({open, onClose, screenwidth}) => {
-    const {retrieveMemberItem, memberRowSelectionModel} = useMembers();
+const StaffEmailDialog: React.FC<StaffEmailDialogProps> = ({open, onClose, screenwidth}) => {
+    const {retrieveStaffById, staffRowSelectionModel} = useStaff(); // Use the staff provider
 
     const handleClose = () => {
         onClose();
     };
 
-    if (memberRowSelectionModel.length === 0) {
+    if (staffRowSelectionModel.length === 0) {
         return (
             <Dialog
                 open={open}
@@ -33,18 +33,18 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({open, onClose, scr
                 }}
             >
                 <DialogContent>
-                    <Typography>You must select a member to copy emails.</Typography>
+                    <Typography>You must select a staff member to copy emails.</Typography>
                 </DialogContent>
             </Dialog>
         );
     }
 
-    const memberEmails = memberRowSelectionModel.map((id) => {
-        const member = retrieveMemberItem(id.toString());
-        return member?.email || ""; // Return the email or an empty string if member not found
+    const staffEmails = staffRowSelectionModel.map((id) => {
+        const staff = retrieveStaffById(id.toString());
+        return staff?.memberDetails?.email || ""; // Return the email or an empty string if staff member not found
     });
 
-    const emailsJoined = memberEmails.join(", "); // Join emails with commas
+    const emailsJoined = staffEmails.join(", "); // Join emails with commas
 
     const maxWidth = `${(screenwidth / 100) * 80}vw`;
 
@@ -78,4 +78,4 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({open, onClose, scr
     );
 };
 
-export default MemberEmailDialog;
+export default StaffEmailDialog;

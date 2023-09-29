@@ -14,7 +14,7 @@ export type MemberProps = {
 
 export type StaffProps = {
     _id: string;
-    memberId: string;
+    member_id: string;
     memberDetails?: MemberProps;
     positions: string[];
     profileImageUrl: string;
@@ -28,7 +28,7 @@ export type NewMemberProps = Omit<
 
 export type NewStaffProps = {
     positions: string[];
-    memberId: string;
+    member_id: string;
 };
 
 export type GearProps = {

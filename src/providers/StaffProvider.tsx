@@ -10,7 +10,8 @@ interface StaffContextProps {
     setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>;
     staffRowSelectionModel: GridRowSelectionModel;
     setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
-    retrieveStaffItem: (id: string) => StaffProps;
+    retrieveStaffById: (id: string) => StaffProps | null;
+    retrieveStaffByMemberID: (memberID: string) => StaffProps | null;
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
     handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
@@ -57,8 +58,12 @@ const useStaffOperations = (
 
     const queryClient = useQueryClient();
 
-    const retrieveStaffItem = (id: string) => {
+    const retrieveStaffById = (id: string): StaffProps | null => {
         return staffData.filter((staff) => staff._id === id)[0];
+    };
+
+    const retrieveStaffByMemberID = (member_id: string): StaffProps | null => {
+        return staffData.filter((staff) => staff.member_id === member_id)[0];
     };
 
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
@@ -105,7 +110,8 @@ const useStaffOperations = (
     return {
         handleStaffUpdate,
         handleFileUpload,
-        retrieveStaffItem,
+        retrieveStaffById,
+        retrieveStaffByMemberID,
         handleStaffDelete,
         handleStaffAdd
     };

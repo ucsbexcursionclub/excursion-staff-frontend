@@ -2,7 +2,8 @@ import React, {ChangeEvent, useState, useEffect} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import StaffAddDialog from "src/components/StaffAddDialog";
-import StaffUpdateDialog from "src/components/StaffUpdateDialog"; // Step 1
+import StaffRemoveDialog from "./StaffRemoveDialog";
+import StaffEmailDialog from "./StaffEmailDialog";
 
 type StaffNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
@@ -11,7 +12,8 @@ type StaffNavProps = {
 export default function StaffNav({setSearchParams}: StaffNavProps) {
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
-    const [updateDialogOpen, setUpdateDialogOpen] = useState(false); // Step 2
+    const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
+    const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -32,16 +34,24 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
         setAddDialogOpen(true);
     };
 
+    const handleRemoveDialogOpen = () => {
+        setRemoveDialogOpen(true);
+    };
+
+    const handleRemoveDialogClose = () => {
+        setRemoveDialogOpen(false);
+    };
+
     const handleAddDialogClose = () => {
         setAddDialogOpen(false);
     };
 
-    const handleUpdateDialogOpen = () => {
-        setUpdateDialogOpen(true); // Step 3
+    const handleOpenCopyEmail = () => {
+        setCopyEmailOpen(true);
     };
 
-    const handleUpdateDialogClose = () => {
-        setUpdateDialogOpen(false); // Step 3
+    const handleCloseCopyEmail = () => {
+        setCopyEmailOpen(false);
     };
 
     const renderAppBar = () => {
@@ -61,20 +71,17 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
                         </div>
                         <div className="flex">
                             <Button color="inherit" className="mx-1" onClick={handleAddDialogOpen}>
-                                Add Staff
+                                Add/Update
                             </Button>
                             <Button
                                 color="inherit"
                                 className="mx-1"
-                                onClick={handleUpdateDialogOpen}
+                                onClick={handleRemoveDialogOpen}
                             >
-                                Update
-                            </Button>{" "}
-                            {/* Step 3: Button to open the dialog */}
-                            <Button color="inherit" className="mx-1">
-                                Remove Staff
+                                Remove
                             </Button>
-                            <Button color="inherit" className="mx-1">
+
+                            <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
                                 Copy Email(s)
                             </Button>
                         </div>
@@ -98,16 +105,13 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
                     </Toolbar>
                     <div className="flex">
                         <Button color="inherit" className="mx-1" onClick={handleAddDialogOpen}>
-                            Add
+                            Add/Update
                         </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleUpdateDialogOpen}>
-                            Update
-                        </Button>{" "}
-                        {/* Step 3: Button to open the dialog */}
-                        <Button color="inherit" className="mx-1">
+                        <Button color="inherit" className="mx-1" onClick={handleRemoveDialogOpen}>
                             Remove
                         </Button>
-                        <Button color="inherit" className="mx-1">
+
+                        <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
                             Copy Email(s)
                         </Button>
                     </div>
@@ -119,15 +123,12 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
     return (
         <>
             {renderAppBar()}
-            <StaffAddDialog
-                open={addDialogOpen}
-                onAdd={handleAddDialogClose}
-                onClose={handleAddDialogClose}
-            />
-            <StaffUpdateDialog // Step 4
-                open={updateDialogOpen}
-                onUpdate={handleUpdateDialogClose}
-                onClose={handleUpdateDialogClose}
+            <StaffAddDialog open={addDialogOpen} onClose={handleAddDialogClose} />
+            <StaffRemoveDialog open={removeDialogOpen} onClose={handleRemoveDialogClose} />
+            <StaffEmailDialog
+                open={copyEmailOpen}
+                onClose={handleCloseCopyEmail}
+                screenwidth={screenWidth}
             />
         </>
     );
