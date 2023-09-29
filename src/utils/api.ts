@@ -283,20 +283,6 @@ export async function getStaffById(staffId: string): Promise<StaffProps> {
     return staffData;
 }
 
-export async function getStaffByMemberID(memberID: string): Promise<StaffProps | null> {
-    const endpoint = `${baseURL}/api/v1/staff/member/${memberID}`;
-
-    const response = await axios.get(endpoint, {
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
-        }
-    });
-
-    const staffData: StaffProps = response.data.data;
-
-    return staffData;
-}
-
 export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps> {
     const copiedStaff = {...updatedStaff};
     delete copiedStaff.memberDetails;
