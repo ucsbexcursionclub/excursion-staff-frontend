@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import MembersAutoComplete from "src/components/MembersAutoComplete";
 import {MemberProps} from "src/utils/types";
 import {
@@ -11,31 +11,25 @@ import {
     Checkbox
 } from "@mui/material";
 import {useStaff} from "src/providers/StaffProvider";
-import Alert from "@mui/material/Alert";
-import AlertTitle from "@mui/material/AlertTitle";
+import {positionOptions} from "src/utils/constants";
+import {BlurBackDrop} from "./HelperComponents";
 
-const positionOptions = [
-    "Director",
-    "Treasurer",
-    "General Board",
-    "Web Developer",
-    "Camping Gear Head",
-    "Climbing Gear Head",
-    "Head of Water Sports",
-    "Head of Medicine",
-    "Social Media Head",
-    "Gear Fairy",
-    "Full Staff",
-    "Prospective Staff"
-];
+type StaffAddDialogProps = {
+    open: boolean;
+    onClose: () => void;
+};
 
-export default function StaffAddDialog({open, onClose}) {
+export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     const [selectedPositions, setSelectedPositions] = useState([]);
     const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
     const [error, setError] = useState<boolean>(false);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [disableAdd, setDisableAdd] = useState<boolean>(false);
 
-    const {handleStaffAdd, handleStaffUpdate, retrieveStaffByMemberID} = useStaff();
+    const {handleStaffAdd, handleStaffUpdate, retrieveStaffById} = useStaff();
+
+    const handleClose = () => {
+        onClose();
+    };
 
     const handleCheckboxChange = (event) => {
         const position = event.target.name;
@@ -45,28 +39,24 @@ export default function StaffAddDialog({open, onClose}) {
                 : prevSelected.filter((p) => p !== position)
         );
     };
+
+    useEffect(() => {
+        const staffId = selectedMember?.staff_id;
+        const existingStaff = staffId && retrieveStaffById(staffId);
+
+        setDisableAdd(!!existingStaff);
+
+        setSelectedPositions(existingStaff?.positions || []);
+    }, [selectedMember, retrieveStaffById]);
+
     const handleAddStaffMember = async () => {
-        const memberId = selectedMember ? selectedMember._id : "";
+        if (!selectedMember) return;
 
-        // Check if a staff member with the same memberId already exists
-        const existingStaff = retrieveStaffByMemberID(memberId);
-        console.log("existingStaff:", existingStaff);
-
-        if (existingStaff) {
-            setErrorMessage(
-                "Staff member with the same memberId already exists. Please use 'Update' instead."
-            );
-            errorMessage; // This is to remove the ESLint warning
-            setTimeout(() => {
-                setError(null);
-            }, 5000); // 5000 milliseconds (5 seconds)
-            return; // Exit the function without adding the staff member
-        }
+        const memberId = selectedMember._id;
 
         // Create the staff member object with name and positions
         const newStaffData = {
             member_id: memberId,
-            memberDetails: selectedMember || {},
             positions: selectedPositions,
             profileImageUrl: "", // You can add the profile image URL here
             bio: "" // You can add the bio here
@@ -80,17 +70,17 @@ export default function StaffAddDialog({open, onClose}) {
         setSelectedMember(null);
 
         // Close the dialog
-        onClose();
+        handleClose();
     };
 
     const handleUpdateStaffMember = async () => {
-        const existingStaff = retrieveStaffByMemberID(selectedMember._id);
+        if (!selectedMember) return;
+
+        const existingStaff = retrieveStaffById(selectedMember.staff_id);
 
         // Create the staff member object with updated data while maintaining existing values
         const updatedStaff = {
-            ...existingStaff, // Maintain existing values
-            member_id: selectedMember._id, // Use the member ID
-            memberDetails: selectedMember, // Use the member details
+            ...existingStaff,
             positions: selectedPositions
         };
 
@@ -102,19 +92,31 @@ export default function StaffAddDialog({open, onClose}) {
         setSelectedMember(null);
 
         // Close the dialog
-        onClose();
+        handleClose();
     };
 
     return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>Add Staff Member</DialogTitle>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
+            <DialogTitle>Add/Update Staff Member</DialogTitle>
             <DialogContent>
-                <MembersAutoComplete
-                    error={error}
-                    setError={setError}
-                    setMemberVal={setSelectedMember}
-                    memberVal={selectedMember}
-                />
+                <div className="mt-2">
+                    <MembersAutoComplete
+                        error={error}
+                        setError={setError}
+                        setMemberVal={setSelectedMember}
+                        memberVal={selectedMember}
+                    />
+                </div>
                 <div>
                     <p>Positions:</p>
                     {positionOptions.map((position) => (
@@ -131,18 +133,22 @@ export default function StaffAddDialog({open, onClose}) {
                         />
                     ))}
                 </div>
-                {errorMessage && (
-                    <Alert severity="error" sx={{mt: 2}}>
-                        <AlertTitle>Error</AlertTitle>
-                        {errorMessage}
-                    </Alert>
-                )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleUpdateStaffMember} color="primary">
+                <Button
+                    disabled={!disableAdd}
+                    variant="outlined"
+                    onClick={handleUpdateStaffMember}
+                    color="primary"
+                >
                     Update
                 </Button>
-                <Button onClick={handleAddStaffMember} color="primary">
+                <Button
+                    disabled={disableAdd}
+                    variant="outlined"
+                    onClick={handleAddStaffMember}
+                    color="primary"
+                >
                     Add
                 </Button>
             </DialogActions>

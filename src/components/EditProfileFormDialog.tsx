@@ -9,6 +9,7 @@ import Avatar from "@mui/material/Avatar";
 import {useStaff} from "src/providers/StaffProvider";
 import {StaffProps} from "src/utils/types";
 import {useMembers} from "src/providers/MembersProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 interface EditProfileFormDialogProps {
     isOpen: boolean;
@@ -17,18 +18,22 @@ interface EditProfileFormDialogProps {
 
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
     const {handleMemberUpdate, currentMemberData} = useMembers();
-    const {retrieveStaffItem, handleFileUpload, handleStaffUpdate} = useStaff();
+    const {retrieveStaffById, handleFileUpload, handleStaffUpdate} = useStaff();
 
     const [staffDetails, setStaffDetails] = useState<StaffProps>();
+
+    const handleClose = () => {
+        onClose();
+    };
 
     useEffect(() => {
         if (!currentMemberData) return;
 
         setName(currentMemberData.name);
-        const retrievedStaff = retrieveStaffItem(currentMemberData.staff_id);
+        const retrievedStaff = retrieveStaffById(currentMemberData.staff_id);
 
         setStaffDetails(retrievedStaff);
-    }, [currentMemberData, retrieveStaffItem]);
+    }, [currentMemberData, retrieveStaffById]);
 
     const [name, setName] = useState<string>(currentMemberData?.name || "");
     const [bio, setBio] = useState<string>(staffDetails?.bio);
@@ -72,15 +77,23 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
             await handleStaffUpdate({...staffDetails, bio, profileImageUrl});
         }
 
-        onClose();
-    };
-
-    const handleClose = () => {
-        onClose();
+        handleClose();
     };
 
     return (
-        <Dialog fullWidth maxWidth={"sm"} open={isOpen} onClose={handleClose}>
+        <Dialog
+            fullWidth
+            maxWidth={"sm"}
+            open={isOpen}
+            onClose={handleClose}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: isOpen,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle className="text-center">Edit Profile</DialogTitle>
             <DialogContent className="flex flex-col items-center">
                 <Avatar

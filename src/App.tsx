@@ -15,6 +15,13 @@ import {ReservationsProvider} from "./providers/ReservationProvider";
 import {useLogin} from "./providers/LoginProvider";
 import {StaffProvider} from "./providers/StaffProvider";
 
+declare module "@mui/material" {
+    interface ModalComponentsPropsOverrides {
+        open: boolean;
+        onClose: () => void;
+    }
+}
+
 function App() {
     const location = useLocation();
     const {isLoggedIn} = useLogin();

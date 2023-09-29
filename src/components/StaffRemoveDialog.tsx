@@ -9,6 +9,7 @@ import {
     ListItem
 } from "@mui/material";
 import {useStaff} from "src/providers/StaffProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type StaffRemoveDialogProps = {
     open: boolean;
@@ -16,19 +17,35 @@ type StaffRemoveDialogProps = {
 };
 
 const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) => {
-    const {retrieveStaffItem, handleStaffDelete, staffRowSelectionModel} = useStaff();
+    const handleClose = () => {
+        onClose();
+    };
+
+    const {retrieveStaffById, handleStaffDelete, staffRowSelectionModel} = useStaff();
 
     const staffMembersToDelete = staffRowSelectionModel.map((id) =>
-        retrieveStaffItem(id.toString())
+        retrieveStaffById(id.toString())
     );
 
     async function handleConfirmDelete() {
         await handleStaffDelete(staffMembersToDelete);
-        onClose();
+        handleClose();
     }
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"xs"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"xs"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             {staffMembersToDelete.length > 0 && (
                 <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                     Confirm Deletion
@@ -50,7 +67,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
                     </List>
 
                     <DialogActions>
-                        <Button onClick={onClose} variant="contained" color="primary">
+                        <Button onClick={handleClose} variant="contained" color="primary">
                             Cancel
                         </Button>
                         <Button onClick={handleConfirmDelete} variant="contained" color="error">

@@ -47,12 +47,10 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
     };
 
     const handleOpenCopyEmail = () => {
-        // Display the Snackbar when the "Copy Email(s)" button is clicked
         setCopyEmailOpen(true);
     };
 
     const handleCloseCopyEmail = () => {
-        // Display the Snackbar when the "Copy Email(s)" button is clicked
         setCopyEmailOpen(false);
     };
 

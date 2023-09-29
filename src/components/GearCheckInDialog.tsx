@@ -9,6 +9,7 @@ import {
     ListItem
 } from "@mui/material";
 import {useGear} from "src/providers/GearProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type GearCheckInDialogProps = {
     open: boolean;
@@ -18,15 +19,31 @@ type GearCheckInDialogProps = {
 const GearCheckInDialog: React.FC<GearCheckInDialogProps> = ({open, onClose}) => {
     const {retrieveGearItem, handleGearCheckin, gearRowSelectionModel} = useGear();
 
+    const handleClose = () => {
+        onClose();
+    };
+
     const gearsToCheckIn = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 
     const handleConfirmCheckIn = async () => {
         await handleGearCheckin(gearsToCheckIn);
-        onClose();
+        handleClose();
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"xs"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"xs"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                 Confirm Check In
             </DialogTitle>
@@ -40,7 +57,7 @@ const GearCheckInDialog: React.FC<GearCheckInDialogProps> = ({open, onClose}) =>
             </List>
 
             <DialogActions>
-                <Button onClick={onClose} variant="contained" color="primary">
+                <Button onClick={handleClose} variant="contained" color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleConfirmCheckIn} variant="contained" color="primary">

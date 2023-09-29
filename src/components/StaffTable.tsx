@@ -2,6 +2,27 @@ import * as React from "react";
 import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
 import {capitalizeFirstLetter} from "src/utils/utils";
 import {useStaff} from "src/providers/StaffProvider";
+import {positionOptions} from "src/utils/constants";
+
+// Get weight for a single position
+const getPositionWeight = (position: string): number => {
+    const index = positionOptions.indexOf(position);
+    return index !== -1 ? positionOptions.length - index : 0; // Return 0 if position not found
+};
+
+// Get total weight for a row
+const getRowWeight = (positions: string[]): number => {
+    return positions.reduce((total, position) => total + getPositionWeight(position), 0);
+};
+
+// Comparator function for MUI DataGrid
+const positionsComparator = (v1: string[], v2: string[]): number => {
+    const weight1 = getRowWeight(v1);
+    const weight2 = getRowWeight(v2);
+    if (weight1 < weight2) return -1;
+    if (weight1 > weight2) return 1;
+    return 0;
+};
 
 const columns: GridColDef[] = [
     {field: "_id", headerName: "ID", width: 90},
@@ -33,7 +54,8 @@ const columns: GridColDef[] = [
         field: "positions",
         headerName: "Positions",
         width: 200,
-        valueGetter: (params) => params.row?.positions.join(", ") || "N/A" // Join positions array with commas
+        valueFormatter: (params) => (params.value ? params.value.join(", ") : "N/A"),
+        sortComparator: positionsComparator
     }
 ];
 
@@ -69,7 +91,7 @@ export default function StaffTable({searchParams}: StaffTableProps) {
                         }
                     },
                     sorting: {
-                        sortModel: [{field: "name", sort: "asc"}]
+                        sortModel: [{field: "positions", sort: "desc"}]
                     },
                     pagination: {
                         paginationModel: {page: 0, pageSize: 25}

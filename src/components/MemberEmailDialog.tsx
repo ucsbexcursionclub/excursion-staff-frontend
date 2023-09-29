@@ -4,6 +4,7 @@ import DialogContent from "@mui/material/DialogContent";
 import Typography from "@mui/material/Typography";
 import {useMembers} from "src/providers/MembersProvider";
 import TextField from "@mui/material/TextField";
+import {BlurBackDrop} from "./HelperComponents";
 
 type MemberEmailDialogProps = {
     open: boolean;
@@ -14,9 +15,23 @@ type MemberEmailDialogProps = {
 const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({open, onClose, screenwidth}) => {
     const {retrieveMemberItem, memberRowSelectionModel} = useMembers();
 
+    const handleClose = () => {
+        onClose();
+    };
+
     if (memberRowSelectionModel.length === 0) {
         return (
-            <Dialog open={open} onClose={onClose}>
+            <Dialog
+                open={open}
+                onClose={handleClose}
+                slots={{backdrop: BlurBackDrop}}
+                slotProps={{
+                    backdrop: {
+                        open: open,
+                        onClose: handleClose
+                    }
+                }}
+            >
                 <DialogContent>
                     <Typography>You must select a member to copy emails.</Typography>
                 </DialogContent>
@@ -34,7 +49,18 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({open, onClose, scr
     const maxWidth = `${(screenwidth / 100) * 80}vw`;
 
     return (
-        <Dialog open={open} onClose={onClose} style={{maxWidth}}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            style={{maxWidth}}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogContent>
                 <TextField
                     fullWidth

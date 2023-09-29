@@ -10,7 +10,7 @@ interface StaffContextProps {
     setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>;
     staffRowSelectionModel: GridRowSelectionModel;
     setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
-    retrieveStaffItem: (id: string) => StaffProps;
+    retrieveStaffById: (id: string) => StaffProps | null;
     retrieveStaffByMemberID: (memberID: string) => StaffProps | null;
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
@@ -58,12 +58,12 @@ const useStaffOperations = (
 
     const queryClient = useQueryClient();
 
-    const retrieveStaffItem = (id: string) => {
+    const retrieveStaffById = (id: string): StaffProps | null => {
         return staffData.filter((staff) => staff._id === id)[0];
     };
 
-    const retrieveStaffByMemberID = (memberID: string) => {
-        return staffData.find((staff) => staff.memberDetails?._id === memberID) || null;
+    const retrieveStaffByMemberID = (member_id: string): StaffProps | null => {
+        return staffData.filter((staff) => staff.member_id === member_id)[0];
     };
 
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
@@ -83,7 +83,6 @@ const useStaffOperations = (
     };
 
     const handleStaffAdd = async (newStaffData: NewStaffProps) => {
-        console.log("StaffProvider newStaffData:", newStaffData); //test
         const addedStaff = await addStaff(newStaffData);
 
         queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
@@ -111,7 +110,7 @@ const useStaffOperations = (
     return {
         handleStaffUpdate,
         handleFileUpload,
-        retrieveStaffItem,
+        retrieveStaffById,
         retrieveStaffByMemberID,
         handleStaffDelete,
         handleStaffAdd

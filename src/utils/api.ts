@@ -301,9 +301,6 @@ export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps>
     const copiedStaff = {...updatedStaff};
     delete copiedStaff.memberDetails;
 
-    console.log(copiedStaff); //test
-    console.log("id:", copiedStaff._id); //test
-
     const url = `${baseURL}/api/v1/staff/${copiedStaff._id}`;
 
     const response = await axios.patch(url, copiedStaff, {

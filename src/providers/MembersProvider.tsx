@@ -80,7 +80,6 @@ const useMembersOperations = (
     );
 
     useEffect(() => {
-        console.log("triggering");
         setCurrentMemberData(retrieveMemberItem(userId));
     }, [userId, retrieveMemberItem, setCurrentMemberData]);
 
@@ -101,7 +100,6 @@ const useMembersOperations = (
     };
 
     const handleMemberAdd = async (newMemberData: NewMemberProps) => {
-        newMemberData;
         const addedMember = await addMember(newMemberData);
 
         queryClient.setQueryData(["memberItem", addedMember._id], addedMember);

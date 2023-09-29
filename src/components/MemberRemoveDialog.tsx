@@ -9,6 +9,7 @@ import {
     ListItem
 } from "@mui/material";
 import {useMembers} from "src/providers/MembersProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type MemberRemoveDialogProps = {
     open: boolean;
@@ -16,17 +17,27 @@ type MemberRemoveDialogProps = {
 };
 
 const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) => {
+    const handleClose = () => {
+        onClose();
+    };
+
     const {retrieveMemberItem, handleMemberDelete, memberRowSelectionModel} = useMembers();
 
     const membersToDelete = memberRowSelectionModel.map((id) => retrieveMemberItem(id.toString()));
 
     async function handleConfirmDelete() {
         await handleMemberDelete(membersToDelete);
-        onClose();
+        handleClose();
     }
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"xs"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"xs"}
+            slots={{backdrop: BlurBackDrop}}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                 Confirm Deletion
             </DialogTitle>
@@ -40,7 +51,7 @@ const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) 
             </List>
 
             <DialogActions>
-                <Button onClick={onClose} variant="contained" color="primary">
+                <Button onClick={handleClose} variant="contained" color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleConfirmDelete} variant="contained" color="error">
