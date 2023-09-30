@@ -1,82 +1,89 @@
-import {Route, useLocation, Routes} from "react-router-dom";
 import React, {useEffect} from "react";
-import HomePage from "./pages/HomePage";
+import {Route, useLocation, Routes} from "react-router-dom";
 
-import "./index.css";
+// Pages
+import HomePage from "./pages/HomePage";
+import StaffPage from "./pages/StaffPage";
+import EditStaffPage from "./pages/EditStaffPage";
 import LinkPage from "./pages/LinksPage";
 import Layout from "components/Layout";
 import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+
+// Providers
 import {GearProvider} from "./providers/GearProvider";
 import {MembersProvider} from "./providers/MembersProvider";
 import {ReservationsProvider} from "./providers/ReservationProvider";
 import {useLogin} from "./providers/LoginProvider";
+import {StaffProvider} from "./providers/StaffProvider";
+
+function updateDocumentMetadata(pathname: string) {
+    const root = "Excursion Club - ";
+    const metaDescription = ""; // default empty
+
+    const titles: Record<string, string> = {
+        "/": root + "Home",
+        "/staff": root + "Staff",
+        "/links": root + "Links",
+        "/members": root + "Members",
+        "/gear": root + "Gear",
+        "/admin": root + "Admin"
+    };
+
+    const title = titles[pathname] || null;
+
+    if (title) {
+        document.title = title;
+    }
+
+    const metaDescriptionTag = document.querySelector(
+        'head > meta[name="description"]'
+    ) as HTMLMetaElement;
+    if (metaDescriptionTag) {
+        metaDescriptionTag.content = metaDescription;
+    }
+}
 
 function App() {
     const location = useLocation();
-    const {isLoggedIn} = useLogin();
+    const {identity} = useLogin();
 
     useEffect(() => {
-        updateDocumentMetadata(location.pathname, isLoggedIn);
-    }, [location.pathname, isLoggedIn]);
+        updateDocumentMetadata(location.pathname);
+    }, [location.pathname, identity]);
 
-    const updateDocumentMetadata = (pathname: string, loggedIn: boolean) => {
-        const root = "Excursion Club - ";
-        let title;
-        const metaDescription = ""; // default empty
-
-        if (pathname === "/") {
-            title = root + "Home";
-        } else if (loggedIn) {
-            switch (pathname) {
-                case "/links":
-                    title = root + "Links";
-                    break;
-                case "/members":
-                    title = root + "Members";
-                    break;
-                case "/gear":
-                    title = root + "Gear";
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        if (title) {
-            document.title = title;
-        }
-
-        const metaDescriptionTag = document.querySelector(
-            'head > meta[name="description"]'
-        ) as HTMLMetaElement;
-        if (metaDescriptionTag) {
-            metaDescriptionTag.content = metaDescription;
-        }
-    };
+    const isAdmin = identity?.role === "admin";
+    const isStaffOrAdmin = ["staff", "admin"].includes(identity?.role);
 
     return (
         <ReservationsProvider>
-            <MembersProvider>
-                <GearProvider>
-                    <Routes>
-                        <Route path="/" element={<Layout />}>
-                            <Route index element={<HomePage />} />
-                            {isLoggedIn ? (
-                                <>
-                                    <Route path="links/*" element={<LinkPage />} />
-                                    <Route path="members" element={<MembersPage />} />
-                                    <Route path="gear" element={<GearPage />} />
-                                </>
-                            ) : (
+            <StaffProvider>
+                <MembersProvider>
+                    <GearProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<HomePage />} />
+                                <Route path="staff" element={<StaffPage />} />
+
+                                {isStaffOrAdmin && (
+                                    <>
+                                        <Route path="links/*" element={<LinkPage />} />
+                                        <Route path="members" element={<MembersPage />} />
+                                        <Route path="gear" element={<GearPage />} />
+                                    </>
+                                )}
+
+                                {isAdmin && <Route path="editstaff" element={<EditStaffPage />} />}
+
                                 <Route path="*" element={<UnauthorizedPage />} />
-                            )}
-                        </Route>
-                    </Routes>
-                </GearProvider>
-            </MembersProvider>
+                            </Route>
+                        </Routes>
+                    </GearProvider>
+                </MembersProvider>
+            </StaffProvider>
         </ReservationsProvider>
     );
 }
+
 export default App;

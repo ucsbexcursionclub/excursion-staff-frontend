@@ -23,9 +23,11 @@ interface GearContextProps {
 const useGearState = () => {
     const queryClient = useQueryClient();
     const [gearData, setGearData] = useState<GearProps[]>([]);
-    const {isLoggedIn} = useLogin();
+    const {identity} = useLogin();
 
-    const {data: fetchGearData} = useQuery("gear", getGear, {enabled: isLoggedIn});
+    const {data: fetchGearData} = useQuery("gear", getGear, {
+        enabled: ["admin", "staff"].includes(identity?.role)
+    });
 
     useEffect(() => {
         if (fetchGearData) {

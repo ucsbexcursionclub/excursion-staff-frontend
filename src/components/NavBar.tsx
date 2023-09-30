@@ -1,19 +1,24 @@
-import React from "react";
+import React, {useState} from "react";
 import {Link} from "react-router-dom";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
+import {
+    AppBar,
+    Box,
+    Toolbar,
+    IconButton,
+    Typography,
+    Menu,
+    MenuItem,
+    Container,
+    Button
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
-import Button from "@mui/material/Button";
-import MenuItem from "@mui/material/MenuItem";
 import LoginButton from "./LoginButton";
 import {useLogin} from "src/providers/LoginProvider";
 
-const baseTabs = [{label: "Home", href: "/"}];
+const baseTabs = [
+    {label: "Home", href: "/"},
+    {label: "Staff", href: "/staff"}
+];
 
 const loggedInTabs = [
     {label: "Links", href: "/links"},
@@ -21,12 +26,43 @@ const loggedInTabs = [
     {label: "Gear", href: "/gear"}
 ];
 
+const adminTabs = [{label: "Admin", href: "/editstaff"}];
+
+function determineTabs(identityRole: string | undefined) {
+    let tabs = [...baseTabs];
+
+    if (identityRole === "staff" || identityRole === "admin") {
+        tabs = [...tabs, ...loggedInTabs];
+    }
+
+    if (identityRole === "admin") {
+        tabs = [...tabs, ...adminTabs];
+    }
+
+    return tabs;
+}
+
+const NavMenu: React.FC<{tabs: typeof baseTabs}> = ({tabs}) => (
+    <>
+        {tabs.map((tab) => (
+            <Button
+                key={tab.label}
+                component={Link}
+                to={tab.href}
+                className="text-xl"
+                sx={{my: 2, color: "white", display: "block"}}
+            >
+                {tab.label}
+            </Button>
+        ))}
+    </>
+);
+
 function NavBar() {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+    const {identity} = useLogin();
 
-    const {isLoggedIn} = useLogin();
-
-    const tabs = isLoggedIn ? [...baseTabs, ...loggedInTabs] : baseTabs;
+    const tabs = determineTabs(identity?.role);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -54,20 +90,12 @@ function NavBar() {
                         <Menu
                             id="menu-navbar"
                             anchorEl={anchorElNav}
-                            anchorOrigin={{
-                                vertical: "bottom",
-                                horizontal: "left"
-                            }}
+                            anchorOrigin={{vertical: "bottom", horizontal: "left"}}
                             keepMounted
-                            transformOrigin={{
-                                vertical: "top",
-                                horizontal: "left"
-                            }}
+                            transformOrigin={{vertical: "top", horizontal: "left"}}
                             open={Boolean(anchorElNav)}
                             onClose={handleCloseNavMenu}
-                            sx={{
-                                display: {xs: "block", md: "none"}
-                            }}
+                            sx={{display: {xs: "block", md: "none"}}}
                         >
                             {tabs.map((tab) => (
                                 <MenuItem
@@ -82,17 +110,7 @@ function NavBar() {
                         </Menu>
                     </Box>
                     <Box sx={{display: {xs: "none", md: "flex"}}}>
-                        {tabs.map((tab) => (
-                            <Button
-                                key={tab.label}
-                                component={Link}
-                                to={tab.href}
-                                className="text-xl"
-                                sx={{my: 2, color: "white", display: "block"}}
-                            >
-                                {tab.label}
-                            </Button>
-                        ))}
+                        <NavMenu tabs={tabs} />
                     </Box>
                     <img
                         src="https://d36olvmp8krees.cloudfront.net/resources/excursionclublogo_invert.png"

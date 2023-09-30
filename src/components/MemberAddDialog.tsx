@@ -16,7 +16,7 @@ import Box from "@mui/material/Box";
 import {useMembers} from "src/providers/MembersProvider";
 import {MemberProps} from "src/utils/types";
 import MembersAutoComplete from "./MembersAutoComplete";
-import {useLogin} from "src/providers/LoginProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 interface MemberAddDialog {
     open: boolean;
@@ -48,11 +48,17 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {user} = useLogin();
+    const {
+        handleMemberAdd,
+        membersData,
+        handleMemberUpdate,
+        retrieveMemberItem,
+        currentMemberData
+    } = useMembers();
 
     React.useEffect(() => {
-        setSignedStaff(user);
-    }, [user]);
+        setSignedStaff(currentMemberData);
+    }, [currentMemberData]);
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
@@ -161,8 +167,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
         return errorMessage;
     };
-
-    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
 
     const handleSubmit = async () => {
         setValidationEnabled(true);
@@ -332,176 +336,171 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     };
 
     return (
-        <div style={{position: "relative"}}>
-            {open && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
-                        backdropFilter: "blur(5px)" // Add blur effect
-                    }}
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
+            <DialogTitle>
+                Please fill in the following information to sign up
+                <Button
+                    onClick={handleClose}
+                    style={{position: "absolute", top: 0, right: 0}} // Add close button (X) at top right corner
+                >
+                    X
+                </Button>
+            </DialogTitle>
+            <DialogContent>
+                <DialogContentText>Have you filled out the waiver?</DialogContentText>
+                <img
+                    alt="QR Code"
+                    src="http://d36olvmp8krees.cloudfront.net/resources/icons/qr-code-waiver.png"
+                    style={{width: "100px", height: "100px"}}
                 />
-            )}
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>
-                    Please fill in the following information to sign up
-                    <Button
-                        onClick={handleClose}
-                        style={{position: "absolute", top: 0, right: 0}} // Add close button (X) at top right corner
-                    >
-                        X
-                    </Button>
-                </DialogTitle>
-                <DialogContent>
-                    <DialogContentText>Have you filled out the waiver?</DialogContentText>
-                    <img
-                        alt="QR Code"
-                        src="http://d36olvmp8krees.cloudfront.net/resources/icons/qr-code-waiver.png"
-                        style={{width: "100px", height: "100px"}}
-                    />
-                    <RadioGroup row name="isMember" value={hasWaiver} onChange={handleHasWaiver}>
-                        <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                        <FormControlLabel value="no" control={<Radio />} label="No" />
-                    </RadioGroup>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="name"
-                        label="Full Name"
-                        type="text"
-                        fullWidth
-                        variant="standard"
-                        value={fullName}
-                        onChange={handleFullNameChange}
-                        error={validationEnabled && !!fullNameError}
-                        helperText={validationEnabled ? fullNameError || "" : ""}
-                        required
-                        aria-required="true"
-                    />
-                    <TextField
-                        margin="dense"
-                        id="email"
-                        label="Email Address"
-                        type="email"
-                        fullWidth
-                        variant="standard"
-                        value={email}
-                        onChange={handleEmailChange}
-                        error={emailError !== null}
-                        helperText={emailError || ""}
-                        required
-                        aria-required="true"
-                    />
-                    <TextField
-                        margin="dense"
-                        id="reEnterEmail"
-                        label="Re-enter Email"
-                        type="email"
-                        fullWidth
-                        variant="standard"
-                        value={reEnterEmail}
-                        onChange={handleReEnterEmailChange}
-                        error={emailError !== null}
-                        helperText={emailError || ""}
-                        required
-                        aria-required="true"
-                    />
-                    <TextField
-                        margin="dense"
-                        id="phoneNumber"
-                        label="Phone Number"
-                        type="tel"
-                        fullWidth
-                        variant="standard"
-                        value={phoneNumber}
-                        onChange={handlePhoneNumberChange}
-                        error={!!phoneNumberError}
-                        helperText={phoneNumberError || ""}
-                        required
-                        aria-required="true"
-                    />
-                    <TextField
-                        margin="dense"
-                        id="stokedLevel"
-                        label="How Stoked Are You?"
-                        type="text"
-                        onChange={handleStokedLevelChange}
-                        fullWidth
-                        variant="standard"
-                        value={stokedLevel}
-                    />
+                <RadioGroup row name="isMember" value={hasWaiver} onChange={handleHasWaiver}>
+                    <FormControlLabel value="yes" control={<Radio />} label="Yes" />
+                    <FormControlLabel value="no" control={<Radio />} label="No" />
+                </RadioGroup>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="name"
+                    label="Full Name"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    value={fullName}
+                    onChange={handleFullNameChange}
+                    error={validationEnabled && !!fullNameError}
+                    helperText={validationEnabled ? fullNameError || "" : ""}
+                    required
+                    aria-required="true"
+                />
+                <TextField
+                    margin="dense"
+                    id="email"
+                    label="Email Address"
+                    type="email"
+                    fullWidth
+                    variant="standard"
+                    value={email}
+                    onChange={handleEmailChange}
+                    error={emailError !== null}
+                    helperText={emailError || ""}
+                    required
+                    aria-required="true"
+                />
+                <TextField
+                    margin="dense"
+                    id="reEnterEmail"
+                    label="Re-enter Email"
+                    type="email"
+                    fullWidth
+                    variant="standard"
+                    value={reEnterEmail}
+                    onChange={handleReEnterEmailChange}
+                    error={emailError !== null}
+                    helperText={emailError || ""}
+                    required
+                    aria-required="true"
+                />
+                <TextField
+                    margin="dense"
+                    id="phoneNumber"
+                    label="Phone Number"
+                    type="tel"
+                    fullWidth
+                    variant="standard"
+                    value={phoneNumber}
+                    onChange={handlePhoneNumberChange}
+                    error={!!phoneNumberError}
+                    helperText={phoneNumberError || ""}
+                    required
+                    aria-required="true"
+                />
+                <TextField
+                    margin="dense"
+                    id="stokedLevel"
+                    label="How Stoked Are You?"
+                    type="text"
+                    onChange={handleStokedLevelChange}
+                    fullWidth
+                    variant="standard"
+                    value={stokedLevel}
+                />
 
-                    <FormControl component="fieldset" style={{marginTop: "16px"}}>
-                        <FormLabel>Membership Status</FormLabel>
-                        <RadioGroup
-                            row
-                            name="membershipStatus"
-                            value={membershipStatus}
-                            onChange={handleMembershipStatusChange}
-                        >
-                            <FormControlLabel
-                                value="newMember"
-                                control={<Radio />}
-                                label="New Member"
-                            />
-                            <FormControlLabel
-                                value="returningMember"
-                                control={<Radio />}
-                                label="Returning Member"
-                            />
-                        </RadioGroup>
-                    </FormControl>
-                    <FormControl component="fieldset">
-                        <FormLabel style={{marginBottom: "8px"}}>Membership Duration</FormLabel>
-                        <RadioGroup
-                            row
-                            name="membershipDuration"
-                            value={membershipDuration}
-                            onChange={handleMembershipDurationChange}
-                        >
-                            <FormControlLabel value="90" control={<Radio />} label="90 days" />
-                            <FormControlLabel value="180" control={<Radio />} label="180 days" />
-                            <FormControlLabel value="365" control={<Radio />} label="365 days" />
-                        </RadioGroup>
-                    </FormControl>
-                    <Box sx={{my: 2, border: "1px solid black", p: 2}}>
-                        <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
-                            For Staff Use Only:
-                        </DialogContentText>
-                        <MembersAutoComplete
-                            overrideLabel={"Select a staff"}
-                            setMemberVal={setSignedStaff}
-                            memberVal={signedStaff}
+                <FormControl component="fieldset" style={{marginTop: "16px"}}>
+                    <FormLabel>Membership Status</FormLabel>
+                    <RadioGroup
+                        row
+                        name="membershipStatus"
+                        value={membershipStatus}
+                        onChange={handleMembershipStatusChange}
+                    >
+                        <FormControlLabel
+                            value="newMember"
+                            control={<Radio />}
+                            label="New Member"
                         />
-                        <div>
-                            <p>Has this member paid you {calculatePrice()}?</p>
-                            <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>
-                                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                                <FormControlLabel value="no" control={<Radio />} label="No" />
-                            </RadioGroup>
-                        </div>
-                    </Box>
-                    {submitErrorMessage && (
-                        <Alert severity="error" sx={{mt: 2}}>
-                            {submitErrorMessage}
-                        </Alert>
-                    )}
-                    {successMessage && (
-                        <Alert severity="success" sx={{mt: 2}}>
-                            {successMessage}
-                        </Alert>
-                    )}
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleRenew}>Renew</Button>
-                    <Button onClick={handleSubmit}>Sign Up</Button>
-                </DialogActions>
-            </Dialog>
-        </div>
+                        <FormControlLabel
+                            value="returningMember"
+                            control={<Radio />}
+                            label="Returning Member"
+                        />
+                    </RadioGroup>
+                </FormControl>
+                <FormControl component="fieldset">
+                    <FormLabel style={{marginBottom: "8px"}}>Membership Duration</FormLabel>
+                    <RadioGroup
+                        row
+                        name="membershipDuration"
+                        value={membershipDuration}
+                        onChange={handleMembershipDurationChange}
+                    >
+                        <FormControlLabel value="90" control={<Radio />} label="90 days" />
+                        <FormControlLabel value="180" control={<Radio />} label="180 days" />
+                        <FormControlLabel value="365" control={<Radio />} label="365 days" />
+                    </RadioGroup>
+                </FormControl>
+                <Box sx={{my: 2, border: "1px solid black", p: 2}}>
+                    <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
+                        For Staff Use Only:
+                    </DialogContentText>
+                    <MembersAutoComplete
+                        overrideLabel={"Select a staff"}
+                        setMemberVal={setSignedStaff}
+                        memberVal={signedStaff}
+                    />
+                    <div>
+                        <p>Has this member paid you {calculatePrice()}?</p>
+                        <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>
+                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
+                            <FormControlLabel value="no" control={<Radio />} label="No" />
+                        </RadioGroup>
+                    </div>
+                </Box>
+                {submitErrorMessage && (
+                    <Alert severity="error" sx={{mt: 2}}>
+                        {submitErrorMessage}
+                    </Alert>
+                )}
+                {successMessage && (
+                    <Alert severity="success" sx={{mt: 2}}>
+                        {successMessage}
+                    </Alert>
+                )}
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={handleRenew}>Renew</Button>
+                <Button onClick={handleSubmit}>Sign Up</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import {MemberProps} from "src/utils/types";
 import {useMembers} from "src/providers/MembersProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type MemberDetailsDialogProps = {
     open: boolean;
@@ -24,6 +25,10 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
     const [notes, setNotes] = useState(member?.notes || "");
     const [initialNotes, setInitialNotes] = useState(member?.notes || "");
     const {handleMemberUpdate} = useMembers();
+
+    const handleClose = () => {
+        onClose();
+    };
 
     useEffect(() => {
         setNotes(member?.notes || "");
@@ -47,7 +52,20 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
     if (!member) return null;
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"sm"} scroll={"paper"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"sm"}
+            scroll={"paper"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{member.name} Details</DialogTitle>
             <Box sx={{borderBottom: 1, borderColor: "divider"}}></Box>
             <DialogContent dividers={true}>
@@ -110,7 +128,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                 </List>
             </DialogContent>
             <DialogActions>
-                <Button onClick={onClose} color="primary">
+                <Button onClick={handleClose} color="primary">
                     Close
                 </Button>
             </DialogActions>

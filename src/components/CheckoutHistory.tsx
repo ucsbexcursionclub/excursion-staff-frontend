@@ -44,8 +44,6 @@ export default function CheckoutHistory({gearId}: CheckoutHistoryProps) {
     useEffect(() => {
         const retrievedReservations = retrieveReservationsByGearId(gearId).reverse();
 
-        console.log(retrievedReservations);
-
         setReservations(retrievedReservations);
     }, [gearId, retrieveReservationsByGearId]);
 

@@ -20,10 +20,11 @@ const merchImageUrls = [
 ];
 
 export default function HomePage() {
-    const [bigFontSize, setBigFontSize] = useState("24px"); // Initial font size
-    const [medFontSize, setMedFontSize] = useState("18"); // Initial font size
-    const [columns, setColumns] = useState(4); // Initial number of columns
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth); // Initialize with the current window width
+    const [bigFontSize, setBigFontSize] = useState("24px");
+    const [medFontSize, setMedFontSize] = useState("18");
+    const [smallFontSize, setSmallFontSize] = useState("18");
+    const [columns, setColumns] = useState(4);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
     useEffect(() => {
         const handleResize = () => {
@@ -31,7 +32,16 @@ export default function HomePage() {
         };
 
         window.addEventListener("resize", handleResize);
+        // Check if the screenWidth is less than 720
+        if (screenWidth < 720) {
+            const smallCalculatedFontSize = `${(screenWidth / 40).toFixed(0)}px`;
+            setSmallFontSize(smallCalculatedFontSize);
+        } else {
+            // Set a fixed font size when screenWidth is 720 or greater
+            setSmallFontSize("18px");
+        }
 
+        // Calculate and set the big font size
         const bigCalculatedFontSize = `${(screenWidth / 15).toFixed(0)}px`;
         setBigFontSize(bigCalculatedFontSize);
 
@@ -86,7 +96,7 @@ export default function HomePage() {
 
     const paragraphStyle = {
         margin: "16px",
-        fontSize: `${parseInt(medFontSize) - 4}px`
+        fontSize: smallFontSize
     };
 
     const asteriskNoteStyle = {
@@ -96,7 +106,7 @@ export default function HomePage() {
 
     const liStyle = {
         marginBottom: "10px",
-        fontSize: `${parseInt(medFontSize) - 4}px`
+        fontSize: smallFontSize
     };
 
     return (
@@ -104,8 +114,9 @@ export default function HomePage() {
             <ImageContainer // https://d36olvmp8krees.cloudfront.net/resources/homePageTop1.png
                 imgurl="https://d36olvmp8krees.cloudfront.net/resources/rockJump.png"
                 bigFontSize={bigFontSize}
+                textInput="We Do it Outdoors"
             />
-            <StokedDefinitionCard />
+            <StokedDefinitionCard fontsize={smallFontSize} />
             <Card sx={cardStyle} square>
                 <CardContent
                     style={{
@@ -116,11 +127,11 @@ export default function HomePage() {
                         paddingLeft: "15px"
                     }}
                 >
-                    <div>
+                    <Typography variant="body2">
                         <Typography
                             variant="body2"
                             style={{
-                                fontSize: `${parseInt(medFontSize) + 1}px`,
+                                fontSize: `${parseInt(smallFontSize) + 5}px`,
                                 fontWeight: "bold",
                                 color: "black",
                                 paddingRight: "15px",
@@ -137,9 +148,9 @@ export default function HomePage() {
                             those who already enjoy the outdoors, as well as provide those with
                             little to no outdoor experience with the knowledge, resources,
                             opportunities, and support to step outside of their comfort zone and
-                            experience the great outdoors they’ve been missing out on.
+                            experience the great outdoors.
                         </p>
-                    </div>
+                    </Typography>
                     <iframe
                         width={`${screenWidth * 0.9}px`}
                         height={`${0.5625 * (screenWidth * 0.9)}px`}
@@ -154,11 +165,11 @@ export default function HomePage() {
             </Card>
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <div>
+                    <Typography variant="body2">
                         <Typography
                             variant="body2"
                             style={{
-                                fontSize: `${parseInt(medFontSize) + 1}px`,
+                                fontSize: `${parseInt(smallFontSize) + 5}px`,
                                 fontWeight: "bold",
                                 color: "white"
                             }}
@@ -176,25 +187,35 @@ export default function HomePage() {
                             <br />
                             <br />
                             In the 2022-2023 academic year, we led an average of{" "}
-                            <strong>27 trips per week!</strong>
+                            <span
+                                style={{
+                                    fontSize: `${parseInt(smallFontSize) + 2}px`,
+                                    fontWeight: "bold"
+                                }}
+                            >
+                                27 trips per week!
+                            </span>
                         </p>
                         <p style={paragraphStyle}>
                             In addition to weekly trips, we have gear and equipment rentals
                             available to our members for free. All gear and equipment has limited
                             availability, and members are allowed to check them out for a limited
-                            time on a first-come, first-serve basis.
+                            time on a first-come, first-serve basis. Members can come check out gear
+                            every Wednesday and Thursday from 4-6pm at 1026 Camino Lindo during the
+                            academic year or during the summer quarter on Mondays from 7-8pm. Below
+                            is all the gear we offer for rental:
                         </p>
-                    </div>
+                    </Typography>
                 </CardContent>
             </Card>
             <GearGrid columns={columns} labelFontSize={parseInt(medFontSize)} />
             <Card sx={cardStyle} square>
                 <CardContent>
-                    <div>
+                    <Typography variant="body2">
                         <Typography
                             variant="body2"
                             style={{
-                                fontSize: `${parseInt(medFontSize) + 1}px`,
+                                fontSize: `${parseInt(smallFontSize) + 5}px`,
                                 fontWeight: "bold",
                                 color: "black"
                             }}
@@ -217,18 +238,18 @@ export default function HomePage() {
                             this site or DM us on instagram (@excursionclubucsb) and we will find a
                             time to sign you up!
                         </p>
-                    </div>
+                    </Typography>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
             </Card>
             <ResponsiveImageRow imageUrls={merchImageUrls} screenWidth={screenWidth} />
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <div>
+                    <Typography variant="body2">
                         <Typography
                             variant="body2"
                             style={{
-                                fontSize: `${parseInt(medFontSize) + 1}px`,
+                                fontSize: `${parseInt(smallFontSize) + 5}px`,
                                 fontWeight: "bold",
                                 color: "white"
                             }}
@@ -245,7 +266,7 @@ export default function HomePage() {
                             <li>Hats - $15</li>
                             <li>Headlamps - $5</li>
                         </ul>
-                    </div>
+                    </Typography>
                     <p style={paragraphStyle}>
                         If your question is not answered on this page, send it to us using the form
                         above or by emailing us directly at info@excursionclubucsb.org
@@ -257,19 +278,28 @@ export default function HomePage() {
                     <Typography
                         variant="body2"
                         style={{
-                            fontSize: `${parseInt(medFontSize) + 1}px`,
+                            fontSize: `${parseInt(smallFontSize) + 5}px`,
                             fontWeight: "bold",
                             color: "black"
                         }}
                     >
                         FAQ
                     </Typography>
-                    <FAQAccordion fontSize={`${parseInt(medFontSize) - 4}px`} />
+                    <FAQAccordion fontSize={smallFontSize} />
                 </CardContent>
             </Card>
             <Card sx={cardStyle} square>
                 <CardContent>
-                    <FeedbackForm fontSize={`${parseInt(medFontSize) - 6}px`} />
+                    <Typography
+                        variant="body2"
+                        style={{
+                            fontSize: `${parseInt(medFontSize) + 1}px`,
+                            fontWeight: "bold",
+                            color: "black"
+                        }}
+                    ></Typography>
+                    <FeedbackForm fontSize={smallFontSize} />{" "}
+                    {/* Use the FeedbackForm component here */}
                 </CardContent>
             </Card>
         </div>

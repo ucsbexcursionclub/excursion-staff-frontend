@@ -20,10 +20,10 @@ interface ReservationsContextProps {
 const useReservationsState = () => {
     const queryClient = useQueryClient();
     const [reservationsData, setReservationsData] = useState<ReservationProps[]>([]);
-    const {isLoggedIn} = useLogin();
+    const {identity} = useLogin();
 
     const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
-        enabled: isLoggedIn
+        enabled: ["admin", "staff"].includes(identity?.role)
     });
 
     useEffect(() => {

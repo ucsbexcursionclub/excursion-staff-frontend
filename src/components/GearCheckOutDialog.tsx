@@ -12,6 +12,7 @@ import {
 import MembersAutoComplete from "./MembersAutoComplete";
 import {MemberProps} from "src/utils/types";
 import {useGear} from "src/providers/GearProvider";
+import {BlurBackDrop} from "./HelperComponents";
 
 type GearCheckOutDialogProps = {
     open: boolean;
@@ -36,17 +37,33 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
 
     const [error, setError] = useState<boolean>(false);
 
+    const handleClose = () => {
+        onClose();
+    };
+
     const handleConfirmCheckOut = async () => {
         if (selectedMember) {
             await handleGearCheckout(selectedMember, gearsToCheckOut);
-            onClose();
+            handleClose();
         } else {
             setError(true);
         }
     };
 
     return (
-        <Dialog open={open} onClose={onClose} fullWidth={true} maxWidth={"xs"}>
+        <Dialog
+            open={open}
+            onClose={handleClose}
+            fullWidth={true}
+            maxWidth={"xs"}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
             <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                 Check Out Gear
             </DialogTitle>
@@ -74,7 +91,7 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
             </DialogContent>
 
             <DialogActions>
-                <Button onClick={onClose} variant="contained" color="primary">
+                <Button onClick={handleClose} variant="contained" color="primary">
                     Cancel
                 </Button>
                 <Button onClick={handleConfirmCheckOut} variant="contained" color="primary">

@@ -1,7 +1,16 @@
 import React from "react";
 import Backdrop from "@mui/material/Backdrop";
 
-const BlurBackDrop = ({open, handleClose}) => {
+type BlurBackDropProps = {
+    open: boolean;
+    onClose: () => void;
+};
+
+const BlurBackDrop = ({open, onClose}: BlurBackDropProps) => {
+    const handleClose = () => {
+        onClose();
+    };
+
     return (
         <Backdrop
             className="backdrop-blur-md"
