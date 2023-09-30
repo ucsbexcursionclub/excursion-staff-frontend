@@ -5,6 +5,7 @@ import StaffCard from "./StaffCard"; // Import your StaffCard component
 import {useStaff} from "src/providers/StaffProvider";
 
 const StaffGrid: React.FC = () => {
+    //TODO: extract this to some safe function where we just pull staff information like name, email, bio
     const {staffData} = useStaff();
 
     const positionsWeights = {

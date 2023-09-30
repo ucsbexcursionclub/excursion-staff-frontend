@@ -1,11 +1,12 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {verifyAccessToken, verifyJWTToken} from "src/utils/api";
+import {IdentityProps} from "src/utils/types";
 import Cookies from "universal-cookie";
 
 type LoginContextType = {
     isLoggedIn: boolean;
     isAdmin: boolean;
-    userId: string | null;
+    identity: IdentityProps | null;
     verifyJWT: () => Promise<boolean>;
     login: (accessToken: string) => Promise<void>;
     isFetching: boolean;
@@ -16,16 +17,16 @@ const LoginContext = createContext<LoginContextType | undefined>(undefined);
 export function LoginProvider({children}: {children: React.ReactNode}) {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
-    const [userId, setUserId] = useState<string | null>(null);
+    const [identity, setIdentity] = useState<IdentityProps | null>(null);
 
     const verifyJWT = useCallback(async () => {
         const jwt = new Cookies().get("jwt");
         if (jwt) {
             setIsFetching(true);
-            const retrievedUserId = await verifyJWTToken(jwt);
+            const retrievedIdentity = await verifyJWTToken(jwt);
             setIsFetching(false);
-            if (retrievedUserId) {
-                setUserId(retrievedUserId);
+            if (retrievedIdentity) {
+                setIdentity(retrievedIdentity);
                 setIsLoggedIn(true);
                 return true;
             } else {
@@ -41,18 +42,19 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
 
     const login = async (accessToken: string) => {
         setIsFetching(true);
-        const decodedJWT = await verifyAccessToken(accessToken);
+        const userIdentity = await verifyAccessToken(accessToken);
         setIsFetching(false);
-        if (!decodedJWT.userId) return null;
-
-        setUserId(decodedJWT.userId);
+        if (!userIdentity) return null;
+        setIdentity(userIdentity);
         setIsLoggedIn(true);
     };
 
     const isAdmin = true;
 
     return (
-        <LoginContext.Provider value={{isLoggedIn, isAdmin, userId, verifyJWT, login, isFetching}}>
+        <LoginContext.Provider
+            value={{isLoggedIn, isAdmin, identity, verifyJWT, login, isFetching}}
+        >
             {children}
         </LoginContext.Provider>
     );

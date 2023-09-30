@@ -1,3 +1,5 @@
+import {IdentityProps} from "./types";
+
 export function capitalizeFirstLetter(str: string) {
     return str
         .split(" ") // Split string by space
@@ -19,4 +21,13 @@ export function parseJwt(token: string) {
     );
 
     return JSON.parse(jsonPayload);
+}
+
+export function isIdentityProps(obj: any): obj is IdentityProps {
+    return (
+        obj &&
+        typeof obj.member_id === "string" &&
+        typeof obj._id === "string" &&
+        (obj.role === "user" || obj.role === "staff" || obj.role === "admin")
+    );
 }

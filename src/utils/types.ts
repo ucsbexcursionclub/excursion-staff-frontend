@@ -12,6 +12,12 @@ export type MemberProps = {
     staff_id?: string;
 };
 
+export type IdentityProps = {
+    member_id: string;
+    _id: string;
+    role: "user" | "staff" | "admin";
+};
+
 export type StaffProps = {
     _id: string;
     member_id: string;
@@ -19,6 +25,7 @@ export type StaffProps = {
     positions: string[];
     profileImageUrl: string;
     bio: string;
+    role?: IdentityProps["role"];
 };
 
 export type NewMemberProps = Omit<
@@ -26,10 +33,7 @@ export type NewMemberProps = Omit<
     "_id" | "membership_expiration_date" | "join_datetime" | "notes"
 >;
 
-export type NewStaffProps = {
-    positions: string[];
-    member_id: string;
-};
+export type NewStaffProps = Partial<StaffProps>;
 
 export type GearProps = {
     _id: string;

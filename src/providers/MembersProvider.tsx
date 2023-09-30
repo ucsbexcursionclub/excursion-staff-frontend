@@ -4,6 +4,7 @@ import {useQuery, useQueryClient} from "react-query";
 import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
 import {MemberProps, NewMemberProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
+import {useStaff} from "./StaffProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
@@ -21,9 +22,11 @@ const useMembersState = () => {
     const queryClient = useQueryClient();
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
     const [currentMemberData, setCurrentMemberData] = useState<MemberProps | null>();
-    const {isLoggedIn} = useLogin();
+    const {identity} = useLogin();
 
-    const {data: fetchMembersData} = useQuery("members", getMembers, {enabled: isLoggedIn});
+    const {data: fetchMembersData} = useQuery("members", getMembers, {
+        enabled: ["admin", "staff"].includes(identity?.role)
+    });
 
     useEffect(() => {
         if (fetchMembersData) {
@@ -49,7 +52,10 @@ const useMembersOperations = (
 ) => {
     const queryClient = useQueryClient();
 
-    const {userId} = useLogin();
+    const {identity} = useLogin();
+
+    //TODO: don't allow staff to be deleted from members table.
+    const {retrieveStaffById, handleStaffDelete} = useStaff();
 
     const recomputeAggregatedMembers = () => {
         const aggregatedMembers = queryClient
@@ -80,15 +86,21 @@ const useMembersOperations = (
     );
 
     useEffect(() => {
-        setCurrentMemberData(retrieveMemberItem(userId));
-    }, [userId, retrieveMemberItem, setCurrentMemberData]);
+        if (!identity) return;
+        setCurrentMemberData(retrieveMemberItem(identity.member_id));
+    }, [identity, retrieveMemberItem, setCurrentMemberData]);
 
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);
+        const associatedStaff = selectedMembers
+            .filter((member) => member.staff_id)
+            .map((member) => retrieveStaffById(member.staff_id));
 
         setMemberRowSelectionModel([]);
 
         await deleteMembers(memberIds);
+
+        await handleStaffDelete(associatedStaff);
 
         await Promise.all(
             memberIds.map(async (id) => {

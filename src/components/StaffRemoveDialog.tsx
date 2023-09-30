@@ -57,13 +57,15 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
             ) : (
                 <>
                     <List sx={{pt: 0, px: 2}}>
-                        {staffMembersToDelete.map((staffMember) => (
-                            <ListItem key={staffMember._id}>
-                                <Typography color="textSecondary">
-                                    {staffMember.memberDetails.name}
-                                </Typography>
-                            </ListItem>
-                        ))}
+                        {staffMembersToDelete.map((staffMember) => {
+                            return (
+                                <ListItem key={staffMember._id}>
+                                    <Typography color="textSecondary">
+                                        {staffMember.memberDetails.name}
+                                    </Typography>
+                                </ListItem>
+                            );
+                        })}
                     </List>
 
                     <DialogActions>

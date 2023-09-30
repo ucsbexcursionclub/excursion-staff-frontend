@@ -21,10 +21,10 @@ interface StaffContextProps {
 const useStaffState = () => {
     const queryClient = useQueryClient();
     const [staffData, setStaffData] = useState<StaffProps[]>([]);
-    const {isLoggedIn} = useLogin();
+    const {identity} = useLogin();
 
     const {data: fetchStaffData} = useQuery("staff", getStaff, {
-        enabled: isLoggedIn
+        enabled: ["admin", "staff"].includes(identity?.role)
     });
 
     useEffect(() => {

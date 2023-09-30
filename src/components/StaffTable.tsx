@@ -12,6 +12,7 @@ const getPositionWeight = (position: string): number => {
 
 // Get total weight for a row
 const getRowWeight = (positions: string[]): number => {
+    if (!positions) return;
     return positions.reduce((total, position) => total + getPositionWeight(position), 0);
 };
 

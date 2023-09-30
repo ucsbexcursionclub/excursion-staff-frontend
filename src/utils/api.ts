@@ -6,12 +6,13 @@ import {
     ReservationProps,
     NewMemberProps,
     StaffProps,
-    NewStaffProps
+    NewStaffProps,
+    IdentityProps
 } from "./types";
 import axios from "axios";
 
 import Cookies from "universal-cookie";
-import {parseJwt} from "./utils";
+import {isIdentityProps, parseJwt} from "./utils";
 const cookies = new Cookies();
 
 const baseURL =
@@ -205,13 +206,7 @@ export async function endReservations(reservationIds: string[]) {
     return response.data.data;
 }
 
-type DecodedJWTProps = {
-    exp: number;
-    iat: number;
-    userId: string;
-};
-
-export const verifyAccessToken = async (accessToken: string): Promise<DecodedJWTProps | null> => {
+export const verifyAccessToken = async (accessToken: string): Promise<IdentityProps | null> => {
     try {
         const response = await axios.post(`${baseURL}/api/v1/auth/google`, {
             access_token: accessToken // Send access_token to backend
@@ -230,27 +225,45 @@ export const verifyAccessToken = async (accessToken: string): Promise<DecodedJWT
             sameSite: "strict"
         });
 
-        const decodedJWT: DecodedJWTProps = parseJwt(jwtToken);
+        const decodedJWT: any = parseJwt(jwtToken);
 
-        return decodedJWT;
+        if (isIdentityProps(decodedJWT)) {
+            return decodedJWT;
+        } else {
+            return;
+        }
     } catch (error) {
         console.error("Error sending token to backend:", error);
-        return null;
+        return;
     }
 };
 
-export async function verifyJWTToken(jwt: string): Promise<string | null> {
+export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null> {
     try {
         const response = await axios.post(`${baseURL}/api/v1/auth/verify`, {
             jwtToken: jwt // Send token to backend for verification
         });
 
-        const userId = response.data.data;
+        const jwtToken = response.data.data;
 
-        if (userId) {
-            return userId;
+        if (!jwtToken) return;
+
+        const isSecure =
+            process.env.NODE_ENV === "production" || window.location.protocol === "https:";
+
+        new Cookies().set("jwt", jwtToken, {
+            path: "/",
+            secure: isSecure,
+            sameSite: "strict"
+        });
+
+        const decodedJWT: any = parseJwt(jwtToken);
+
+        if (isIdentityProps(decodedJWT)) {
+            return decodedJWT;
+        } else {
+            return;
         }
-        return null;
     } catch (error) {
         console.error("Error verifying token:", error);
         return null;
@@ -315,12 +328,23 @@ export async function deleteStaff(ids: string[]): Promise<number> {
 }
 
 export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps> {
-    console.log("api call newStaffProps:", newStaffProps); //test
     const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffProps, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
     });
-    console.log(response.data.data);
+    return response.data.data;
+}
+
+export async function updateRole(member_id: string, newRole: IdentityProps["role"]): Promise<void> {
+    const response = await axios.patch(
+        `${baseURL}/api/v1/auth`,
+        {member_id, newRole},
+        {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        }
+    );
     return response.data.data;
 }

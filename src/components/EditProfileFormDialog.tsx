@@ -18,6 +18,8 @@ interface EditProfileFormDialogProps {
 
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
     const {handleMemberUpdate, currentMemberData} = useMembers();
+
+    //EDIT: only allow staff update if they are updating their own profile.
     const {retrieveStaffById, handleFileUpload, handleStaffUpdate} = useStaff();
 
     const [staffDetails, setStaffDetails] = useState<StaffProps>();

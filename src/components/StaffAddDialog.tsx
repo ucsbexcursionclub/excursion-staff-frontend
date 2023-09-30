@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
 import MembersAutoComplete from "src/components/MembersAutoComplete";
-import {MemberProps} from "src/utils/types";
+import {IdentityProps, MemberProps, NewStaffProps} from "src/utils/types";
 import {
     Dialog,
     DialogTitle,
@@ -8,11 +8,14 @@ import {
     DialogActions,
     Button,
     FormControlLabel,
-    Checkbox
+    Checkbox,
+    RadioGroup,
+    Radio
 } from "@mui/material";
 import {useStaff} from "src/providers/StaffProvider";
 import {positionOptions} from "src/utils/constants";
 import {BlurBackDrop} from "./HelperComponents";
+import {useMembers} from "src/providers/MembersProvider";
 
 type StaffAddDialogProps = {
     open: boolean;
@@ -24,8 +27,10 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
     const [error, setError] = useState<boolean>(false);
     const [disableAdd, setDisableAdd] = useState<boolean>(false);
+    const [role, setRole] = useState<IdentityProps["role"]>("staff");
 
     const {handleStaffAdd, handleStaffUpdate, retrieveStaffById} = useStaff();
+    const {handleMemberUpdate} = useMembers();
 
     const handleClose = () => {
         onClose();
@@ -40,11 +45,19 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         );
     };
 
+    const handleRoleChange = (event) => {
+        const position = event.target.value;
+        setRole(position);
+    };
+
     useEffect(() => {
         const staffId = selectedMember?.staff_id;
+
         const existingStaff = staffId && retrieveStaffById(staffId);
 
         setDisableAdd(!!existingStaff);
+
+        existingStaff?.role && setRole(existingStaff.role);
 
         setSelectedPositions(existingStaff?.positions || []);
     }, [selectedMember, retrieveStaffById]);
@@ -55,15 +68,15 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         const memberId = selectedMember._id;
 
         // Create the staff member object with name and positions
-        const newStaffData = {
+        const newStaffData: NewStaffProps = {
             member_id: memberId,
             positions: selectedPositions,
-            profileImageUrl: "", // You can add the profile image URL here
-            bio: "" // You can add the bio here
+            role: role
         };
 
         // Call the handleStaffAdd function to add the staff member
         await handleStaffAdd(newStaffData);
+        await handleMemberUpdate(selectedMember);
 
         // Reset the form fields
         setSelectedPositions([]);
@@ -81,7 +94,8 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         // Create the staff member object with updated data while maintaining existing values
         const updatedStaff = {
             ...existingStaff,
-            positions: selectedPositions
+            positions: selectedPositions,
+            role: role
         };
 
         // Call the handleStaffUpdate function to update the staff member
@@ -118,7 +132,7 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
                     />
                 </div>
                 <div>
-                    <p>Positions:</p>
+                    <p>Staff Positions:</p>
                     {positionOptions.map((position) => (
                         <FormControlLabel
                             key={position}
@@ -133,6 +147,17 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
                         />
                     ))}
                 </div>
+                <p>Website Priviledges:</p>
+                <RadioGroup
+                    className="flex flex-row"
+                    aria-label="role"
+                    name="role"
+                    value={role}
+                    onChange={handleRoleChange}
+                >
+                    <FormControlLabel value="staff" control={<Radio />} label="Staff" />
+                    <FormControlLabel value="admin" control={<Radio />} label="Admin" />
+                </RadioGroup>
             </DialogContent>
             <DialogActions>
                 <Button

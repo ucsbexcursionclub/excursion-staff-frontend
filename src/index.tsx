@@ -12,6 +12,13 @@ import {getGearById, getMemberById, getReservationById, getStaffById} from "./ut
 import "./index.css";
 import {LoginProvider} from "./providers/LoginProvider";
 
+declare module "@mui/material" {
+    interface ModalComponentsPropsOverrides {
+        open: boolean;
+        onClose: () => void;
+    }
+}
+
 const defaultQueryFunction = async ({queryKey}) => {
     const [type, id] = queryKey;
 
