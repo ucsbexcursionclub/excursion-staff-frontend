@@ -2,6 +2,7 @@ import React from "react";
 import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import {StaffProps} from "src/utils/types";
+import { capitalizeFirstLetter } from "src/utils/utils"; // Import the function
 
 interface StaffCardProps {
     staff: StaffProps;
@@ -35,10 +36,6 @@ const StyledAvatar = styled("img")({
     borderRadius: "8px",
     marginBottom: "8px" // Add some space between the image and text
 });
-
-const capitalizeFirstLetter = (str: string) => {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-};
 
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
     const nameParts = staff.memberDetails?.name.split(" ");
