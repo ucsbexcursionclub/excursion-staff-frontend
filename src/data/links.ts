@@ -38,6 +38,18 @@ export const prospectiveMembers: linkGroupType = {
             description: "Share this form with any members not getting emails",
             href: "https://docs.google.com/forms/d/e/1FAIpQLSfN207lrIK9FjX_uzn4YB0uwa2YACbsf_AmxjEU0WUWiWOJWQ/viewform",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleFormsLogo.PNG"
+        },
+        {
+            title: "Backup Sign Up Form",
+            description: "Only use this form if the website is down",
+            href: "https://forms.gle/mSQGzdkhmyAbA1Lh9",
+            imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleFormsLogo.PNG"
+        },
+        {
+            title: "Backup Gear Form",
+            description: "Only use this form to check in/out gear if the website is down",
+            href: "https://forms.gle/7HkgKkbbjyWQKD5f8",
+            imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleFormsLogo.PNG"
         }
     ]
 };

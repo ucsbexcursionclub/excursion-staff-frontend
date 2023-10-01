@@ -7,13 +7,13 @@ import {
     GridComparatorFn,
     GridFilterInputValue,
     GridFilterItem,
-    GridFilterModel,
+    // GridFilterModel,
     GridPagination,
     gridPageCountSelector,
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
-import React, {useState} from "react";
+import React, {useState, useEffect} from "react";
 import {GearProps} from "src/utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "src/providers/GearProvider";
@@ -44,13 +44,13 @@ const columns: GridColDef[] = [
     {field: "rfid", headerName: "RFID", width: 150},
     {field: "gear_name", headerName: "Gear Name", width: 150},
     {
-        field: "missing",
+        field: "is_missing",
         headerName: "Missing?",
         width: 100,
         type: "boolean"
     },
     {
-        field: "broken",
+        field: "is_broken",
         headerName: "Broken?",
         width: 100,
         type: "boolean"
@@ -134,11 +134,30 @@ type GearTableProps = {
 export default function GearTable({searchParams}: GearTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedGear, setSelectedGear] = useState<GearProps | null>(null);
-    const [filterButtonEl, setFilterButtonEl] = React.useState<HTMLButtonElement | null>(null);
-
+    const [selectedFilter, setSelectedFilter] = useState("showAll");
     const {gearData, gearRowSelectionModel, setGearRowSelectionModel} = useGear();
 
-    const [showOverdueOnly, setShowOverdueOnly] = useState<boolean>(false);
+    useEffect(() => {
+        setSelectedFilter(selectedFilter);
+
+        const filteredRows = gearData.filter((row) => {
+            const dueDate = new Date(row.reservationDetails?.due_date);
+            const today = new Date();
+            today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
+
+            switch (selectedFilter) {
+                case "showOverdue":
+                    return dueDate < today && row.reservationDetails?.due_date !== null;
+                case "hideOverdue":
+                    return dueDate >= today || row.reservationDetails?.due_date === null;
+                default:
+                    return true; // No filter, return all rows
+            }
+        });
+        setFilteredRows(filteredRows);
+    }, [selectedFilter, gearData]);
+
+    const [filteredRows, setFilteredRows] = useState<GearProps[]>([]);
 
     const handleCellClick = (params: any) => {
         if (params.field === "gear_name") {
@@ -152,26 +171,10 @@ export default function GearTable({searchParams}: GearTableProps) {
         setSelectedGear(null); // Reset the selected gear
     };
 
-    const filterModel: GridFilterModel = React.useMemo(
-        () => {
-            const items = [];
-            if (showOverdueOnly) {
-                // Ensure due_date is a number representing a date timestamp
-                items.push({id: 1, field: "due_date", operator: "<", value: Date.now()});
-            }
-            return {
-                items: items,
-                quickFilterExcludeHiddenColumns: true,
-                quickFilterValues: [searchParams]
-            };
-        },
-        [searchParams, showOverdueOnly] // Add showOverdue as a dependency
-    );
-
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
-                rows={gearData}
+                rows={filteredRows}
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}
@@ -182,7 +185,6 @@ export default function GearTable({searchParams}: GearTableProps) {
                 }}
                 rowSelectionModel={gearRowSelectionModel}
                 disableColumnMenu
-                filterModel={filterModel}
                 initialState={{
                     columns: {
                         columnVisibilityModel: {
@@ -203,13 +205,9 @@ export default function GearTable({searchParams}: GearTableProps) {
                     pagination: CustomPagination
                 }}
                 slotProps={{
-                    panel: {
-                        anchorEl: filterButtonEl
-                    },
                     toolbar: {
                         searchParams: searchParams,
-                        setShowOverdueOnly: setShowOverdueOnly,
-                        setFilterButtonEl: setFilterButtonEl
+                        onFilterChange: setSelectedFilter
                     }
                 }}
             />
