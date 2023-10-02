@@ -34,6 +34,21 @@ const dateOperators = [
         },
         InputComponent: GridFilterInputValue,
         InputComponentProps: {type: "date"}
+    },
+    {
+        value: ">",
+        getApplyFilterFn: (filterItem: GridFilterItem) => {
+            if (!filterItem.value) {
+                return;
+            }
+            return (params: GridCellParams<GearProps>) => {
+                const filterValue = filterItem.value;
+                const cellValue = params.row?.reservationDetails?.due_date || -Infinity;
+                return cellValue > filterValue;
+            };
+        },
+        InputComponent: GridFilterInputValue,
+        InputComponentProps: {type: "date"}
     }
 ];
 
@@ -44,13 +59,13 @@ const columns: GridColDef[] = [
     {field: "rfid", headerName: "RFID", width: 150},
     {field: "gear_name", headerName: "Gear Name", width: 150},
     {
-        field: "missing",
+        field: "is_missing",
         headerName: "Missing?",
         width: 100,
         type: "boolean"
     },
     {
-        field: "broken",
+        field: "is_broken",
         headerName: "Broken?",
         width: 100,
         type: "boolean"
@@ -134,11 +149,12 @@ type GearTableProps = {
 export default function GearTable({searchParams}: GearTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedGear, setSelectedGear] = useState<GearProps | null>(null);
-    const [filterButtonEl, setFilterButtonEl] = React.useState<HTMLButtonElement | null>(null);
+    //const [filterButtonEl, setFilterButtonEl] = React.useState<HTMLButtonElement | null>(null);
 
     const {gearData, gearRowSelectionModel, setGearRowSelectionModel} = useGear();
-
-    const [showOverdueOnly, setShowOverdueOnly] = useState<boolean>(false);
+    const [selectedFilter, setSelectedFilter] = useState<"showOverdue" | "showAll" | "hideOverdue">(
+        "showAll"
+    );
 
     const handleCellClick = (params: any) => {
         if (params.field === "gear_name") {
@@ -155,17 +171,25 @@ export default function GearTable({searchParams}: GearTableProps) {
     const filterModel: GridFilterModel = React.useMemo(
         () => {
             const items = [];
-            if (showOverdueOnly) {
-                // Ensure due_date is a number representing a date timestamp
-                items.push({id: 1, field: "due_date", operator: "<", value: Date.now()});
+
+            switch (selectedFilter) {
+                case "showOverdue":
+                    items.push({id: 1, field: "due_date", operator: "<", value: Date.now()});
+                    break;
+                case "hideOverdue":
+                    items.push({id: 1, field: "due_date", operator: ">", value: Date.now()});
+                    break;
+                default:
+                    break;
             }
+
             return {
                 items: items,
                 quickFilterExcludeHiddenColumns: true,
                 quickFilterValues: [searchParams]
             };
         },
-        [searchParams, showOverdueOnly] // Add showOverdue as a dependency
+        [searchParams, selectedFilter] // Add showOverdue as a dependency
     );
 
     return (
@@ -203,13 +227,9 @@ export default function GearTable({searchParams}: GearTableProps) {
                     pagination: CustomPagination
                 }}
                 slotProps={{
-                    panel: {
-                        anchorEl: filterButtonEl
-                    },
                     toolbar: {
                         searchParams: searchParams,
-                        setShowOverdueOnly: setShowOverdueOnly,
-                        setFilterButtonEl: setFilterButtonEl
+                        onFilterChange: setSelectedFilter
                     }
                 }}
             />

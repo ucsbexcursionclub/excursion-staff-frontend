@@ -7,44 +7,8 @@ import {useStaff} from "src/providers/StaffProvider";
 const StaffGrid: React.FC = () => {
     //TODO: extract this to some safe function where we just pull staff information like name, email, bio
     const {staffData} = useStaff();
+    // console.log(staffData);
 
-    const positionsWeights = {
-        Director: 1, // 1 Director
-        Treasurer: 1, // 1 Treasurer
-        "General Board": 5, // 5 General Board members
-        "Web Developer": 5, // 5 Web Developers
-        "Camping Gear Head": 5, // 5 Camping Gear Heads
-        "Climbing Gear Head": 5, // 5 Climbing Gear Heads
-        "Head of Water Sports": 4, // 4 Heads of Water Sports
-        "Head of Medicine": 4, // 4 Heads of Medicine
-        "Social Media Head": 4, // 4 Social Media Heads
-        "Gear Fairy": 4, // 4 Gear Fairies
-        "Full Staff": 20, // Majority of the staff falls here. 20 members.
-        "Prospective Staff": 10 // Newcomers or short-term staff. 10 members.
-    };
-
-    const expandedPositions: string[] = [];
-    for (const [position, weight] of Object.entries(positionsWeights)) {
-        for (let i = 0; i < weight; i++) {
-            expandedPositions.push(position);
-        }
-    }
-
-    // Populate positions for each staff member
-    staffData.forEach((staff) => {
-        staff.positions = [];
-        // Decide how many positions this staff will have, for demonstration let's say 1 to 3
-        const numPositions = Math.floor(Math.random() * 3) + 1;
-
-        for (let i = 0; i < numPositions; i++) {
-            const randomPositionIndex = Math.floor(Math.random() * expandedPositions.length);
-            const randomPosition = expandedPositions[randomPositionIndex];
-            if (!staff.positions.includes(randomPosition)) {
-                // Ensure the same position is not added multiple times
-                staff.positions.push(randomPosition);
-            }
-        }
-    });
     // Sort staff by position
     const sortedStaff = [...staffData].sort((a, b) => {
         // Define the order of positions
@@ -92,18 +56,17 @@ const StaffGrid: React.FC = () => {
     return (
         <div>
             {/* Section for "Board" */}
-            <div style={{marginBottom: "2rem", textAlign: "center"}}>
+            <div className="mb-8 text-center">
                 <Typography
                     variant="h4"
-                    color="rgba(60,66,57,255)"
-                    noWrap
+                    color="text-green-900"
                     sx={{fontSize: {xs: "24px", md: "32px"}}}
                 >
                     Board
                 </Typography>
-                <Grid container spacing={{xs: 2, md: 3}} columns={{xs: 4, sm: 8, md: 12}}>
+                <Grid container justifyContent="left" spacing={4}>
                     {boardStaff.map((staffMember) => (
-                        <Grid item xs={2} sm={4} md={4} key={staffMember._id}>
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
                             <StaffCard staff={staffMember} />
                         </Grid>
                     ))}
@@ -111,18 +74,17 @@ const StaffGrid: React.FC = () => {
             </div>
 
             {/* Section for "General Staff" */}
-            <div style={{marginBottom: "2rem", textAlign: "center"}}>
+            <div className="mb-8 text-center">
                 <Typography
                     variant="h4"
-                    color="rgba(60,66,57,255)"
-                    noWrap
+                    color="text-green-900"
                     sx={{fontSize: {xs: "24px", md: "32px"}}}
                 >
                     Staff
                 </Typography>
-                <Grid container justifyContent="flex-start" alignItems="center">
+                <Grid container justifyContent="left" spacing={4}>
                     {generalStaff.map((staffMember) => (
-                        <Grid item key={staffMember._id}>
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
                             <StaffCard staff={staffMember} />
                         </Grid>
                     ))}
@@ -130,18 +92,17 @@ const StaffGrid: React.FC = () => {
             </div>
 
             {/* Section for "Prospective Staff" */}
-            <div style={{marginBottom: "2rem", textAlign: "center"}}>
+            <div className="mb-8 text-center">
                 <Typography
                     variant="h4"
-                    color="rgba(60,66,57,255)"
-                    noWrap
+                    color="text-green-900"
                     sx={{fontSize: {xs: "24px", md: "32px"}}}
                 >
                     Prospective Staff
                 </Typography>
-                <Grid container justifyContent="flex-start" alignItems="center">
+                <Grid container justifyContent="left" spacing={4}>
                     {prospectiveStaff.map((staffMember) => (
-                        <Grid item key={staffMember._id}>
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
                             <StaffCard staff={staffMember} />
                         </Grid>
                     ))}

@@ -2,6 +2,7 @@ import React from "react";
 import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import {StaffProps} from "src/utils/types";
+import { capitalizeFirstLetter } from "src/utils/utils"; // Import the function
 
 interface StaffCardProps {
     staff: StaffProps;
@@ -37,19 +38,26 @@ const StyledAvatar = styled("img")({
 });
 
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
+    const nameParts = staff.memberDetails?.name.split(" ");
+    const firstName = nameParts ? capitalizeFirstLetter(nameParts[0]) : "";
+    const lastName =
+        nameParts && nameParts.length > 1
+            ? capitalizeFirstLetter(nameParts[nameParts.length - 1])
+            : "";
+
     return (
         <div>
             <StyledAvatar
                 src={
                     staff.profileImageUrl ||
-                    "https://static2.bigstockphoto.com/2/7/3/large1500/372579397.jpg"
+                    "https://d36olvmp8krees.cloudfront.net/resources/avatar.png"
                 }
                 alt={staff.memberDetails?.name}
                 className="avatar"
             />
             <div className="info">
                 <Typography variant="h6" className="font-bold">
-                    {staff.memberDetails?.name}
+                    {firstName} {lastName}
                 </Typography>
                 <div className="positions">
                     <Typography variant="body2" className="position">

@@ -1,13 +1,13 @@
-import React, {useMemo} from "react";
+import React, {useMemo, useState} from "react";
 import {
     GridToolbarContainer,
-    GridToolbarFilterButton,
     gridFilteredSortedRowEntriesSelector,
     useGridApiContext
 } from "@mui/x-data-grid";
 import {useGear} from "src/providers/GearProvider";
-import {FormControlLabel, FormGroup, Switch, Typography} from "@mui/material";
+import {Typography} from "@mui/material";
 import {GearProps} from "src/utils/types";
+import {FormControl, InputLabel, MenuItem, Select} from "@mui/material";
 
 function SelectedCount() {
     const {gearRowSelectionModel} = useGear();
@@ -32,18 +32,33 @@ type AvailibilityViewProps = {
     searchParams: string;
 };
 
-type FilterByOverDueProps = {
-    setShowOverdueOnly: React.Dispatch<React.SetStateAction<boolean>>;
+type FilterSelectProps = {
+    onFilterChange: React.Dispatch<React.SetStateAction<"showAll" | "showOverdue" | "hideOverdue">>;
 };
 
-function FilterByOverDue({setShowOverdueOnly}: FilterByOverDueProps) {
+function FilterSelect({onFilterChange}: FilterSelectProps) {
+    const [selectedFilter, setSelectedFilter] = useState("showAll");
+
+    const handleFilterChange = (event) => {
+        setSelectedFilter(event.target.value);
+        // Call the callback to update the filter in the parent component
+        onFilterChange(event.target.value);
+    };
+
     return (
-        <FormGroup sx={{m: 1}} className="pl-4 bg-gray-100 shadow-md rounded-2xl">
-            <FormControlLabel
-                control={<Switch onClick={() => setShowOverdueOnly((prevVal) => !prevVal)} />}
-                label="Show Overdue Only"
-            />
-        </FormGroup>
+        <FormControl sx={{minWidth: 120}}>
+            <InputLabel>Select Filter</InputLabel>
+            <Select
+                className="rounded-2xl bg-gray-100 shadow-md border-none pl-4 p-1"
+                value={selectedFilter}
+                onChange={handleFilterChange}
+                label="Select Filter"
+            >
+                <MenuItem value="showAll">Show all gear</MenuItem>
+                <MenuItem value="showOverdue">Show Overdue Only</MenuItem>
+                <MenuItem value="hideOverdue">Hide Overdue</MenuItem>
+            </Select>
+        </FormControl>
     );
 }
 
@@ -103,26 +118,16 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
 type GearToolBarProps = {
     searchParams: string;
-    setShowOverdueOnly: React.Dispatch<React.SetStateAction<boolean>>;
-    setFilterButtonEl: React.Dispatch<React.SetStateAction<HTMLButtonElement | null>>;
+    onFilterChange: (newSelectedFilter: "showAll" | "showOverdue" | "hideOverdue") => void; // Define the prop type
 };
 
-export default function CustomToolbar({
-    searchParams,
-    setShowOverdueOnly,
-    setFilterButtonEl
-}: GearToolBarProps) {
+export default function CustomToolbar({searchParams, onFilterChange}: GearToolBarProps) {
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
-            className="bg-gray-200 rounded-2xl rounded-b-none"
+            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center"
         >
-            <GridToolbarFilterButton
-                ref={setFilterButtonEl}
-                className="px-4 py-2 bg-gray-100 shadow-md rounded-2xl"
-                sx={{color: "black"}}
-            />
-            <FilterByOverDue setShowOverdueOnly={setShowOverdueOnly} />
+            <FilterSelect onFilterChange={onFilterChange} />
             <Separator />
             <SelectedCount />
             <AvailibilityView searchParams={searchParams} />
