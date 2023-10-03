@@ -2,7 +2,7 @@ import React from "react";
 import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import {StaffProps} from "src/utils/types";
-import { capitalizeFirstLetter } from "src/utils/utils"; // Import the function
+import {capitalizeFirstLetter} from "src/utils/utils"; // Import the function
 
 interface StaffCardProps {
     staff: StaffProps;

@@ -165,7 +165,13 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
             Authorization: `Bearer ${cookies.get("jwt")}`
         }
     });
-    return response.data.data;
+    // Check if the response has a success message or other conditions before returning data
+    if (response.data.success) {
+        await sendWelcomeEmail(newMemberData.email);
+        return response.data.data;
+    } else {
+        throw new Error("Add Member request was not successful."); // You can customize the error message
+    }
 }
 
 export async function getReservationsByIds(ids: string[]): Promise<ReservationProps[]> {
@@ -347,4 +353,36 @@ export async function updateRole(member_id: string, newRole: IdentityProps["role
         }
     );
     return response.data.data;
+}
+
+interface FeedbackProps {
+    name: string;
+    email: string;
+    phone: string;
+    subject: string;
+    feedback: string;
+}
+
+export async function sendFeedback(feedbackData: FeedbackProps): Promise<void> {
+    console.log(feedbackData);
+    try {
+        await axios.post(`${baseURL}/api/v1/mail/send-feedback`, feedbackData);
+        console.log("Feedback data sent successfully to the backend!");
+    } catch (error) {
+        console.error("Error sending feedback data to the backend:", error);
+        throw new Error("Failed to send feedback data to the backend.");
+    }
+}
+
+async function sendWelcomeEmail(email: string): Promise<void> {
+    try {
+        // Customize this part to send a welcome email to the provided email address
+        // You can use axios.post or any other method suitable for your API
+        console.log(`Sending welcome email to ${email}...`);
+        await axios.post(`${baseURL}/api/v1/mail/send-welcome-email`, {email});
+        console.log(`Welcome email sent successfully to ${email}!`);
+    } catch (error) {
+        console.error(`Error sending welcome email to ${email}:`, error);
+        throw new Error(`Failed to send welcome email to ${email}.`);
+    }
 }
