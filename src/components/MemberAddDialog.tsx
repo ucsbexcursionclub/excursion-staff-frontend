@@ -40,6 +40,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
     const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
     const [signedStaff, setSignedStaff] = React.useState<MemberProps | null>(null);
+    const [localLivingAddress, setLocalLivingAddress] = React.useState("");
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -119,6 +120,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             setPhoneNumberError(null);
         }
     };
+
+    const handleLocalLivingAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setLocalLivingAddress(value);
+    };
+
     const calculatePrice = () => {
         if (membershipStatus === "newMember") {
             switch (membershipDuration) {
@@ -163,6 +170,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             errorMessage = "Please ensure the new member has paid dues.";
         } else if (!signedStaff) {
             errorMessage = "Please ensure the staff enters signed up by details.";
+        } else if (!localLivingAddress) {
+            errorMessage = "Please fill in the address in which you live nearby.";
         }
 
         return errorMessage;
@@ -230,7 +239,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: signedStaff._id
+                signed_up_by: signedStaff._id,
+                local_living_address: localLivingAddress
             });
         } catch (error) {
             console.error("Failed to add member:", error);
@@ -249,6 +259,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setStokedLevel("");
         setHasWaiver("no");
         setHasPaid("no");
+        setLocalLivingAddress("");
 
         function setErrorMessageTimeout() {
             setTimeout(() => {
@@ -296,7 +307,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 signed_up_by: signedStaff._id,
                 membership_expiration_date: expirationDate.getTime(),
                 join_datetime: new Date().getTime(),
-                notes: retrievedMemberData.notes
+                notes: retrievedMemberData.notes,
+                local_living_address: localLivingAddress
             };
 
             await handleMemberUpdate(memberData);
@@ -327,6 +339,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setStokedLevel("");
         setHasWaiver("no");
         setHasPaid("no");
+        setLocalLivingAddress("");
 
         function setErrorMessageTimeout() {
             setTimeout(() => {
@@ -423,6 +436,17 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     helperText={phoneNumberError || ""}
                     required
                     aria-required="true"
+                />
+                <TextField
+                    margin="dense"
+                    id="localLivingAddress"
+                    label="Local Living Address"
+                    type="text"
+                    fullWidth
+                    required
+                    variant="standard"
+                    value={localLivingAddress}
+                    onChange={handleLocalLivingAddressChange}
                 />
                 <TextField
                     margin="dense"

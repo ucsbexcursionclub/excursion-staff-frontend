@@ -223,20 +223,19 @@ export default function HomePage() {
                             How to get stoked (How can I join?)
                         </Typography>
                         <p style={paragraphStyle}>
-                            During the academic year, come to one of our general meetings, every
-                            Tuesday at 7:00 pm in Broida Hall, room 1610 on the UCSB campus, or come
-                            out to office hours every Wednesday and Thursday from 4-6 pm at 1026
-                            Camino Lindo, and bring cash or check (made out to The Excursion Club
-                            using black or blue ink) to the meeting for the membership payment.
-                            During the summer quarter our hours are every Monday from 7-8pm at 1026
-                            Camino Lindo.
+                            During the academic year, come to one of our general meetings, which are
+                            held most Tuesdays at 8:00 pm in Embaracadero Hall (check our instagram
+                            @excursionclubucsb day of), or come out to office hours every Wednesday
+                            and Thursday from 4-6 pm at 1026 Camino Lindo, and bring cash or check
+                            (made out to The Excursion Club using black or blue ink) to the meeting
+                            for the membership payment. During the summer quarter our hours are
+                            every Monday from 7-8pm at 1026 Camino Lindo.
                         </p>
                         <p style={asteriskNoteStyle}>
                             *We do not hold meetings or office hours during breaks, school holidays,
                             and finals week. If you are unable to sign-up during our general meeting
                             or office hours, contact us directly through the form at the bottom of
-                            this site or DM us on instagram (@excursionclubucsb) and we will find a
-                            time to sign you up!
+                            this site and we will find a time to sign you up!
                         </p>
                     </Typography>
                     <PricingColumns medFontSize={medFontSize} />
