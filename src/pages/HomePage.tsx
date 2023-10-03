@@ -180,10 +180,10 @@ export default function HomePage() {
                             We lead a multitude of trips every week including but not limited to:
                             <br />
                             Skydiving, Rock Climbing, Tree Climbing, Surfing, Skiing/Snowboarding,
-                            Camping, Backpacking, Kayaking, Stand Up Paddleboarding, Intramural
-                            Sports, Yoga, Free Diving/Spear Fishing, Canyoneering, Hiking,
-                            Paintballing, Rafting, Dirt Biking, Mountain Biking, Downhill Cycling,
-                            Road Cycling, Archery, Bungee Jumping
+                            Camping, Backpacking, Kayaking, Stand Up Paddleboarding, Yoga, Free
+                            Diving/Spear Fishing, Canyoneering, Hiking, Paintballing, Rafting, Dirt
+                            Biking, Mountain Biking, Downhill Cycling, Road Cycling, Archery, Bungee
+                            Jumping
                             <br />
                             <br />
                             In the 2022-2023 academic year, we led an average of{" "}
