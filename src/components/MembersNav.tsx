@@ -6,20 +6,18 @@ import MemberRemoveDialog from "src/components/MemberRemoveDialog";
 import FailMemberRemoveDialog from "src/components/FailMemberRemoveDialog";
 import {useMembers} from "src/providers/MembersProvider";
 import MemberEmailDialog from "./MemberEmailDialog";
-import {Select, MenuItem} from "@mui/material";
-
+import {ToggleButtonGroup, ToggleButton} from "@mui/material";
 type MembersNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
-    setFilter: (filter: string) => void;
 };
 
-export default function MembersNav({setSearchParams, setFilter}: MembersNavProps) {
+export default function MembersNav({setSearchParams}: MembersNavProps) {
     const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
     const [removeDialogOpen, setRemoveDialogOpen] = useState<boolean>(false);
     const [failRemoveDialogOpen, setFailRemoveDialogOpen] = useState<boolean>(false);
     const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth); // Initialize with the current window width
-    const [filterVal, setFilterVal] = useState("all"); // 'all', 'active', or 'expired'
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [copyEmailOption, setCopyEmailOption] = useState("");
 
     useEffect(() => {
         const handleResize = () => {
@@ -42,6 +40,7 @@ export default function MembersNav({setSearchParams, setFilter}: MembersNavProps
 
     const handleCloseCopyEmail = () => {
         // Display the Snackbar when the "Copy Email(s)" button is clicked
+        setCopyEmailOption("");
         setCopyEmailOpen(false);
     };
 
@@ -73,68 +72,18 @@ export default function MembersNav({setSearchParams, setFilter}: MembersNavProps
         handleOpenDeleteDialog();
     };
 
-    const handleFilterChange = (event) => {
-        setFilterVal(event.target.value);
-        setFilter(event.target.value);
+    const handleCopyEmailOptionChange = (
+        event: React.MouseEvent<HTMLElement>,
+        newValue: string | null
+    ) => {
+        if (newValue !== null) {
+            setCopyEmailOption(newValue);
+            handleOpenCopyEmail();
+        }
     };
 
     const renderAppBar = () => {
-        if (screenWidth < 600) {
-            // Render AppBar with buttons below on smaller screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4">Members</Typography>
-                        <div style={{color: "white"}}>
-                            <Select
-                                inputProps={{
-                                    className:
-                                        "appearance-none bg-transparent border-none w-full text-white placeholder-white focus:outline-none"
-                                }}
-                                value={filterVal}
-                                onChange={handleFilterChange}
-                            >
-                                <MenuItem value="all">All Members</MenuItem>
-                                <MenuItem value="active">Active Members</MenuItem>
-                                <MenuItem value="expired">Expired Members</MenuItem>
-                            </Select>
-                        </div>
-                    </Toolbar>
-                    <Toolbar className="flex justify-between items-center py-1 w-full">
-                        <div className="flex flex-col items-center w-full">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                    Search
-                                </Button>
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Name, Email, or Phone Number
-                            </Typography>
-                        </div>
-                    </Toolbar>
-
-                    <div className="flex flex justify-center">
-                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
-                            Add/Renew Member
-                        </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                            Remove Member(s)
-                        </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
-                            Copy Email(s)
-                        </Button>
-                    </div>
-                </AppBar>
-            );
-        } else if (screenWidth < 800) {
+        if (screenWidth < 1000) {
             // Render AppBar with buttons in the same row on wider screens
             return (
                 <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
@@ -168,77 +117,32 @@ export default function MembersNav({setSearchParams, setFilter}: MembersNavProps
                         <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                             Remove Member(s)
                         </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
-                            Copy Email(s)
-                        </Button>
-                        <div style={{color: "white"}}>
-                            <Select
-                                inputProps={{
-                                    className:
-                                        "appearance-none bg-transparent border-none w-full text-white placeholder-white focus:outline-none"
-                                }}
-                                value={filterVal}
-                                onChange={handleFilterChange}
-                            >
-                                <MenuItem value="all">All Members</MenuItem>
-                                <MenuItem value="active">Active Members</MenuItem>
-                                <MenuItem value="expired">Expired Members</MenuItem>
-                            </Select>
-                        </div>
-                    </div>
-                </AppBar>
-            );
-        } else if (screenWidth < 950) {
-            // Render AppBar with buttons in the same row on wider screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1 mb-[-20px]">
-                        <Typography variant="h4" className="pr-3">
-                            Members
-                        </Typography>
-                        <div className="flex justify-end pr-3">
-                            <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
-                                Add/Renew Member
-                            </Button>
-                            <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                                Remove Member(s)
-                            </Button>
-                            <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
-                                Copy Email(s)
-                            </Button>
-                            <div style={{color: "white"}}>
-                                <Select
-                                    inputProps={{
-                                        className:
-                                            "appearance-none bg-transparent border-none w-full text-white placeholder-white focus:outline-none"
-                                    }}
-                                    value={filterVal}
-                                    onChange={handleFilterChange}
-                                >
-                                    <MenuItem value="all">All Members</MenuItem>
-                                    <MenuItem value="active">Active Members</MenuItem>
-                                    <MenuItem value="expired">Expired Members</MenuItem>
-                                </Select>
-                            </div>
-                        </div>
-                    </Toolbar>
-                    <div className="flex flex-col items-center w-full p-4">
-                        <Typography
-                            style={{userSelect: "none"}}
-                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                        <ToggleButtonGroup
+                            exclusive
+                            value={copyEmailOption}
+                            onChange={handleCopyEmailOptionChange}
+                            className="text-white" // Add text-white class to make text white
+                            style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
                         >
-                            s
-                        </Typography>
-                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
-                            <SearchIcon className="absolute left-2" color="inherit" />
-                            <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                            <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                Search
-                            </Button>
-                        </div>
-                        <Typography className="text-xs text-gray-200 italic">
-                            Name, Email, or Phone Number
-                        </Typography>
+                            <ToggleButton
+                                value="copySelected"
+                                className="text-white border-transparent"
+                            >
+                                Copy Selected Members
+                            </ToggleButton>
+                            <ToggleButton
+                                value="copyActive"
+                                className="text-white border-transparent"
+                            >
+                                Copy Active Members
+                            </ToggleButton>
+                            <ToggleButton
+                                value="copyExpired"
+                                className="text-white border-transparent"
+                            >
+                                Copy Expired Members
+                            </ToggleButton>
+                        </ToggleButtonGroup>
                     </div>
                 </AppBar>
             );
@@ -275,23 +179,32 @@ export default function MembersNav({setSearchParams, setFilter}: MembersNavProps
                             <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                                 Remove Member(s)
                             </Button>
-                            <Button color="inherit" className="mx-1" onClick={handleOpenCopyEmail}>
-                                Copy Email(s)
-                            </Button>
-                            <div style={{color: "white"}}>
-                                <Select
-                                    inputProps={{
-                                        className:
-                                            "appearance-none bg-transparent border-none w-full text-white placeholder-white focus:outline-none"
-                                    }}
-                                    value={filterVal}
-                                    onChange={handleFilterChange}
+                            <ToggleButtonGroup
+                                exclusive
+                                value={copyEmailOption}
+                                onChange={handleCopyEmailOptionChange}
+                                className="text-white" // Add text-white class to make text white
+                                style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
+                            >
+                                <ToggleButton
+                                    value="copySelected"
+                                    className="text-white border-transparent"
                                 >
-                                    <MenuItem value="all">All Members</MenuItem>
-                                    <MenuItem value="active">Active Members</MenuItem>
-                                    <MenuItem value="expired">Expired Members</MenuItem>
-                                </Select>
-                            </div>
+                                    Copy Selected Members
+                                </ToggleButton>
+                                <ToggleButton
+                                    value="copyActive"
+                                    className="text-white border-transparent"
+                                >
+                                    Copy Active Members
+                                </ToggleButton>
+                                <ToggleButton
+                                    value="copyExpired"
+                                    className="text-white border-transparent"
+                                >
+                                    Copy Expired Members
+                                </ToggleButton>
+                            </ToggleButtonGroup>
                         </div>
                     </Toolbar>
                 </AppBar>
@@ -312,6 +225,7 @@ export default function MembersNav({setSearchParams, setFilter}: MembersNavProps
                 open={copyEmailOpen}
                 onClose={handleCloseCopyEmail}
                 screenwidth={screenWidth}
+                copyEmailOption={copyEmailOption}
             />
         </>
     );
