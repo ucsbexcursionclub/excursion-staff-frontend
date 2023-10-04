@@ -127,30 +127,27 @@ export default function HomePage() {
                         paddingLeft: "15px"
                     }}
                 >
-                    <Typography variant="body2">
-                        <Typography
-                            variant="body2"
-                            style={{
-                                fontSize: `${parseInt(smallFontSize) + 5}px`,
-                                fontWeight: "bold",
-                                color: "black",
-                                paddingRight: "15px",
-                                paddingLeft: "15px"
-                            }}
-                        >
-                            What is The Excursion Club?
-                        </Typography>
-                        <p style={paragraphStyle}>
-                            The Excursion Club at UCSB is an entirely student-run, volunteer
-                            organization that is committed to getting people stoked on the outdoors.
-                            The club connects individuals by providing gear and opportunities to
-                            partake in outdoor activities as inexpensively as possible. We connect
-                            those who already enjoy the outdoors, as well as provide those with
-                            little to no outdoor experience with the knowledge, resources,
-                            opportunities, and support to step outside of their comfort zone and
-                            experience the great outdoors.
-                        </p>
+                    <Typography
+                        variant="body2"
+                        style={{
+                            fontSize: `${parseInt(smallFontSize) + 5}px`,
+                            fontWeight: "bold",
+                            color: "black",
+                            paddingRight: "15px",
+                            paddingLeft: "15px"
+                        }}
+                    >
+                        What is The Excursion Club?
                     </Typography>
+                    <div style={paragraphStyle}>
+                        The Excursion Club at UCSB is an entirely student-run, volunteer
+                        organization that is committed to getting people stoked on the outdoors. The
+                        club connects individuals by providing gear and opportunities to partake in
+                        outdoor activities as inexpensively as possible. We connect those who
+                        already enjoy the outdoors, as well as provide those with little to no
+                        outdoor experience with the knowledge, resources, opportunities, and support
+                        to step outside of their comfort zone and experience the great outdoors.
+                    </div>
                     <iframe
                         width={`${screenWidth * 0.9}px`}
                         height={`${0.5625 * (screenWidth * 0.9)}px`}
@@ -165,111 +162,105 @@ export default function HomePage() {
             </Card>
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
-                        <Typography
-                            variant="body2"
+                    <Typography
+                        variant="body2"
+                        style={{
+                            fontSize: `${parseInt(smallFontSize) + 5}px`,
+                            fontWeight: "bold",
+                            color: "white"
+                        }}
+                    >
+                        What do we offer?
+                    </Typography>
+                    <div style={paragraphStyle}>
+                        We lead a multitude of trips every week including but not limited to:
+                        <br />
+                        Skydiving, Rock Climbing, Tree Climbing, Surfing, Skiing/Snowboarding,
+                        Camping, Backpacking, Kayaking, Stand Up Paddleboarding, Yoga, Free
+                        Diving/Spear Fishing, Canyoneering, Hiking, Paintballing, Rafting, Dirt
+                        Biking, Mountain Biking, Downhill Cycling, Road Cycling, Archery, Bungee
+                        Jumping
+                        <br />
+                        <br />
+                        In the 2022-2023 academic year, we led an average of{" "}
+                        <span
                             style={{
-                                fontSize: `${parseInt(smallFontSize) + 5}px`,
-                                fontWeight: "bold",
-                                color: "white"
+                                fontSize: `${parseInt(smallFontSize) + 2}px`,
+                                fontWeight: "bold"
                             }}
                         >
-                            What do we offer?
-                        </Typography>
-                        <p style={paragraphStyle}>
-                            We lead a multitude of trips every week including but not limited to:
-                            <br />
-                            Skydiving, Rock Climbing, Tree Climbing, Surfing, Skiing/Snowboarding,
-                            Camping, Backpacking, Kayaking, Stand Up Paddleboarding, Yoga, Free
-                            Diving/Spear Fishing, Canyoneering, Hiking, Paintballing, Rafting, Dirt
-                            Biking, Mountain Biking, Downhill Cycling, Road Cycling, Archery, Bungee
-                            Jumping
-                            <br />
-                            <br />
-                            In the 2022-2023 academic year, we led an average of{" "}
-                            <span
-                                style={{
-                                    fontSize: `${parseInt(smallFontSize) + 2}px`,
-                                    fontWeight: "bold"
-                                }}
-                            >
-                                27 trips per week!
-                            </span>
-                        </p>
-                        <p style={paragraphStyle}>
-                            In addition to weekly trips, we have gear and equipment rentals
-                            available to our members for free. All gear and equipment has limited
-                            availability, and members are allowed to check them out for a limited
-                            time on a first-come, first-serve basis. Members can come check out gear
-                            every Wednesday and Thursday from 4-6pm at 1026 Camino Lindo during the
-                            academic year or during the summer quarter on Mondays from 7-8pm. Below
-                            is all the gear we offer for rental:
-                        </p>
-                    </Typography>
+                            27 trips per week!
+                        </span>
+                    </div>
+                    <div style={paragraphStyle}>
+                        In addition to weekly trips, we have gear and equipment rentals available to
+                        our members for free. All gear and equipment has limited availability, and
+                        members are allowed to check them out for a limited time on a first-come,
+                        first-serve basis. Members can come check out gear every Wednesday and
+                        Thursday from 4-6pm at 1026 Camino Lindo during the academic year or during
+                        the summer quarter on Mondays from 7-8pm. Below is all the gear we offer for
+                        rental:
+                    </div>
                 </CardContent>
             </Card>
             <GearGrid columns={columns} labelFontSize={parseInt(medFontSize)} />
             <Card sx={cardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
-                        <Typography
-                            variant="body2"
-                            style={{
-                                fontSize: `${parseInt(smallFontSize) + 5}px`,
-                                fontWeight: "bold",
-                                color: "black"
-                            }}
-                        >
-                            How to get stoked (How can I join?)
-                        </Typography>
-                        <p style={paragraphStyle}>
-                            During the academic year, come to one of our general meetings, which are
-                            held most Tuesdays at 8:00 pm in Embaracadero Hall (check our instagram
-                            @excursionclubucsb day of), or come out to office hours every Wednesday
-                            and Thursday from 4-6 pm at 1026 Camino Lindo, and bring cash or check
-                            (made out to The Excursion Club using black or blue ink) to the meeting
-                            for the membership payment. During the summer quarter our hours are
-                            every Monday from 7-8pm at 1026 Camino Lindo.
-                        </p>
-                        <p style={asteriskNoteStyle}>
-                            *We do not hold meetings or office hours during breaks, school holidays,
-                            and finals week. If you are unable to sign-up during our general meeting
-                            or office hours, contact us directly through the form at the bottom of
-                            this site and we will find a time to sign you up!
-                        </p>
+                    <Typography
+                        variant="body2"
+                        style={{
+                            fontSize: `${parseInt(smallFontSize) + 5}px`,
+                            fontWeight: "bold",
+                            color: "black"
+                        }}
+                    >
+                        How to get stoked (How can I join?)
                     </Typography>
+                    <div style={paragraphStyle}>
+                        During the academic year, come to one of our general meetings, which are
+                        held most Tuesdays at 8:00 pm in Embaracadero Hall (check our instagram
+                        @excursionclubucsb day of), or come out to office hours every Wednesday and
+                        Thursday from 4-6 pm at 1026 Camino Lindo, and bring cash or check (made out
+                        to The Excursion Club using black or blue ink) to the meeting for the
+                        membership payment. During the summer quarter our hours are every Monday
+                        from 7-8pm at 1026 Camino Lindo.
+                    </div>
+                    <div style={asteriskNoteStyle}>
+                        *We do not hold meetings or office hours during breaks, school holidays, and
+                        finals week. If you are unable to sign-up during our general meeting or
+                        office hours, contact us directly through the form at the bottom of this
+                        site and we will find a time to sign you up!
+                    </div>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
             </Card>
             <ResponsiveImageRow imageUrls={merchImageUrls} screenWidth={screenWidth} />
             <Card sx={greenCardStyle} square>
                 <CardContent>
-                    <Typography variant="body2">
-                        <Typography
-                            variant="body2"
-                            style={{
-                                fontSize: `${parseInt(smallFontSize) + 5}px`,
-                                fontWeight: "bold",
-                                color: "white"
-                            }}
-                        >
-                            Get Rad, Buy Rad
-                        </Typography>
-                        <p style={paragraphStyle}>
-                            Admiring our staffers in their merch? Come by the Oasis during office
-                            hours to buy some and rep it with them!
-                        </p>
-                        <ul style={liStyle}>
-                            <li>Long sleeves - $15</li>
-                            <li>Short sleeves - $15</li>
-                            <li>Hats - $15</li>
-                            <li>Headlamps - $5</li>
-                        </ul>
+                    <Typography
+                        variant="body2"
+                        style={{
+                            fontSize: `${parseInt(smallFontSize) + 5}px`,
+                            fontWeight: "bold",
+                            color: "white"
+                        }}
+                    >
+                        Get Rad, Buy Rad
                     </Typography>
-                    <p style={paragraphStyle}>
+                    <div style={paragraphStyle}>
+                        Admiring our staffers in their merch? Come by the Oasis during office hours
+                        to buy some and rep it with them!
+                    </div>
+                    <ul style={liStyle}>
+                        <li>Long sleeves - $15</li>
+                        <li>Short sleeves - $15</li>
+                        <li>Hats - $15</li>
+                        <li>Headlamps - $5</li>
+                    </ul>
+                    <div style={paragraphStyle}>
                         If your question is not answered on this page, send it to us using the form
                         above or by emailing us directly at info@excursionclubucsb.org
-                    </p>
+                    </div>
                 </CardContent>
             </Card>
             <Card sx={cardStyle} square>
