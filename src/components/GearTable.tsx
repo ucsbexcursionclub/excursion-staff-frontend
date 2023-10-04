@@ -54,7 +54,7 @@ const dateOperators = [
 
 const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - (v2 || Infinity);
 
-const columns: GridColDef[] = [
+const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
     {field: "rfid", headerName: "RFID", width: 150},
     {field: "gear_name", headerName: "Gear Name", width: 150},
@@ -77,11 +77,11 @@ const columns: GridColDef[] = [
         width: 200,
         valueGetter: (params) => {
             return (
-                (params.row?.memberDetails?.name ?? "") +
+                (params.row.memberDetails?.name ?? "") +
                 "\n" +
-                (params.row?.memberDetails?.email ?? "") +
+                (params.row.memberDetails?.email ?? "") +
                 "\n" +
-                (params.row?.memberDetails?.phone_number ?? "")
+                (params.row.memberDetails?.phone_number ?? "")
             );
         }
     },
@@ -90,7 +90,7 @@ const columns: GridColDef[] = [
         headerName: "Due Date",
         type: "date",
         width: 150,
-        valueGetter: (params) => params.row?.reservationDetails?.due_date,
+        valueGetter: (params) => params.row.reservationDetails?.due_date,
         valueFormatter: (params) => {
             if (params.value) {
                 const date = new Date(params.value);
@@ -106,7 +106,7 @@ const columns: GridColDef[] = [
         headerName: "Last Contacted",
         type: "date",
         width: 150,
-        valueGetter: (params) => params.row?.reservationDetails?.last_contacted,
+        valueGetter: (params) => params.row.reservationDetails?.last_contacted,
         valueFormatter: (params) => {
             if (params.value) {
                 const date = new Date(params.value as number);
@@ -174,7 +174,12 @@ export default function GearTable({searchParams}: GearTableProps) {
 
             switch (selectedFilter) {
                 case "showOverdue":
-                    items.push({id: 1, field: "due_date", operator: "<", value: Date.now()});
+                    items.push({
+                        id: 1,
+                        field: "due_date",
+                        operator: "<",
+                        value: Date.now()
+                    });
                     break;
                 case "hideOverdue":
                     items.push({id: 1, field: "due_date", operator: ">", value: Date.now()});
@@ -185,19 +190,12 @@ export default function GearTable({searchParams}: GearTableProps) {
 
             return {
                 items: items,
-                quickFilterExcludeHiddenColumns: true,
                 quickFilterValues: [searchParams]
             };
         },
         [searchParams, selectedFilter] // Add showOverdue as a dependency
     );
-
-    function getRowId(row) {
-        if (!row._id) {
-            console.log("row doesn't have id property");
-            return;
-        }
-
+    function getRowId(row: GearProps) {
         return row._id;
     }
 

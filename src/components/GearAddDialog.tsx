@@ -26,10 +26,11 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     const {handleGearAdd, retrieveGearItemByRFID} = useGear();
 
     const handleValidation = (): boolean => {
-        if (!gearName || !rfid) return false;
+        if (!gearName) return false;
 
-        if (retrieveGearItemByRFID(rfid)) return false;
-
+        if (rfid !== "" && rfid !== null) {
+            if (retrieveGearItemByRFID(rfid)) return false;
+        }
         return true;
     };
 
@@ -37,6 +38,8 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
         //TODO: User feedback for missing fields
 
         if (!handleValidation()) return false;
+
+        setRfid(rfid === "" ? null : rfid);
 
         handleGearAdd({
             gear_name: gearName,
