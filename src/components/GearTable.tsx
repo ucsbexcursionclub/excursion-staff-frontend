@@ -168,9 +168,11 @@ export default function GearTable({searchParams}: GearTableProps) {
         setSelectedGear(null); // Reset the selected gear
     };
 
+    const getRowId = (row: GearProps) => row._id;
+
     const filterModel: GridFilterModel = React.useMemo(
         () => {
-            const items = [];
+            const items: GridFilterItem[] = [];
 
             switch (selectedFilter) {
                 case "showOverdue":
@@ -190,14 +192,12 @@ export default function GearTable({searchParams}: GearTableProps) {
 
             return {
                 items: items,
+                quickFilterExcludeHiddenColumns: true,
                 quickFilterValues: [searchParams]
             };
         },
         [searchParams, selectedFilter] // Add showOverdue as a dependency
     );
-    function getRowId(row: GearProps) {
-        return row._id;
-    }
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">

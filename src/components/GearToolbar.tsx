@@ -37,7 +37,9 @@ type FilterSelectProps = {
 };
 
 function FilterSelect({onFilterChange}: FilterSelectProps) {
-    const [selectedFilter, setSelectedFilter] = useState("showAll");
+    const [selectedFilter, setSelectedFilter] = useState<"showOverdue" | "showAll" | "hideOverdue">(
+        "showAll"
+    );
 
     const handleFilterChange = (event) => {
         setSelectedFilter(event.target.value);
