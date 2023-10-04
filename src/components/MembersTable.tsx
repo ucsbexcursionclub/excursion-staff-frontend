@@ -79,10 +79,9 @@ const getColumns = (getMemberById: (memberId) => MemberProps) => {
 
 type MembersTableProps = {
     searchParams: string;
-    filter: string;
 };
 
-export default function MembersTable({searchParams, filter}: MembersTableProps) {
+export default function MembersTable({searchParams}: MembersTableProps) {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
     const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberItem} =
@@ -96,29 +95,6 @@ export default function MembersTable({searchParams, filter}: MembersTableProps) 
         }),
         [searchParams]
     );
-
-    const filteredRows = React.useMemo(() => {
-        switch (filter) {
-            case "expired":
-                return membersData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date);
-                    const today = new Date();
-                    today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
-                    return expirationDate < today && row.membership_expiration_date !== null;
-                });
-            case "active":
-                return membersData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date);
-                    const today = new Date();
-                    today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
-                    return expirationDate >= today || row.membership_expiration_date === null;
-                });
-            default:
-                return membersData;
-        }
-    }, [membersData, filter]);
-
-    const dataForGrid = filter === "expired" || filter === "active" ? filteredRows : membersData;
 
     const handleCellClick = (params: any) => {
         if (params.field === "name") {
@@ -137,7 +113,7 @@ export default function MembersTable({searchParams, filter}: MembersTableProps) 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
-                rows={dataForGrid}
+                rows={membersData}
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}
