@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addReservation, endReservations, getReservations} from "src/utils/api";
+import {addReservation, endReservations, getReservations, isDeployedPreview} from "src/utils/api";
 import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
 
@@ -23,7 +23,7 @@ const useReservationsState = () => {
     const {identity} = useLogin();
 
     const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: ["admin", "staff"].includes(identity?.role) || isDeployedPreview
     });
 
     useEffect(() => {

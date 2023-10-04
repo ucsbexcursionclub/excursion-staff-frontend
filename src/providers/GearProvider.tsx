@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addGear, deleteGearItems, getGear, updateGear} from "src/utils/api";
+import {addGear, deleteGearItems, getGear, isDeployedPreview, updateGear} from "src/utils/api";
 import {GearProps, MemberProps, NewGearProps} from "src/utils/types";
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
@@ -26,7 +26,7 @@ const useGearState = () => {
     const {identity} = useLogin();
 
     const {data: fetchGearData} = useQuery("gear", getGear, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: ["admin", "staff"].includes(identity?.role) || isDeployedPreview
     });
 
     useEffect(() => {

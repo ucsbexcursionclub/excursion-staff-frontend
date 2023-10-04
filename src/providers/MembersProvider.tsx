@@ -25,7 +25,7 @@ const useMembersState = () => {
     const {identity} = useLogin();
 
     const {data: fetchMembersData} = useQuery("members", getMembers, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: ["admin", "staff"].includes(identity?.role) || isDeployedPreview
     });
 
     useEffect(() => {
