@@ -15,10 +15,8 @@ import Cookies from "universal-cookie";
 import {isIdentityProps, parseJwt} from "./utils";
 const cookies = new Cookies();
 
-export const isDeployedPreview = process.env.VERCEL_ENV === "preview";
-
 const baseURL =
-    process.env.NODE_ENV === "production" && !isDeployedPreview
+    process.env.NODE_ENV === "production"
         ? "https://excursion-backend.vercel.app"
         : "http://localhost:9000";
 

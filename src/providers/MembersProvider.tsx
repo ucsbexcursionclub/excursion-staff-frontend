@@ -1,13 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {
-    getMembers,
-    addMember,
-    deleteMembers,
-    updateMembers,
-    isDeployedPreview
-} from "src/utils/api";
+import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
 import {MemberProps, NewMemberProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
 import {useStaff} from "./StaffProvider";
@@ -31,7 +25,7 @@ const useMembersState = () => {
     const {identity} = useLogin();
 
     const {data: fetchMembersData} = useQuery("members", getMembers, {
-        enabled: ["admin", "staff"].includes(identity?.role) || isDeployedPreview
+        enabled: ["admin", "staff"].includes(identity?.role)
     });
 
     useEffect(() => {

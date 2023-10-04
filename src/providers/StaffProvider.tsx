@@ -1,6 +1,6 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addStaff, deleteStaff, getStaff, isDeployedPreview, updateStaff} from "src/utils/api"; // Adjust the API functions as needed
+import {addStaff, deleteStaff, getStaff, updateStaff} from "src/utils/api"; // Adjust the API functions as needed
 import {NewStaffProps, StaffProps} from "src/utils/types";
 import {useLogin} from "./LoginProvider";
 import {GridRowSelectionModel} from "@mui/x-data-grid";
@@ -24,7 +24,7 @@ const useStaffState = () => {
     const {identity} = useLogin();
 
     const {data: fetchStaffData} = useQuery("staff", getStaff, {
-        enabled: ["admin", "staff"].includes(identity?.role) || isDeployedPreview
+        enabled: ["admin", "staff"].includes(identity?.role)
     });
 
     useEffect(() => {
