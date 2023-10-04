@@ -192,6 +192,15 @@ export default function GearTable({searchParams}: GearTableProps) {
         [searchParams, selectedFilter] // Add showOverdue as a dependency
     );
 
+    function getRowId(row) {
+        if (!row._id) {
+            console.log("row doesn't have id property");
+            return;
+        }
+
+        return row._id;
+    }
+
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
@@ -199,7 +208,7 @@ export default function GearTable({searchParams}: GearTableProps) {
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}
-                getRowId={(row) => row._id}
+                getRowId={getRowId}
                 disableRowSelectionOnClick
                 onRowSelectionModelChange={(newRowSelectionModel) => {
                     setGearRowSelectionModel(newRowSelectionModel);
