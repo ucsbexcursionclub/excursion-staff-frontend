@@ -16,7 +16,7 @@ import {isIdentityProps, parseJwt} from "./utils";
 const cookies = new Cookies();
 
 const baseURL =
-    process.env.NODE_ENV === "production"
+    process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview"
         ? "https://excursion-backend.vercel.app"
         : "http://localhost:9000";
 export async function getMembers(): Promise<MemberProps[]> {
