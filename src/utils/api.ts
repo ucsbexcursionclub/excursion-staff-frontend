@@ -19,6 +19,7 @@ const baseURL =
     process.env.NODE_ENV === "production"
         ? "https://excursion-backend.vercel.app"
         : "http://localhost:9000";
+
 export async function getMembers(): Promise<MemberProps[]> {
     const response = await axios.get(`${baseURL}/api/v1/members`, {
         headers: {
