@@ -10,6 +10,7 @@ export type MemberProps = {
     join_datetime: number;
     notes: string | null;
     staff_id?: string;
+    local_living_address?: string;
 };
 
 export type IdentityProps = {
