@@ -118,6 +118,8 @@ export default function MembersTable({searchParams, filter}: MembersTableProps) 
         }
     }, [membersData, filter]);
 
+    const dataForGrid = filter === "expired" || filter === "active" ? filteredRows : membersData;
+
     const handleCellClick = (params: any) => {
         if (params.field === "name") {
             setSelectedMember(params.row);
@@ -135,7 +137,7 @@ export default function MembersTable({searchParams, filter}: MembersTableProps) 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
-                rows={filteredRows}
+                rows={dataForGrid}
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}
