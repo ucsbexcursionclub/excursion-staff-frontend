@@ -1,10 +1,35 @@
-# react-typescript-starter
-###### Minimalist React 18 starter template with TypeScript ⚛ without usage of create-react-app.
+# README and documentation is a work in progress 
 
+# React Typescript
 Configured with:
 - Webpack
 - ESLint
 - Prettier
 
-## Read post on medium:
-https://medium.com/@adriancelczynski/react-with-typescript-starter-kit-without-create-react-app-including-webpack-eslint-bef225c35ffa
+
+# Data Descriptions
+
+Gear Categories
+Camping Gear	Sleeping Bags
+	Sleeping Bag Liners
+	Sleeping Pads
+	Backpacks
+	Water Filters
+	BP Stoves
+	Colman Stoves
+	Lantern
+Climbing Gear	Climbing Shoes
+	Harnesses
+	Climbing Helmet
+	Crash Pads
+	Hammocks
+Water Sports	Wetsuits
+	Paddleboards
+	Kayaks
+	Surfboards
+Other	Yoga Mats
+	Table
+	Cots
+	Croquet Set
+	Sun Shade
+	Tarps
