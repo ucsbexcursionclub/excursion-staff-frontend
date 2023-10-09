@@ -4,25 +4,26 @@ import {
     gridFilteredSortedRowEntriesSelector,
     useGridApiContext
 } from "@mui/x-data-grid";
-import {useGear} from "../providers/GearProvider";
 import Typography from "@mui/material/Typography";
-import {GearProps} from "../utils/types";
+import {MemberProps} from "../utils/types";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import Select, {SelectChangeEvent} from "@mui/material/Select";
-import {GearFilterOptions} from "../utils/constants";
+import {MemberFilterOptions} from "../utils/constants";
+import {useMembers} from "../providers/MembersProvider";
+import {useReservations} from "../providers/ReservationProvider";
 
 function SelectedCount() {
-    const {gearRowSelectionModel} = useGear();
+    const {memberRowSelectionModel} = useMembers();
 
-    const selectedCount = useMemo(() => gearRowSelectionModel.length, [gearRowSelectionModel]);
+    const selectedCount = useMemo(() => memberRowSelectionModel.length, [memberRowSelectionModel]);
 
     return (
         <div className="px-4 py-2 bg-gray-100 shadow-md rounded-2xl">
             <Typography>
                 <strong>{selectedCount}</strong>
-                {` Gear Selected`}
+                {` Member(s) Selected`}
             </Typography>
         </div>
     );
@@ -37,16 +38,16 @@ type AvailibilityViewProps = {
 };
 
 type FilterSelectProps = {
-    onFilterChange: React.Dispatch<React.SetStateAction<GearFilterOptions>>;
+    onFilterChange: React.Dispatch<React.SetStateAction<MemberFilterOptions>>;
 };
 function FilterSelect({onFilterChange}: FilterSelectProps) {
-    const [selectedFilter, setSelectedFilter] = useState<GearFilterOptions>(
-        GearFilterOptions.SHOW_ALL
+    const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
+        MemberFilterOptions.SHOW_ALL
     );
 
-    const handleFilterChange = (event: SelectChangeEvent<GearFilterOptions>) => {
-        setSelectedFilter(event.target.value as GearFilterOptions);
-        onFilterChange(event.target.value as GearFilterOptions);
+    const handleFilterChange = (event: SelectChangeEvent<MemberFilterOptions>) => {
+        setSelectedFilter(event.target.value as MemberFilterOptions);
+        onFilterChange(event.target.value as MemberFilterOptions);
     };
 
     return (
@@ -59,10 +60,12 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
                 onChange={handleFilterChange}
                 label="Select Filter"
             >
-                <MenuItem value={GearFilterOptions.SHOW_ALL}>Show All</MenuItem>
-                <MenuItem value={GearFilterOptions.SHOW_AVAILABLE}>Show Available</MenuItem>
-                <MenuItem value={GearFilterOptions.SHOW_OVERDUE}>Show Overdue Only</MenuItem>
-                <MenuItem value={GearFilterOptions.HIDE_OVERDUE}>Hide Overdue</MenuItem>
+                <MenuItem value={MemberFilterOptions.SHOW_ALL}>Show All</MenuItem>
+                <MenuItem value={MemberFilterOptions.SHOW_EXPIRED}>Expired Members</MenuItem>
+                <MenuItem value={MemberFilterOptions.SHOW_ACTIVE}>Active Members</MenuItem>
+                <MenuItem value={MemberFilterOptions.SHOW_HAS_OVERDUE_GEAR}>
+                    Has Overdue Gear
+                </MenuItem>
             </Select>
         </FormControl>
     );
@@ -73,26 +76,36 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
 
-    const [availableCount, checkedOutCount, overdueCount, totalCount] = useMemo(() => {
-        let localAvailableCount = 0;
-        let localCheckedOutCount = 0;
+    const {retrieveReservationsByMemberId} = useReservations();
+
+    const [activeCount, expiredCount, overdueCount, totalCount] = useMemo(() => {
+        let localActiveCount = 0;
+        let localExpiredCount = 0;
         let localOverdueCount = 0;
         let localTotalCount = 0;
 
         visibleRows.map((row) => {
-            const gear: GearProps = row.model as GearProps;
+            const member: MemberProps = row.model as MemberProps;
 
             localTotalCount++;
 
-            gear.current_reservation ? localCheckedOutCount++ : localAvailableCount++;
+            if ((member.membership_expiration_date || Infinity) > Date.now()) {
+                localActiveCount++;
+            } else {
+                localExpiredCount++;
+            }
 
-            if (gear.reservationDetails && gear.reservationDetails.due_date < Date.now()) {
+            if (
+                retrieveReservationsByMemberId(member._id).filter(
+                    (reservation) => reservation.due_date < Date.now()
+                ).length > 0
+            ) {
                 localOverdueCount++;
             }
         });
 
-        return [localAvailableCount, localCheckedOutCount, localOverdueCount, localTotalCount];
-    }, [visibleRows]);
+        return [localActiveCount, localExpiredCount, localOverdueCount, localTotalCount];
+    }, [visibleRows, retrieveReservationsByMemberId]);
 
     const filter = searchParams || "All";
 
@@ -108,18 +121,18 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             </Typography>
             <Separator />
             <Typography>
-                <strong>{availableCount}</strong>
-                {" Available "}
+                <strong>{activeCount}</strong>
+                {" Active "}
             </Typography>
             <Separator />
             <Typography>
-                <strong>{checkedOutCount}</strong>
-                {" Checked Out "}
+                <strong>{expiredCount}</strong>
+                {" Expired "}
             </Typography>
             <Separator />
             <Typography>
                 <strong>{overdueCount}</strong>
-                {" Overdue "}
+                {" Have Overdue Gear "}
             </Typography>
             <Separator />
             <Typography>
@@ -132,10 +145,10 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
 type GearToolBarProps = {
     searchParams: string;
-    onFilterChange: React.Dispatch<React.SetStateAction<GearFilterOptions>>;
+    onFilterChange: React.Dispatch<React.SetStateAction<MemberFilterOptions>>;
 };
 
-export default function GearToolBar({searchParams, onFilterChange}: GearToolBarProps) {
+export default function MembersToolBar({searchParams, onFilterChange}: GearToolBarProps) {
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}

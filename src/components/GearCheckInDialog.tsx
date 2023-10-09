@@ -8,8 +8,9 @@ import {
     List,
     ListItem
 } from "@mui/material";
-import {useGear} from "src/providers/GearProvider";
+import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {GearProps} from "../utils/types";
 
 type GearCheckInDialogProps = {
     open: boolean;
@@ -23,7 +24,9 @@ const GearCheckInDialog: React.FC<GearCheckInDialogProps> = ({open, onClose}) =>
         onClose();
     };
 
-    const gearsToCheckIn = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
+    const gearsToCheckIn = gearRowSelectionModel
+        .map((id) => retrieveGearItem(id.toString()))
+        .filter(Boolean) as GearProps[];
 
     const handleConfirmCheckIn = async () => {
         await handleGearCheckin(gearsToCheckIn);

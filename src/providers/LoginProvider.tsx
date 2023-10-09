@@ -1,11 +1,12 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
-import {verifyAccessToken, verifyJWTToken} from "src/utils/api";
-import {IdentityProps} from "src/utils/types";
+import {verifyAccessToken, verifyJWTToken} from "../utils/api";
+import {IdentityProps} from "../utils/types";
 import Cookies from "universal-cookie";
 
 type LoginContextType = {
     isLoggedIn: boolean;
     isAdmin: boolean;
+    isStaff: boolean;
     identity: IdentityProps | null;
     verifyJWT: () => Promise<boolean>;
     login: (accessToken: string) => Promise<void>;
@@ -19,6 +20,9 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
     const [isFetching, setIsFetching] = useState(false);
     const [identity, setIdentity] = useState<IdentityProps | null>(null);
 
+    const isStaff = !!identity && ["admin", "staff"].includes(identity.role);
+    const isAdmin = identity?.role === "admin";
+    identity;
     const verifyJWT = useCallback(async () => {
         const jwt = new Cookies().get("jwt");
         if (jwt) {
@@ -44,16 +48,14 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
         setIsFetching(true);
         const userIdentity = await verifyAccessToken(accessToken);
         setIsFetching(false);
-        if (!userIdentity) return null;
+        if (!userIdentity) return;
         setIdentity(userIdentity);
         setIsLoggedIn(true);
     };
 
-    const isAdmin = true;
-
     return (
         <LoginContext.Provider
-            value={{isLoggedIn, isAdmin, identity, verifyJWT, login, isFetching}}
+            value={{isLoggedIn, isAdmin, isStaff, identity, verifyJWT, login, isFetching}}
         >
             {children}
         </LoginContext.Provider>

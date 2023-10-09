@@ -8,8 +8,9 @@ import {
     List,
     ListItem
 } from "@mui/material";
-import {useMembers} from "src/providers/MembersProvider";
+import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {MemberProps} from "../utils/types";
 
 type MemberRemoveDialogProps = {
     open: boolean;
@@ -23,7 +24,9 @@ const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) 
 
     const {retrieveMemberItem, handleMemberDelete, memberRowSelectionModel} = useMembers();
 
-    const membersToDelete = memberRowSelectionModel.map((id) => retrieveMemberItem(id.toString()));
+    const membersToDelete = memberRowSelectionModel
+        .map((id) => retrieveMemberItem(id.toString()))
+        .filter(Boolean) as MemberProps[];
 
     async function handleConfirmDelete() {
         await handleMemberDelete(membersToDelete);

@@ -1,17 +1,17 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
     corePlugins: {
         preflight: false
     },
     important: "#root",
-    content: ["./src/**/*.{js,jsx,ts,tsx}"],
+    content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
     theme: {
         extend: {
             minWidth: {
-                80: "320px",
+                80: "320px"
             },
             maxWidth: {
-              "1/4": "25%"
+                "1/4": "25%"
             },
             maxHeight: {
                 20: "80px"

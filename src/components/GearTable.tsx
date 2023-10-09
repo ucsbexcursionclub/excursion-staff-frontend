@@ -2,33 +2,34 @@ import {TablePaginationProps} from "@mui/material";
 import MuiPagination from "@mui/material/Pagination";
 import {
     DataGrid,
-    GridCellParams,
     GridColDef,
     GridComparatorFn,
     GridFilterInputValue,
     GridFilterItem,
-    GridFilterModel,
+    GridFilterOperator,
     GridPagination,
     gridPageCountSelector,
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
 import React, {useState} from "react";
-import {GearProps} from "src/utils/types";
+import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
-import {useGear} from "src/providers/GearProvider";
-import CustomToolbar from "./GearToolbar";
-
-const dateOperators = [
+import {useGear} from "../providers/GearProvider";
+import GearToolBar from "./GearToolbar";
+import {GearFilterOptions} from "../utils/constants";
+const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
         value: "<",
-        getApplyFilterFn: (filterItem: GridFilterItem) => {
-            if (!filterItem.value) {
-                return;
-            }
-            return (params: GridCellParams<GearProps>) => {
+        getApplyFilterFn: () => null,
+        getApplyFilterFnV7: (filterItem: GridFilterItem) => {
+            return (params: number | null) => {
+                if (!params) {
+                    return false;
+                }
+
                 const filterValue = filterItem.value;
-                const cellValue = params.row?.reservationDetails?.due_date || Infinity;
+                const cellValue = params;
                 return cellValue < filterValue;
             };
         },
@@ -36,19 +37,24 @@ const dateOperators = [
         InputComponentProps: {type: "date"}
     },
     {
-        value: ">",
-        getApplyFilterFn: (filterItem: GridFilterItem) => {
-            if (!filterItem.value) {
-                return;
-            }
-            return (params: GridCellParams<GearProps>) => {
+        value: ">=",
+        getApplyFilterFn: () => null,
+        getApplyFilterFnV7: (filterItem: GridFilterItem) => {
+            return (params: number | null) => {
                 const filterValue = filterItem.value;
-                const cellValue = params.row?.reservationDetails?.due_date || -Infinity;
-                return cellValue > filterValue;
+                const cellValue = params || Infinity;
+                return cellValue >= filterValue;
             };
         },
         InputComponent: GridFilterInputValue,
         InputComponentProps: {type: "date"}
+    },
+    {
+        value: "NULL",
+        getApplyFilterFn: () => null,
+        getApplyFilterFnV7: () => {
+            return (params: number | null) => !params;
+        }
     }
 ];
 
@@ -149,11 +155,10 @@ type GearTableProps = {
 export default function GearTable({searchParams}: GearTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedGear, setSelectedGear] = useState<GearProps | null>(null);
-    //const [filterButtonEl, setFilterButtonEl] = React.useState<HTMLButtonElement | null>(null);
 
     const {gearData, gearRowSelectionModel, setGearRowSelectionModel} = useGear();
-    const [selectedFilter, setSelectedFilter] = useState<"showOverdue" | "showAll" | "hideOverdue">(
-        "showAll"
+    const [selectedFilter, setSelectedFilter] = useState<GearFilterOptions>(
+        GearFilterOptions.SHOW_ALL
     );
 
     const handleCellClick = (params: any) => {
@@ -169,35 +174,47 @@ export default function GearTable({searchParams}: GearTableProps) {
     };
 
     const getRowId = (row: GearProps) => row._id;
+    const calculateFilterItems = () => {
+        const today = new Date().getTime();
 
-    const filterModel: GridFilterModel = React.useMemo(
-        () => {
-            const items: GridFilterItem[] = [];
-
-            switch (selectedFilter) {
-                case "showOverdue":
-                    items.push({
+        switch (selectedFilter) {
+            case GearFilterOptions.SHOW_OVERDUE:
+                return [
+                    {
                         id: 1,
                         field: "due_date",
                         operator: "<",
-                        value: Date.now()
-                    });
-                    break;
-                case "hideOverdue":
-                    items.push({id: 1, field: "due_date", operator: ">", value: Date.now()});
-                    break;
-                default:
-                    break;
-            }
+                        value: today
+                    }
+                ];
 
-            return {
-                items: items,
-                quickFilterExcludeHiddenColumns: true,
-                quickFilterValues: [searchParams]
-            };
-        },
-        [searchParams, selectedFilter] // Add showOverdue as a dependency
-    );
+            case GearFilterOptions.HIDE_OVERDUE:
+                return [
+                    {
+                        id: 1,
+                        field: "due_date",
+                        operator: ">=",
+                        value: today
+                    }
+                ];
+
+            case GearFilterOptions.SHOW_AVAILABLE:
+                return [
+                    {
+                        id: 1,
+                        field: "due_date",
+                        operator: "NULL",
+                        value: today
+                    }
+                ];
+
+            case GearFilterOptions.SHOW_ALL:
+            default:
+                return []; // No filters
+        }
+    };
+
+    const filterItems = calculateFilterItems();
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
@@ -213,7 +230,11 @@ export default function GearTable({searchParams}: GearTableProps) {
                 }}
                 rowSelectionModel={gearRowSelectionModel}
                 disableColumnMenu
-                filterModel={filterModel}
+                filterModel={{
+                    items: filterItems,
+                    quickFilterExcludeHiddenColumns: true,
+                    quickFilterValues: [searchParams]
+                }}
                 initialState={{
                     columns: {
                         columnVisibilityModel: {
@@ -230,7 +251,7 @@ export default function GearTable({searchParams}: GearTableProps) {
                 pageSizeOptions={[10, 25, 50, 100]}
                 checkboxSelection
                 slots={{
-                    toolbar: CustomToolbar,
+                    toolbar: GearToolBar,
                     pagination: CustomPagination
                 }}
                 slotProps={{

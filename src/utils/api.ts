@@ -15,10 +15,9 @@ import Cookies from "universal-cookie";
 import {isIdentityProps, parseJwt} from "./utils";
 const cookies = new Cookies();
 
-const baseURL =
-    process.env.NODE_ENV === "production"
-        ? "https://excursion-backend.vercel.app"
-        : "http://localhost:9000";
+const baseURL = import.meta.env.PROD
+    ? "https://excursion-backend.vercel.app"
+    : "http://localhost:9000";
 
 export async function getMembers(): Promise<MemberProps[]> {
     const response = await axios.get(`${baseURL}/api/v1/members`, {
@@ -221,10 +220,9 @@ export const verifyAccessToken = async (accessToken: string): Promise<IdentityPr
 
         const jwtToken = response.data.data;
 
-        if (!jwtToken) return;
+        if (!jwtToken) return null;
 
-        const isSecure =
-            process.env.NODE_ENV === "production" || window.location.protocol === "https:";
+        const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
 
         new Cookies().set("jwt", jwtToken, {
             path: "/",
@@ -237,11 +235,11 @@ export const verifyAccessToken = async (accessToken: string): Promise<IdentityPr
         if (isIdentityProps(decodedJWT)) {
             return decodedJWT;
         } else {
-            return;
+            return null;
         }
     } catch (error) {
         console.error("Error sending token to backend:", error);
-        return;
+        return null;
     }
 };
 
@@ -253,10 +251,9 @@ export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null>
 
         const jwtToken = response.data.data;
 
-        if (!jwtToken) return;
+        if (!jwtToken) return null;
 
-        const isSecure =
-            process.env.NODE_ENV === "production" || window.location.protocol === "https:";
+        const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
 
         new Cookies().set("jwt", jwtToken, {
             path: "/",
@@ -269,7 +266,7 @@ export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null>
         if (isIdentityProps(decodedJWT)) {
             return decodedJWT;
         } else {
-            return;
+            return null;
         }
     } catch (error) {
         console.error("Error verifying token:", error);

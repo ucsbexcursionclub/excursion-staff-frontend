@@ -2,7 +2,7 @@ import {createRoot} from "react-dom/client";
 import {CssBaseline, ThemeProvider, createTheme} from "@mui/material";
 import {BrowserRouter as Router} from "react-router-dom";
 import {StyledEngineProvider} from "@mui/material/styles";
-import {QueryClient, QueryClientProvider} from "react-query";
+import {QueryClient, QueryClientProvider, QueryFunctionContext, QueryKey} from "react-query";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 
 import React from "react";
@@ -19,8 +19,8 @@ declare module "@mui/material" {
     }
 }
 
-const defaultQueryFunction = async ({queryKey}) => {
-    const [type, id] = queryKey;
+const defaultQueryFunction = async ({queryKey}: QueryFunctionContext<QueryKey>) => {
+    const [type, id] = queryKey as string[];
 
     if (type === "gearItem" && id) {
         console.log(`fetching gear ${id} from db`);

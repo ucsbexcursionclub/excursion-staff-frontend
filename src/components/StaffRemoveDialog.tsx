@@ -1,15 +1,14 @@
 import React from "react";
-import {
-    Dialog,
-    DialogTitle,
-    DialogActions,
-    Button,
-    Typography,
-    List,
-    ListItem
-} from "@mui/material";
-import {useStaff} from "src/providers/StaffProvider";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogActions from "@mui/material/DialogActions";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import {useStaff} from "../providers/StaffProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {StaffProps} from "../utils/types";
 
 type StaffRemoveDialogProps = {
     open: boolean;
@@ -23,9 +22,9 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
 
     const {retrieveStaffById, handleStaffDelete, staffRowSelectionModel} = useStaff();
 
-    const staffMembersToDelete = staffRowSelectionModel.map((id) =>
-        retrieveStaffById(id.toString())
-    );
+    const staffMembersToDelete: StaffProps[] = staffRowSelectionModel
+        .map((id) => retrieveStaffById(id.toString()))
+        .filter(Boolean) as StaffProps[];
 
     async function handleConfirmDelete() {
         await handleStaffDelete(staffMembersToDelete);
@@ -42,7 +41,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
             slotProps={{
                 backdrop: {
                     open: open,
-                    onClose: handleClose
+                    onClose: handleClose //if you see an error here open index.tsx file, theres an override that the compiler might not notice at first
                 }
             }}
         >
@@ -61,7 +60,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
                             return (
                                 <ListItem key={staffMember._id}>
                                     <Typography color="textSecondary">
-                                        {staffMember.memberDetails.name}
+                                        {staffMember.memberDetails?.name}
                                     </Typography>
                                 </ListItem>
                             );

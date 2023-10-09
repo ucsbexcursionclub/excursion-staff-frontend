@@ -10,8 +10,8 @@ import {
     ListItem
 } from "@mui/material";
 import MembersAutoComplete from "./MembersAutoComplete";
-import {MemberProps} from "src/utils/types";
-import {useGear} from "src/providers/GearProvider";
+import {MemberProps} from "../utils/types";
+import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
 
 type GearCheckOutDialogProps = {

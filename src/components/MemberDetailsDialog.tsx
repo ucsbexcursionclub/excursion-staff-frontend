@@ -11,8 +11,8 @@ import {
     Typography,
     DialogContent
 } from "@mui/material";
-import {MemberProps} from "src/utils/types";
-import {useMembers} from "src/providers/MembersProvider";
+import {MemberProps} from "../utils/types";
+import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
 
 type MemberDetailsDialogProps = {
