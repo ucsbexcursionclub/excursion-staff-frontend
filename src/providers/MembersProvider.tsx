@@ -1,17 +1,17 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {getMembers, addMember, deleteMembers, updateMembers} from "src/utils/api";
-import {MemberProps, NewMemberProps} from "src/utils/types";
+import {getMembers, addMember, deleteMembers, updateMembers} from "../utils/api";
+import {MemberProps, NewMemberProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {useStaff} from "./StaffProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
-    currentMemberData: MemberProps | null;
+    currentMemberData: MemberProps | null | undefined;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
     handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
-    retrieveMemberItem: (id: string) => MemberProps | undefined;
+    retrieveMemberItem: (id: string) => MemberProps | null;
     handleMemberDelete: (selectedMember: MemberProps[]) => Promise<void>;
     handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
     memberRowSelectionModel: GridRowSelectionModel;
@@ -22,10 +22,10 @@ const useMembersState = () => {
     const queryClient = useQueryClient();
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
     const [currentMemberData, setCurrentMemberData] = useState<MemberProps | null>();
-    const {identity} = useLogin();
+    const {isStaff} = useLogin();
 
     const {data: fetchMembersData} = useQuery("members", getMembers, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -48,7 +48,7 @@ const useMembersOperations = (
     membersData: MemberProps[],
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>,
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>,
-    setCurrentMemberData: React.Dispatch<React.SetStateAction<MemberProps>>
+    setCurrentMemberData: React.Dispatch<React.SetStateAction<MemberProps | undefined | null>>
 ) => {
     const queryClient = useQueryClient();
 
@@ -92,9 +92,9 @@ const useMembersOperations = (
 
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);
-        const associatedStaff = selectedMembers
-            .filter((member) => member.staff_id)
-            .map((member) => retrieveStaffById(member.staff_id));
+        const associatedStaff: StaffProps[] = selectedMembers
+            .map((member) => member.staff_id && retrieveStaffById(member.staff_id))
+            .filter(Boolean) as StaffProps[];
 
         setMemberRowSelectionModel([]);
 

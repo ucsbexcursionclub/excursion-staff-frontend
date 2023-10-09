@@ -6,9 +6,9 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Avatar from "@mui/material/Avatar";
-import {useStaff} from "src/providers/StaffProvider";
-import {StaffProps} from "src/utils/types";
-import {useMembers} from "src/providers/MembersProvider";
+import {useStaff} from "../providers/StaffProvider";
+import {StaffProps} from "../utils/types";
+import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
 
 interface EditProfileFormDialogProps {

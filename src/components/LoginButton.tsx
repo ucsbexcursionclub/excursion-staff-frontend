@@ -10,10 +10,10 @@ import Logout from "@mui/icons-material/Logout";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
-import {useLogin} from "src/providers/LoginProvider";
+import {useLogin} from "../providers/LoginProvider";
 import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
 import {Edit} from "@mui/icons-material";
-import {useMembers} from "src/providers/MembersProvider";
+import {useMembers} from "../providers/MembersProvider";
 
 const cookies = new Cookies();
 

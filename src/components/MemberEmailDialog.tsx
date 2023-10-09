@@ -1,7 +1,7 @@
 import React from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
-import {useMembers} from "src/providers/MembersProvider";
+import {useMembers} from "../providers/MembersProvider";
 import TextField from "@mui/material/TextField";
 import {BlurBackDrop} from "./HelperComponents";
 import {Typography} from "@mui/material";
@@ -54,7 +54,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
         switch (copyEmailOption) {
             case "copyActive":
                 filteredData = filteredData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date);
+                    const expirationDate = new Date(row.membership_expiration_date || Infinity);
                     const today = new Date();
                     today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
                     return expirationDate >= today || row.membership_expiration_date === null;
@@ -62,7 +62,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
                 break;
             case "copyExpired":
                 filteredData = filteredData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date);
+                    const expirationDate = new Date(row.membership_expiration_date || Infinity);
                     const today = new Date();
                     today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
                     return expirationDate < today && row.membership_expiration_date !== null;

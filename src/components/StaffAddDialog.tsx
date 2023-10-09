@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from "react";
-import MembersAutoComplete from "src/components/MembersAutoComplete";
-import {IdentityProps, MemberProps, NewStaffProps} from "src/utils/types";
+import MembersAutoComplete from "../components/MembersAutoComplete";
+import {IdentityProps, MemberProps, NewStaffProps} from "../utils/types";
 import {
     Dialog,
     DialogTitle,
@@ -12,10 +12,10 @@ import {
     RadioGroup,
     Radio
 } from "@mui/material";
-import {useStaff} from "src/providers/StaffProvider";
-import {positionOptions} from "src/utils/constants";
+import {useStaff} from "../providers/StaffProvider";
+import {positionOptions} from "../utils/constants";
 import {BlurBackDrop} from "./HelperComponents";
-import {useMembers} from "src/providers/MembersProvider";
+import {useMembers} from "../providers/MembersProvider";
 
 type StaffAddDialogProps = {
     open: boolean;

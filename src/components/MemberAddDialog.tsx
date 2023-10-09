@@ -13,8 +13,8 @@ import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
-import {useMembers} from "src/providers/MembersProvider";
-import {MemberProps} from "src/utils/types";
+import {useMembers} from "../providers/MembersProvider";
+import {MemberProps} from "../utils/types";
 import MembersAutoComplete from "./MembersAutoComplete";
 import {BlurBackDrop} from "./HelperComponents";
 

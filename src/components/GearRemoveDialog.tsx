@@ -8,8 +8,9 @@ import {
     List,
     ListItem
 } from "@mui/material";
-import {useGear} from "src/providers/GearProvider";
+import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {GearProps} from "../utils/types";
 
 type GearRemoveDialogProps = {
     open: boolean;
@@ -23,7 +24,9 @@ const GearRemoveDialog: React.FC<GearRemoveDialogProps> = ({open, onClose}) => {
         onClose();
     };
 
-    const gearsToDelete = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
+    const gearsToDelete = gearRowSelectionModel
+        .map((id) => retrieveGearItem(id.toString()))
+        .filter(Boolean) as GearProps[];
 
     async function handleConfirmDelete() {
         await handleGearDelete(gearsToDelete);

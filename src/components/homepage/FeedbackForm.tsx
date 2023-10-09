@@ -2,7 +2,7 @@ import React, {useState, ChangeEvent, FormEvent} from "react";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import {Button, Typography} from "@mui/material";
-import {sendFeedback} from "src/utils/api";
+import {sendFeedback} from "../../utils/api";
 
 interface Props {
     fontSize: string;

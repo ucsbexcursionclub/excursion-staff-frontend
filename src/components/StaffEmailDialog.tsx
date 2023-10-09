@@ -2,7 +2,7 @@ import React from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import Typography from "@mui/material/Typography";
-import {useStaff} from "src/providers/StaffProvider"; // Import the staff provider
+import {useStaff} from "../providers/StaffProvider"; // Import the staff provider
 import TextField from "@mui/material/TextField";
 import {BlurBackDrop} from "./HelperComponents";
 

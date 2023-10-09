@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LoginButton from "./LoginButton";
-import {useLogin} from "src/providers/LoginProvider";
+import {useLogin} from "../providers/LoginProvider";
 
 const baseTabs = [
     {label: "Home", href: "/"},

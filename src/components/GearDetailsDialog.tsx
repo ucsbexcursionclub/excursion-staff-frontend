@@ -13,8 +13,8 @@ import {
     Typography,
     DialogContent
 } from "@mui/material";
-import {GearProps} from "src/utils/types";
-import {useGear} from "src/providers/GearProvider";
+import {GearProps} from "../utils/types";
+import {useGear} from "../providers/GearProvider";
 import CheckoutHistory from "./CheckoutHistory";
 import {BlurBackDrop} from "./HelperComponents";
 

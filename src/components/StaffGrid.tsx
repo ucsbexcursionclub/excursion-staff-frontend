@@ -2,7 +2,7 @@ import React from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import StaffCard from "./StaffCard"; // Import your StaffCard component
-import {useStaff} from "src/providers/StaffProvider";
+import {useStaff} from "../providers/StaffProvider";
 
 const StaffGrid: React.FC = () => {
     //TODO: extract this to some safe function where we just pull staff information like name, email, bio

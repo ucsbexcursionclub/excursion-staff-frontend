@@ -6,7 +6,7 @@ import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/StaffPage";
 import EditStaffPage from "./pages/EditStaffPage";
 import LinkPage from "./pages/LinksPage";
-import Layout from "components/Layout";
+import Layout from "./components/Layout";
 import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
@@ -54,7 +54,7 @@ function App() {
     }, [location.pathname, identity]);
 
     const isAdmin = identity?.role === "admin";
-    const isStaffOrAdmin = ["staff", "admin"].includes(identity?.role);
+    const isStaffOrAdmin = !!identity && ["staff", "admin"].includes(identity.role);
 
     return (
         <ReservationsProvider>

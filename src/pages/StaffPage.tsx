@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from "react";
-import StaffGrid from "src/components/StaffGrid";
+import StaffGrid from "../components/StaffGrid";
 import Typography from "@mui/material/Typography";
-import ImageContainer from "components/homepage/ImageContainer";
+import ImageContainer from "../components/homepage/ImageContainer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
