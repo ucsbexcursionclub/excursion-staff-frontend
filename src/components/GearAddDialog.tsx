@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Dialog, DialogTitle, DialogActions, Button, TextField} from "@mui/material";
-import {useGear} from "src/providers/GearProvider";
+import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
 
 type GearAddDialogProps = {

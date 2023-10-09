@@ -1,8 +1,8 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addGear, deleteGearItems, getGear, updateGear} from "src/utils/api";
-import {GearProps, MemberProps, NewGearProps} from "src/utils/types";
+import {addGear, deleteGearItems, getGear, updateGear} from "../utils/api";
+import {GearProps, MemberProps, NewGearProps} from "../utils/types";
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
 
@@ -23,10 +23,10 @@ interface GearContextProps {
 const useGearState = () => {
     const queryClient = useQueryClient();
     const [gearData, setGearData] = useState<GearProps[]>([]);
-    const {identity} = useLogin();
+    const {isStaff} = useLogin();
 
     const {data: fetchGearData} = useQuery("gear", getGear, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -121,7 +121,9 @@ const useGearOperations = (
     const handleGearCheckin = async (selectedGear: GearProps[]) => {
         setGearRowSelectionModel([]);
 
-        const reservationIds = [...new Set(selectedGear.map((gear) => gear.current_reservation))];
+        const reservationIds = [
+            ...new Set(selectedGear.map((gear) => gear.current_reservation).filter(Boolean))
+        ] as string[];
 
         await handleReservationEnd(reservationIds);
 

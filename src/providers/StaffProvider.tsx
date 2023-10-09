@@ -1,7 +1,7 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addStaff, deleteStaff, getStaff, updateStaff} from "src/utils/api"; // Adjust the API functions as needed
-import {NewStaffProps, StaffProps} from "src/utils/types";
+import {addStaff, deleteStaff, getStaff, updateStaff} from "../utils/api"; // Adjust the API functions as needed
+import {NewStaffProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 
@@ -15,7 +15,7 @@ interface StaffContextProps {
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
     handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
-    handleFileUpload: (uploadedFile: any) => Promise<string>;
+    handleFileUpload: (uploadedFile: File) => Promise<string>;
 }
 
 const useStaffState = () => {
@@ -24,7 +24,7 @@ const useStaffState = () => {
     const {identity} = useLogin();
 
     const {data: fetchStaffData} = useQuery("staff", getStaff, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: !!identity && ["admin", "staff"].includes(identity.role)
     });
 
     useEffect(() => {
@@ -100,7 +100,7 @@ const useStaffOperations = (
         recomputeAggregatedStaff();
     };
 
-    const handleFileUpload = async (uploadedFile) => {
+    const handleFileUpload = async (uploadedFile: File) => {
         uploadedFile;
         return "";
         //need this to upload the image to the backend, backend uploads the image to s3 and cloudfront

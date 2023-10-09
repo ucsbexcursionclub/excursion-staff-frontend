@@ -1,9 +1,9 @@
-import MembersNav from "components/MembersNav";
-import MembersTable from "components/MembersTable";
+import MembersNav from "../components/MembersNav";
+import MembersTable from "../components/MembersTable";
 import React, {useState} from "react";
 
 export default function MembersPage() {
-    const [searchParams, setSearchParams] = useState<string>();
+    const [searchParams, setSearchParams] = useState<string>("");
 
     return (
         <>

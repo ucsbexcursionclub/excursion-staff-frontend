@@ -5,7 +5,7 @@ import MuiAccordion, {AccordionProps} from "@mui/material/Accordion";
 import MuiAccordionSummary, {AccordionSummaryProps} from "@mui/material/AccordionSummary";
 import MuiAccordionDetails from "@mui/material/AccordionDetails";
 import Typography from "@mui/material/Typography";
-import {faqItems} from "src/data/faq";
+import {faqItems} from "../../data/faq";
 
 const Accordion = styled((props: AccordionProps) => (
     <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -41,7 +41,11 @@ const AccordionDetails = styled(MuiAccordionDetails)(({theme}) => ({
     borderTop: "1px solid rgba(0, 0, 0, .125)"
 }));
 
-export default function FAQAccordion({fontSize}) {
+type FAQAccordionProps = {
+    fontSize: string;
+};
+
+export default function FAQAccordion({fontSize}: FAQAccordionProps) {
     return (
         <div>
             {faqItems.map((item, index) => (

@@ -1,8 +1,8 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addReservation, endReservations, getReservations} from "src/utils/api";
-import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "src/utils/types";
+import {addReservation, endReservations, getReservations} from "../utils/api";
+import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 
 interface ReservationsContextProps {
@@ -15,15 +15,16 @@ interface ReservationsContextProps {
     retrieveReservations: (ids: string[]) => ReservationProps[];
     setReservationRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     retrieveReservationsByGearId: (id: string) => ReservationProps[];
+    retrieveReservationsByMemberId: (id: string) => ReservationProps[];
 }
 
 const useReservationsState = () => {
     const queryClient = useQueryClient();
     const [reservationsData, setReservationsData] = useState<ReservationProps[]>([]);
-    const {identity} = useLogin();
+    const {isStaff} = useLogin();
 
     const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
-        enabled: ["admin", "staff"].includes(identity?.role)
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -53,7 +54,10 @@ const useReservationsOperations = (
 
     const recomputeAggregatedReservations = () => {
         const aggregatedReservations = queryClient
-            .getQueriesData<ReservationProps>({queryKey: ["reservationItem"], exact: false})
+            .getQueriesData<ReservationProps>({
+                queryKey: ["reservationItem"],
+                exact: false
+            })
             .map((query) => query[1]);
 
         setReservationsData(aggregatedReservations);
@@ -69,6 +73,10 @@ const useReservationsOperations = (
 
     const retrieveReservationsByGearId = (id: string) => {
         return reservationsData.filter((reservation) => reservation.reserved_gear.includes(id));
+    };
+
+    const retrieveReservationsByMemberId = (id: string) => {
+        return reservationsData.filter((reservation) => reservation.reserving_member === id);
     };
 
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
@@ -107,7 +115,8 @@ const useReservationsOperations = (
         handleReservationEnd,
         retrieveReservation,
         retrieveReservations,
-        retrieveReservationsByGearId
+        retrieveReservationsByGearId,
+        retrieveReservationsByMemberId
     };
 };
 

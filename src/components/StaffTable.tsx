@@ -1,8 +1,8 @@
 import * as React from "react";
 import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
-import {capitalizeFirstLetter} from "src/utils/utils";
-import {useStaff} from "src/providers/StaffProvider";
-import {positionOptions} from "src/utils/constants";
+import {capitalizeFirstLetter} from "../utils/utils";
+import {useStaff} from "../providers/StaffProvider";
+import {positionOptions} from "../utils/constants";
 
 // Get weight for a single position
 const getPositionWeight = (position: string): number => {
@@ -11,8 +11,8 @@ const getPositionWeight = (position: string): number => {
 };
 
 // Get total weight for a row
-const getRowWeight = (positions: string[]): number => {
-    if (!positions) return;
+const getRowWeight = (positions: string[]): number | null => {
+    if (!positions) return null;
     return positions.reduce((total, position) => total + getPositionWeight(position), 0);
 };
 
@@ -20,6 +20,7 @@ const getRowWeight = (positions: string[]): number => {
 const positionsComparator = (v1: string[], v2: string[]): number => {
     const weight1 = getRowWeight(v1);
     const weight2 = getRowWeight(v2);
+    if (!weight1 || !weight2) return 0;
     if (weight1 < weight2) return -1;
     if (weight1 > weight2) return 1;
     return 0;

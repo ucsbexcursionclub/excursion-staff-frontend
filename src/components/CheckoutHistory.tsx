@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {Button, Card, CardActions, CardContent, Stack, Typography} from "@mui/material";
-import {ReservationProps} from "src/utils/types";
-import {useReservations} from "src/providers/ReservationProvider";
+import {ReservationProps} from "../utils/types";
+import {useReservations} from "../providers/ReservationProvider";
 
 type ReservationDetailsProps = {
     reservation: ReservationProps;

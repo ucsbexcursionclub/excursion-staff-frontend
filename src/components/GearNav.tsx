@@ -5,7 +5,7 @@ import GearRemoveDialog from "./GearRemoveDialog";
 import GearAddDialog from "./GearAddDialog";
 import GearCheckOutDialog from "./GearCheckOutDialog";
 import GearCheckInDialog from "./GearCheckInDialog";
-import {useGear} from "src/providers/GearProvider";
+import {useGear} from "../providers/GearProvider";
 
 type GearNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;

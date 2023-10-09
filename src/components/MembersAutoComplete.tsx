@@ -1,14 +1,16 @@
-import * as React from "react";
+import React, {ReactNode} from "react";
 import TextField from "@mui/material/TextField";
 import Autocomplete, {autocompleteClasses} from "@mui/material/Autocomplete";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import ListSubheader from "@mui/material/ListSubheader";
 import Popper from "@mui/material/Popper";
-import {useTheme, styled} from "@mui/material/styles";
+import useTheme from "@mui/material/styles/useTheme";
+import styled from "@mui/material/styles/styled";
+
 import {VariableSizeList, ListChildComponentProps} from "react-window";
 import Typography from "@mui/material/Typography";
-import {MemberProps} from "src/utils/types";
-import {useMembers} from "src/providers/MembersProvider";
+import {MemberProps} from "../utils/types";
+import {useMembers} from "../providers/MembersProvider";
 
 const LISTBOX_PADDING = 8; // px
 
@@ -53,63 +55,65 @@ function useResetCache(data: any) {
     return ref;
 }
 
-// Adapter for react-window
-const ListboxComponent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLElement>>(
-    function ListboxComponent(props, ref) {
-        const {children, ...other} = props;
-        const itemData: React.ReactNode[] = [];
-        (children as React.ReactNode[]).forEach(
-            (item: React.ReactNode & {children?: React.ReactNode[]}) => {
-                itemData.push(item);
-                itemData.push(...(item.children || []));
-            }
-        );
+interface ListboxProps extends React.HTMLAttributes<HTMLElement> {
+    children?: Array<React.ReactNode & {children?: React.ReactNode[]}>;
+}
 
-        const theme = useTheme();
-        const smUp = useMediaQuery(theme.breakpoints.up("sm"), {
-            noSsr: true
-        });
-        const itemCount = itemData.length;
-        const itemSize = smUp ? 36 : 48;
+const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(function ListboxComponent(
+    props,
+    ref
+) {
+    const {children, ...other} = props;
+    const itemData: React.ReactNode[] = [];
+    children?.forEach((item) => {
+        itemData.push(item);
+        itemData.push(...(item.children || []));
+    });
 
-        const getChildSize = (child: React.ReactNode) => {
-            if (Object.prototype.hasOwnProperty.call(child, "group")) {
-                return 48;
-            }
+    const theme = useTheme();
+    const smUp = useMediaQuery(theme.breakpoints.up("sm"), {
+        noSsr: true
+    });
+    const itemCount = itemData.length;
+    const itemSize = smUp ? 36 : 48;
 
-            return itemSize;
-        };
+    const getChildSize = (child: React.ReactNode) => {
+        if (Object.prototype.hasOwnProperty.call(child, "group")) {
+            return 48;
+        }
 
-        const getHeight = () => {
-            if (itemCount > 8) {
-                return 8 * itemSize;
-            }
-            return itemData.map(getChildSize).reduce((a, b) => a + b, 0);
-        };
+        return itemSize;
+    };
 
-        const gridRef = useResetCache(itemCount);
+    const getHeight = () => {
+        if (itemCount > 8) {
+            return 8 * itemSize;
+        }
+        return itemData.map(getChildSize).reduce((a, b) => a + b, 0);
+    };
 
-        return (
-            <div ref={ref}>
-                <OuterElementContext.Provider value={other}>
-                    <VariableSizeList
-                        itemData={itemData}
-                        height={getHeight() + 2 * LISTBOX_PADDING}
-                        width="100%"
-                        ref={gridRef}
-                        outerElementType={OuterElementType}
-                        innerElementType="ul"
-                        itemSize={(index) => getChildSize(itemData[index])}
-                        overscanCount={5}
-                        itemCount={itemCount}
-                    >
-                        {renderRow}
-                    </VariableSizeList>
-                </OuterElementContext.Provider>
-            </div>
-        );
-    }
-);
+    const gridRef = useResetCache(itemCount);
+
+    return (
+        <div ref={ref}>
+            <OuterElementContext.Provider value={other}>
+                <VariableSizeList
+                    itemData={itemData}
+                    height={getHeight() + 2 * LISTBOX_PADDING}
+                    width="100%"
+                    ref={gridRef}
+                    outerElementType={OuterElementType}
+                    innerElementType="ul"
+                    itemSize={(index) => getChildSize(itemData[index])}
+                    overscanCount={5}
+                    itemCount={itemCount}
+                >
+                    {renderRow}
+                </VariableSizeList>
+            </OuterElementContext.Provider>
+        </div>
+    );
+});
 
 ListboxComponent.displayName = "ListboxComponent";
 
@@ -127,8 +131,8 @@ type MembersAutoCompleteProps = {
     error?: boolean;
     setError?: React.Dispatch<React.SetStateAction<boolean>>;
     overrideLabel?: string;
-    memberVal: MemberProps;
-    setMemberVal: React.Dispatch<React.SetStateAction<MemberProps | null>>;
+    memberVal: MemberProps | undefined | null;
+    setMemberVal: React.Dispatch<React.SetStateAction<MemberProps | undefined | null>>;
 };
 
 export default function MembersAutoComplete({
@@ -140,9 +144,10 @@ export default function MembersAutoComplete({
 }: MembersAutoCompleteProps) {
     const [inputValue, setInputValue] = React.useState("");
 
-    const updateInputVal = (event, newInputValue) => {
+    const updateInputVal = (event: React.SyntheticEvent<Element, Event>, value: string) => {
+        event;
         setError && setError(false);
-        setInputValue(newInputValue);
+        setInputValue(value);
     };
 
     const {membersData} = useMembers();
@@ -154,22 +159,23 @@ export default function MembersAutoComplete({
             value={memberVal}
             style={error ? {border: "1px solid red"} : {}}
             onChange={(event: any, newValue: MemberProps | null) => {
+                event;
                 setMemberVal(newValue);
             }}
             inputValue={inputValue}
             onInputChange={updateInputVal}
             disableListWrap
             PopperComponent={StyledPopper}
-            ListboxComponent={ListboxComponent}
+            ListboxComponent={
+                ListboxComponent as React.JSXElementConstructor<React.HTMLAttributes<HTMLElement>>
+            }
             options={membersData}
             getOptionLabel={(option) => option.name}
             renderInput={(params) => (
                 <TextField {...params} label={overrideLabel ?? "Select A Member"} />
             )}
-            renderOption={(props, option, state) =>
-                [props, option.name, state.index] as React.ReactNode
-            }
-            renderGroup={(params) => params as unknown as React.ReactNode}
+            renderOption={(props, option, state) => [props, option.name, state.index] as ReactNode}
+            renderGroup={(params) => params as unknown as ReactNode}
         />
     );
 }

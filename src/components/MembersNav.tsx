@@ -1,10 +1,10 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import MemberAddDialog from "src/components/MemberAddDialog";
-import MemberRemoveDialog from "src/components/MemberRemoveDialog";
-import FailMemberRemoveDialog from "src/components/FailMemberRemoveDialog";
-import {useMembers} from "src/providers/MembersProvider";
+import MemberAddDialog from "../components/MemberAddDialog";
+import MemberRemoveDialog from "../components/MemberRemoveDialog";
+import FailMemberRemoveDialog from "../components/FailMemberRemoveDialog";
+import {useMembers} from "../providers/MembersProvider";
 import MemberEmailDialog from "./MemberEmailDialog";
 import {ToggleButtonGroup, ToggleButton} from "@mui/material";
 type MembersNavProps = {

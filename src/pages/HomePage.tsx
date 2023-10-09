@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from "react";
-import StokedDefinitionCard from "src/components/homepage/StokedDefinitionCard";
+import StokedDefinitionCard from "../components/homepage/StokedDefinitionCard";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import GearGrid from "src/components/homepage/GearGrid";
-import FAQAccordion from "src/components/homepage/FAQAccordion";
-import FeedbackForm from "src/components/homepage/FeedbackForm";
-import ImageContainer from "components/homepage/ImageContainer";
-import PricingColumns from "components/homepage/PricingColumns";
-import ResponsiveImageRow from "components/homepage/ResponsiveImageRow";
+import GearGrid from "../components/homepage/GearGrid";
+import FAQAccordion from "../components/homepage/FAQAccordion";
+import FeedbackForm from "../components/homepage/FeedbackForm";
+import ImageContainer from "../components/homepage/ImageContainer";
+import PricingColumns from "../components/homepage/PricingColumns";
+import ResponsiveImageRow from "../components/homepage/ResponsiveImageRow";
 
 const merchImageUrls = [
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",

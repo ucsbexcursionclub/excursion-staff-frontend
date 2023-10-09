@@ -1,13 +1,140 @@
-import * as React from "react";
-import {DataGrid, GridColDef, GridFilterModel} from "@mui/x-data-grid";
-import {MemberProps} from "src/utils/types";
-import {useMembers} from "src/providers/MembersProvider";
-import MemberDetailsDialog from "src/components/MemberDetailsDialog";
-import {capitalizeFirstLetter} from "src/utils/utils";
+import React, {useState} from "react";
+import {
+    DataGrid,
+    GridColDef,
+    GridComparatorFn,
+    GridFilterInputValue,
+    GridFilterItem,
+    GridFilterOperator,
+    GridPagination,
+    gridPageCountSelector,
+    useGridApiContext,
+    useGridSelector
+} from "@mui/x-data-grid";
+import {MemberProps, ReservationProps} from "../utils/types";
+import {useMembers} from "../providers/MembersProvider";
+import MemberDetailsDialog from "../components/MemberDetailsDialog";
+import {capitalizeFirstLetter} from "../utils/utils";
+import MembersToolBar from "./MembersToolbar";
+import {TablePaginationProps} from "@mui/material";
+import MuiPagination from "@mui/material/Pagination";
+import {MemberFilterOptions} from "../utils/constants";
+import {useReservations} from "../providers/ReservationProvider";
 
-const getColumns = (getMemberById: (memberId) => MemberProps) => {
+function Pagination({
+    page,
+    onPageChange,
+    className
+}: Pick<TablePaginationProps, "page" | "onPageChange" | "className">) {
+    const apiRef = useGridApiContext();
+    const pageCount = useGridSelector(apiRef, gridPageCountSelector);
+
+    return (
+        <MuiPagination
+            color="primary"
+            className={className}
+            count={pageCount}
+            page={page + 1}
+            onChange={(event, newPage) => {
+                onPageChange(event as any, newPage - 1);
+            }}
+        />
+    );
+}
+
+function CustomPagination(props: any) {
+    return <GridPagination ActionsComponent={Pagination} {...props} />;
+}
+
+const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
+    {
+        value: "<",
+        getApplyFilterFn: () => null,
+        getApplyFilterFnV7: (filterItem: GridFilterItem) => {
+            return (params: number | null) => {
+                if (!params) {
+                    return false;
+                }
+
+                const filterValue = filterItem.value;
+                const cellValue = params;
+                return cellValue < filterValue;
+            };
+        },
+        InputComponent: GridFilterInputValue,
+        InputComponentProps: {type: "date"}
+    },
+    {
+        value: ">=",
+        getApplyFilterFn: () => null,
+        getApplyFilterFnV7: (filterItem: GridFilterItem) => {
+            return (params: number | null) => {
+                const filterValue = filterItem.value;
+                const cellValue = params || Infinity;
+                return cellValue >= filterValue;
+            };
+        },
+        InputComponent: GridFilterInputValue,
+        InputComponentProps: {type: "date"}
+    }
+];
+
+const getIdOperators = (
+    retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
+): GridFilterOperator<MemberProps, any, any>[] | undefined => {
+    const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
+        {
+            value: MemberFilterOptions.SHOW_HAS_OVERDUE_GEAR,
+            getApplyFilterFn: () => null,
+            getApplyFilterFnV7: () => {
+                return (params: string | null) => {
+                    if (!params) {
+                        return false;
+                    }
+
+                    const memberId = params;
+
+                    return (
+                        (retrieveReservationsByMemberId(memberId) ?? []).filter(
+                            (reservation) => reservation.due_date < Date.now()
+                        ).length > 0
+                    );
+                };
+            },
+            InputComponent: GridFilterInputValue,
+            InputComponentProps: {type: "date"}
+        },
+        {
+            value: ">=",
+            getApplyFilterFn: () => null,
+            getApplyFilterFnV7: (filterItem: GridFilterItem) => {
+                return (params: number | null) => {
+                    const filterValue = filterItem.value;
+                    const cellValue = params || Infinity;
+                    return cellValue >= filterValue;
+                };
+            },
+            InputComponent: GridFilterInputValue,
+            InputComponentProps: {type: "date"}
+        }
+    ];
+
+    return idOperators;
+};
+
+const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - (v2 || Infinity);
+
+const getColumns = (
+    getMemberById: (memberId: string) => MemberProps | null,
+    retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
+) => {
     const columns: GridColDef[] = [
-        {field: "_id", headerName: "ID", width: 90},
+        {
+            field: "_id",
+            headerName: "ID",
+            width: 90,
+            filterOperators: getIdOperators(retrieveReservationsByMemberId)
+        },
         {
             field: "name",
             headerName: "Name",
@@ -36,7 +163,9 @@ const getColumns = (getMemberById: (memberId) => MemberProps) => {
                     return date.toLocaleDateString("en-US", options);
                 }
                 return "N/A";
-            }
+            },
+            sortComparator: dateComparator,
+            filterOperators: dateOperators
         },
         {
             field: "signed_up_by",
@@ -86,15 +215,53 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
     const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberItem} =
         useMembers();
-
-    const filterModel: GridFilterModel = React.useMemo(
-        () => ({
-            items: [],
-            quickFilterExcludeHiddenColumns: true,
-            quickFilterValues: [searchParams]
-        }),
-        [searchParams]
+    const {retrieveReservationsByMemberId} = useReservations();
+    const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
+        MemberFilterOptions.SHOW_ALL
     );
+
+    const getRowId = (row: MemberProps) => row._id;
+    const calculateFilterItems = () => {
+        const today = new Date().getTime();
+
+        switch (selectedFilter) {
+            case MemberFilterOptions.SHOW_ACTIVE:
+                return [
+                    {
+                        id: 1,
+                        field: "membership_expiration_date",
+                        operator: ">=",
+                        value: today
+                    }
+                ];
+
+            case MemberFilterOptions.SHOW_EXPIRED:
+                return [
+                    {
+                        id: 1,
+                        field: "membership_expiration_date",
+                        operator: "<",
+                        value: today
+                    }
+                ];
+
+            case MemberFilterOptions.SHOW_HAS_OVERDUE_GEAR:
+                return [
+                    {
+                        id: 1,
+                        field: "_id",
+                        operator: MemberFilterOptions.SHOW_HAS_OVERDUE_GEAR,
+                        value: today
+                    }
+                ];
+
+            case MemberFilterOptions.SHOW_ALL:
+            default:
+                return []; // No filters
+        }
+    };
+
+    const filterItems = calculateFilterItems();
 
     const handleCellClick = (params: any) => {
         if (params.field === "name") {
@@ -108,7 +275,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         setSelectedMember(null);
     };
 
-    const columns = getColumns(retrieveMemberItem);
+    const columns = getColumns(retrieveMemberItem, retrieveReservationsByMemberId);
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
@@ -117,9 +284,13 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}
-                getRowId={(row) => row._id}
+                getRowId={getRowId}
                 disableRowSelectionOnClick
-                filterModel={filterModel}
+                filterModel={{
+                    items: filterItems,
+                    quickFilterExcludeHiddenColumns: true,
+                    quickFilterValues: [searchParams]
+                }}
                 initialState={{
                     columns: {
                         columnVisibilityModel: {
@@ -139,6 +310,16 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                     setMemberRowSelectionModel(newRowSelectionModel);
                 }}
                 rowSelectionModel={memberRowSelectionModel}
+                slots={{
+                    toolbar: MembersToolBar,
+                    pagination: CustomPagination
+                }}
+                slotProps={{
+                    toolbar: {
+                        searchParams: searchParams,
+                        onFilterChange: setSelectedFilter
+                    }
+                }}
             />
             <MemberDetailsDialog
                 open={dialogOpen}
