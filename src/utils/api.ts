@@ -159,7 +159,7 @@ export async function addGear(newGearData: NewGearProps): Promise<GearProps> {
     return response.data.data;
 }
 
-export async function addMember(newMemberData: NewMemberProps): Promise<MemberProps> {
+export async function addMember(newMemberData: NewMemberProps): Promise<MemberProps | null> {
     const response = await axios.post(`${baseURL}/api/v1/members`, newMemberData, {
         headers: {
             Authorization: `Bearer ${cookies.get("jwt")}`
@@ -167,10 +167,16 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
     });
     // Check if the response has a success message or other conditions before returning data
     if (response.data.success) {
-        await sendWelcomeEmail(newMemberData.email);
+        try {
+            await sendWelcomeEmail(newMemberData.email);
+        } catch (error: any) {
+            console.error("Error sending welcome email:", error.message);
+        }
+
         return response.data.data;
     } else {
-        throw new Error("Add Member request was not successful."); // You can customize the error message
+        console.error("Error adding member:", response.data.status);
+        return null;
     }
 }
 
@@ -368,7 +374,6 @@ export async function sendFeedback(feedbackData: FeedbackProps): Promise<void> {
         console.log("Feedback data sent successfully to the backend!");
     } catch (error) {
         console.error("Error sending feedback data to the backend:", error);
-        throw new Error("Failed to send feedback data to the backend.");
     }
 }
 
@@ -381,6 +386,5 @@ async function sendWelcomeEmail(email: string): Promise<void> {
         console.log(`Welcome email sent successfully to ${email}!`);
     } catch (error) {
         console.error(`Error sending welcome email to ${email}:`, error);
-        throw new Error(`Failed to send welcome email to ${email}.`);
     }
 }

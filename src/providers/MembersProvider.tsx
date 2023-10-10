@@ -114,6 +114,8 @@ const useMembersOperations = (
     const handleMemberAdd = async (newMemberData: NewMemberProps) => {
         const addedMember = await addMember(newMemberData);
 
+        console.log("member added");
+
         queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
         await queryClient.prefetchQuery(["memberItem", addedMember._id], {
             initialData: addedMember,

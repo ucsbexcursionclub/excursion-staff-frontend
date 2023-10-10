@@ -13,7 +13,7 @@ import {
 } from "@mui/x-data-grid";
 import {MemberProps, ReservationProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
-import MemberDetailsDialog from "../components/MemberDetailsDialog";
+import MemberDetailsDialog from "./MemberDetailsDialog";
 import {capitalizeFirstLetter} from "../utils/utils";
 import MembersToolBar from "./MembersToolbar";
 import {TablePaginationProps} from "@mui/material";

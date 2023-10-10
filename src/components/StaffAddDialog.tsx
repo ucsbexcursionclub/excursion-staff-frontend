@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react";
-import MembersAutoComplete from "../components/MembersAutoComplete";
+import MembersAutoComplete from "./MembersAutoComplete";
 import {IdentityProps, MemberProps, NewStaffProps} from "../utils/types";
 import {
     Dialog,

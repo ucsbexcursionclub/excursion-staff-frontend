@@ -1,7 +1,7 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import StaffAddDialog from "../components/StaffAddDialog";
+import StaffAddDialog from "./StaffAddDialog";
 import StaffRemoveDialog from "./StaffRemoveDialog";
 import StaffEmailDialog from "./StaffEmailDialog";
 
