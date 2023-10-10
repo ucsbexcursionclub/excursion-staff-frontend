@@ -58,7 +58,12 @@ const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     }
 ];
 
-const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - (v2 || Infinity);
+const dateComparator: GridComparatorFn<number | null> = (v1, v2) => {
+    if (v1 === null && v2 === null) return 0;
+    if (v1 === null) return 1;
+    if (v2 === null) return -1;
+    return v1 - v2;
+};
 
 const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
@@ -242,7 +247,7 @@ export default function GearTable({searchParams}: GearTableProps) {
                         }
                     },
                     sorting: {
-                        sortModel: [{field: "due_date", sort: "asc"}]
+                        sortModel: [{field: "due_date", sort: "desc"}]
                     },
                     pagination: {
                         paginationModel: {page: 0, pageSize: 25}
