@@ -84,10 +84,12 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
             localTotalCount++;
 
-            gear.current_reservation ? localCheckedOutCount++ : localAvailableCount++;
-
-            if (gear.reservationDetails && gear.reservationDetails.due_date < Date.now()) {
-                localOverdueCount++;
+            if (gear.reservationDetails) {
+                gear.reservationDetails.due_date < Date.now()
+                    ? localOverdueCount++
+                    : localCheckedOutCount++;
+            } else {
+                localAvailableCount++;
             }
         });
 

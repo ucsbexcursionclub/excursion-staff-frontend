@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
-import {AppBar, Toolbar, Typography, InputBase, Button, Snackbar} from "@mui/material";
+import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import GearRemoveDialog from "./GearRemoveDialog";
 import GearAddDialog from "./GearAddDialog";
@@ -17,8 +17,6 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const [checkOutDialogOpen, setCheckOutDialogOpen] = useState<boolean>(false);
     const [checkInDialogOpen, setCheckInDialogOpen] = useState<boolean>(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-    const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
-    const [snackbarMessage, setSnackbarMessage] = useState<string>("");
 
     useEffect(() => {
         const handleResize = () => {
@@ -28,19 +26,14 @@ export default function GearNav({setSearchParams}: GearNavProps) {
         window.addEventListener("resize", handleResize);
     }, [screenWidth]);
 
-    const {gearRowSelectionModel} = useGear();
+    const {validateRowSelection} = useGear();
 
     const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setSearchParams(event.currentTarget.value);
     };
 
     const handleOpenDeleteDialog = () => {
-        if (gearRowSelectionModel.length > 0) {
-            setRemoveDialogOpen(true);
-        } else {
-            // Insert snackbar that says "Please select gear to remove"
-            showSnackbar("Please select gear to remove");
-        }
+        validateRowSelection() && setRemoveDialogOpen(true);
     };
 
     const handleCloseDeleteDialog = () => {
@@ -48,12 +41,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     };
 
     const handleOpenCheckOutDialog = () => {
-        if (gearRowSelectionModel.length > 0) {
-            setCheckOutDialogOpen(true);
-        } else {
-            // Insert snackbar that says "Please select gear to check out"
-            showSnackbar("Please select gear to check out");
-        }
+        validateRowSelection() && setCheckOutDialogOpen(true);
     };
 
     const handleCloseCheckOutDialog = () => {
@@ -61,12 +49,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     };
 
     const handleOpenCheckInDialog = () => {
-        if (gearRowSelectionModel.length > 0) {
-            setCheckInDialogOpen(true);
-        } else {
-            // Insert snackbar that says "Please select gear to check in"
-            showSnackbar("Please select gear to check in");
-        }
+        validateRowSelection() && setCheckInDialogOpen(true);
     };
 
     const handleCloseCheckInDialog = () => {
@@ -83,15 +66,6 @@ export default function GearNav({setSearchParams}: GearNavProps) {
 
     const handleRemoveClick = () => {
         handleOpenDeleteDialog();
-    };
-
-    const showSnackbar = (message: string) => {
-        setSnackbarMessage(message);
-        setSnackbarOpen(true);
-    };
-
-    const closeSnackbar = () => {
-        setSnackbarOpen(false);
     };
 
     const renderAppBar = () => {
@@ -189,12 +163,6 @@ export default function GearNav({setSearchParams}: GearNavProps) {
             <GearAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <GearCheckOutDialog open={checkOutDialogOpen} onClose={handleCloseCheckOutDialog} />
             <GearCheckInDialog open={checkInDialogOpen} onClose={handleCloseCheckInDialog} />
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={4000}
-                onClose={closeSnackbar}
-                message={snackbarMessage}
-            />
         </>
     );
 }

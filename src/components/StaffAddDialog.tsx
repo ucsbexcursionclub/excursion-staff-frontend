@@ -36,7 +36,7 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         onClose();
     };
 
-    const handleCheckboxChange = (event) => {
+    const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const position = event.target.name;
         setSelectedPositions((prevSelected) =>
             event.target.checked
@@ -45,8 +45,8 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         );
     };
 
-    const handleRoleChange = (event) => {
-        const position = event.target.value;
+    const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const position = event.target.value as "user" | "staff" | "admin";
         setRole(position);
     };
 

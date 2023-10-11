@@ -71,7 +71,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         const value = e.target.value;
         setStokedLevel(value);
     };
-    const handleMembershipStatusChange = (event) => {
+    const handleMembershipStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setMembershipStatus(event.target.value);
     };
     const handleMembershipDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {

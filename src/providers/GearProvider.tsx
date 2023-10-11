@@ -2,9 +2,10 @@ import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {addGear, deleteGearItems, getGear, updateGear} from "../utils/api";
-import {GearProps, MemberProps, NewGearProps} from "../utils/types";
+import {GearProps, MemberProps, NewGearProps, NotificationProps} from "../utils/types";
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
+import {useSnackbar} from "./SnackBarProvider";
 
 interface GearContextProps {
     gearData: GearProps[];
@@ -18,6 +19,7 @@ interface GearContextProps {
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     gearRowSelectionModel: GridRowSelectionModel;
+    validateRowSelection: () => boolean;
 }
 
 const useGearState = () => {
@@ -48,11 +50,13 @@ const useGearState = () => {
 const useGearOperations = (
     gearData: GearProps[],
     setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>,
+    gearRowSelectionModel: GridRowSelectionModel,
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
     const queryClient = useQueryClient();
 
     const {handleReservationAdd, handleReservationEnd} = useReservations();
+    const {addNotification} = useSnackbar();
 
     const recomputeAggregatedGear = () => {
         const aggregatedGear = queryClient
@@ -136,6 +140,19 @@ const useGearOperations = (
         recomputeAggregatedGear();
     };
 
+    const validateRowSelection = () => {
+        if (gearRowSelectionModel.length === 0) {
+            const newNotification: NotificationProps = {
+                message: "Select at least one row of gear.",
+                type: "error"
+            };
+            addNotification(newNotification);
+            return false;
+        } else {
+            return true;
+        }
+    };
+
     return {
         handleGearUpdate,
         retrieveGearItem,
@@ -143,7 +160,8 @@ const useGearOperations = (
         handleGearDelete,
         handleGearAdd,
         handleGearCheckout,
-        handleGearCheckin
+        handleGearCheckin,
+        validateRowSelection
     };
 };
 
@@ -156,7 +174,12 @@ interface DataProviderProps {
 export const GearProvider: React.FC<DataProviderProps> = ({children}) => {
     const {gearData, setGearData} = useGearState();
     const [gearRowSelectionModel, setGearRowSelectionModel] = useState<GridRowSelectionModel>([]);
-    const gearOps = useGearOperations(gearData, setGearData, setGearRowSelectionModel);
+    const gearOps = useGearOperations(
+        gearData,
+        setGearData,
+        gearRowSelectionModel,
+        setGearRowSelectionModel
+    );
 
     return (
         <GearContext.Provider

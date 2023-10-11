@@ -20,14 +20,45 @@ const baseURL = import.meta.env.PROD
     : "http://localhost:9000";
 
 export async function getMembers(): Promise<MemberProps[]> {
-    const response = await axios.get(`${baseURL}/api/v1/members`, {
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
-        }
-    });
-    const membersData: MemberProps[] = await response.data.data;
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/members`, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
 
-    return membersData;
+        if (response.data && response.data.data) {
+            return response.data.data;
+        }
+    } catch (error) {
+        // You can log the error if you want to diagnose issues.
+        //console.error("Error fetching members:", error);
+
+        if (error.response && error.response.status === 403) {
+            throw new Error("You don't have permission to view member data.");
+        } else {
+            throw new Error("Failed to fetch members. Please try again later.");
+        }
+    }
+}
+
+export async function getMemberById(id: string): Promise<MemberProps | null> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/members/${id}`, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+
+        if (response.data && response.data.data) {
+            return response.data.data;
+        }
+    } catch (error) {
+        // You can log the error if you want to diagnose issues.
+        //console.error("Error fetching members:", error);
+
+        return null;
+    }
 }
 
 export async function getReservations(): Promise<ReservationProps[]> {
@@ -39,20 +70,6 @@ export async function getReservations(): Promise<ReservationProps[]> {
     const reservations: ReservationProps[] = await response.data.data;
 
     return reservations;
-}
-
-export async function getMemberById(id: string): Promise<MemberProps> {
-    const endpoint = `${baseURL}/api/v1/members/${id}`;
-
-    const response = await axios.get(endpoint, {
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
-        }
-    });
-
-    const memberData: MemberProps = response.data.data;
-
-    return memberData;
 }
 
 export async function getGear(): Promise<GearProps[]> {

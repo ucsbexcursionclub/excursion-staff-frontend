@@ -2,9 +2,10 @@ import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {getMembers, addMember, deleteMembers, updateMembers} from "../utils/api";
-import {MemberProps, NewMemberProps, StaffProps} from "../utils/types";
+import {MemberProps, NewMemberProps, NotificationProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {useStaff} from "./StaffProvider";
+import {useSnackbar} from "./SnackBarProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
@@ -16,6 +17,7 @@ interface MembersContextProps {
     handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
     memberRowSelectionModel: GridRowSelectionModel;
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
+    validateRowSelection: () => boolean;
 }
 
 const useMembersState = () => {
@@ -23,9 +25,17 @@ const useMembersState = () => {
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
     const [currentMemberData, setCurrentMemberData] = useState<MemberProps | null>();
     const {isStaff} = useLogin();
+    const {addNotification} = useSnackbar();
 
     const {data: fetchMembersData} = useQuery("members", getMembers, {
-        enabled: isStaff
+        enabled: isStaff,
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     });
 
     useEffect(() => {
@@ -47,12 +57,14 @@ const useMembersState = () => {
 const useMembersOperations = (
     membersData: MemberProps[],
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>,
+    memberRowSelectionModel: GridRowSelectionModel,
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>,
     setCurrentMemberData: React.Dispatch<React.SetStateAction<MemberProps | undefined | null>>
 ) => {
     const queryClient = useQueryClient();
 
     const {identity} = useLogin();
+    const {addNotification} = useSnackbar();
 
     //TODO: don't allow staff to be deleted from members table.
     const {retrieveStaffById, handleStaffDelete} = useStaff();
@@ -125,11 +137,25 @@ const useMembersOperations = (
         recomputeAggregatedMembers();
     };
 
+    const validateRowSelection = () => {
+        if (memberRowSelectionModel.length === 0) {
+            const newNotification: NotificationProps = {
+                message: "Select at least one row of members.",
+                type: "error"
+            };
+            addNotification(newNotification);
+            return false;
+        } else {
+            return true;
+        }
+    };
+
     return {
         handleMemberUpdate,
         retrieveMemberItem,
         handleMemberDelete,
-        handleMemberAdd
+        handleMemberAdd,
+        validateRowSelection
     };
 };
 
@@ -148,6 +174,7 @@ export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
     const memberOps = useMembersOperations(
         membersData,
         setMembersData,
+        memberRowSelectionModel,
         setMemberRowSelectionModel,
         setCurrentMemberData
     );
