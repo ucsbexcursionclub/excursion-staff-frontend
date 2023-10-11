@@ -19,7 +19,7 @@ const baseURL = import.meta.env.PROD
     ? "https://excursion-backend.vercel.app"
     : "http://localhost:9000";
 
-export async function getMembers(): Promise<MemberProps[]> {
+export async function getMembers(): Promise<MemberProps[] | undefined> {
     try {
         const response = await axios.get(`${baseURL}/api/v1/members`, {
             headers: {
@@ -30,7 +30,7 @@ export async function getMembers(): Promise<MemberProps[]> {
         if (response.data && response.data.data) {
             return response.data.data;
         }
-    } catch (error) {
+    } catch (error: any) {
         // You can log the error if you want to diagnose issues.
         //console.error("Error fetching members:", error);
 
@@ -42,7 +42,7 @@ export async function getMembers(): Promise<MemberProps[]> {
     }
 }
 
-export async function getMemberById(id: string): Promise<MemberProps | null> {
+export async function getMemberById(id: string): Promise<MemberProps | undefined> {
     try {
         const response = await axios.get(`${baseURL}/api/v1/members/${id}`, {
             headers: {
@@ -57,7 +57,7 @@ export async function getMemberById(id: string): Promise<MemberProps | null> {
         // You can log the error if you want to diagnose issues.
         //console.error("Error fetching members:", error);
 
-        return null;
+        return;
     }
 }
 
