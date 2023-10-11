@@ -9,6 +9,7 @@
         "allowSyntheticDefaultImports": true,
         "jsx": "react",
         "allowJs": true,
+        "strict": true,
         "baseUrl": "./",
         "esModuleInterop": true,
         "resolveJsonModule": true,

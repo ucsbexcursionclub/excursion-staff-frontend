@@ -26,7 +26,7 @@ function LoginButton() {
 
     const {isLoggedIn, login, isFetching} = useLogin();
 
-    const {currentMemberData} = useMembers();
+    const {loggedInMember} = useMembers();
 
     function handleSuccess(tokenResponse: tokenResponseProps) {
         login(tokenResponse.access_token);
@@ -89,7 +89,7 @@ function LoginButton() {
                     >
                         <MenuItem>
                             <Avatar sx={{width: 40, height: 40}} className="mr-2" />
-                            <span>{currentMemberData?.email || ""}</span>
+                            <span>{loggedInMember?.email || ""}</span>
                         </MenuItem>
                         <MenuItem onClick={handleEditProfileOpen}>
                             <ListItemIcon>

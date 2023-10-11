@@ -183,14 +183,15 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
         }
     });
     // Check if the response has a success message or other conditions before returning data
-    if (response.data.success) {
+    if (response.data.data) {
+        const addedMember: MemberProps = response.data.data;
         try {
-            await sendWelcomeEmail(newMemberData.email);
+            await sendWelcomeEmail(addedMember.email);
         } catch (error: any) {
             console.error("Error sending welcome email:", error.message);
         }
 
-        return response.data.data;
+        return addedMember;
     } else {
         console.error("Error adding member:", response.data.status);
         return null;

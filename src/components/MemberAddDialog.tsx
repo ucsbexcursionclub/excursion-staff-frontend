@@ -49,18 +49,13 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {
-        handleMemberAdd,
-        membersData,
-        handleMemberUpdate,
-        retrieveMemberItem,
-        currentMemberData
-    } = useMembers();
+    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem, loggedInMember} =
+        useMembers();
 
     const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
 
-    if (!currentMemberData) return;
+    if (!loggedInMember) return;
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
@@ -217,7 +212,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     return;
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to check member existence:", error);
             if (error.response && error.response.status === 400) {
                 setSubmitErrorMessage("Invalid request data. Please check your input.");
@@ -243,7 +238,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: currentMemberData._id,
+                signed_up_by: loggedInMember._id,
                 local_living_address: localLivingAddress
             });
         } catch (error) {
@@ -298,7 +293,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
             const memberId = memberWithEmail._id;
             // TODO Convert to get overdue gear from member function
-            const reservations: ReservationProps[] = await retrieveReservationsByMemberId(memberId);
+            const reservations: ReservationProps[] = retrieveReservationsByMemberId(memberId);
             const today = new Date();
 
             const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
@@ -309,7 +304,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
                     await Promise.all(
                         reservation.reserved_gear.map(async (gearId) => {
-                            const gearItem = await retrieveGearItem(gearId);
+                            const gearItem = retrieveGearItem(gearId)!;
 
                             if (
                                 gearItem.current_reservation === reservation._id &&
@@ -339,14 +334,15 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 return;
             }
 
-            const retrievedMemberData = retrieveMemberItem(memberId);
+            const retrievedMemberData = retrieveMemberItem(memberId)!;
+
+            const memberExpirationDate =
+                retrievedMemberData.membership_expiration_date || Date.now();
 
             //Checking if member is not expired. If member is not expired than extend membership
-            retrievedMemberData.membership_expiration_date < Date.now()
+            memberExpirationDate < Date.now()
                 ? expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration))
-                : expirationDate.setDate(
-                      retrievedMemberData.membership_expiration_date + parseInt(membershipDuration)
-                  );
+                : expirationDate.setDate(memberExpirationDate + parseInt(membershipDuration));
 
             const memberData: MemberProps = {
                 _id: retrievedMemberData._id, //include id here
@@ -355,7 +351,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: currentMemberData._id,
+                signed_up_by: loggedInMember._id,
                 membership_expiration_date: expirationDate.getTime(),
                 join_datetime: new Date().getTime(),
                 notes: retrievedMemberData.notes,
@@ -363,7 +359,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             };
 
             await handleMemberUpdate(memberData);
-        } catch (error) {
+        } catch (error: any) {
             if (error.response && error.response.status === 404) {
                 setSubmitErrorMessage("Member not found. Please double check name and email.");
                 setErrorMessageTimeout();
@@ -547,7 +543,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
                         For Staff Use Only:
                     </DialogContentText>
-                    <p>Signed up by: {currentMemberData.name}</p>
+                    <p>Signed up by: {loggedInMember.name}</p>
                     <div>
                         <p>Has this member paid you {calculatePrice()}?</p>
                         <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>
