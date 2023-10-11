@@ -1,9 +1,10 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import StaffAddDialog from "../components/StaffAddDialog";
+import StaffAddDialog from "./StaffAddDialog";
 import StaffRemoveDialog from "./StaffRemoveDialog";
 import StaffEmailDialog from "./StaffEmailDialog";
+import {useStaff} from "../providers/StaffProvider";
 
 type StaffNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
@@ -14,6 +15,8 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
     const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
+
+    const {validateRowSelection} = useStaff();
 
     useEffect(() => {
         const handleResize = () => {
@@ -35,7 +38,7 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
     };
 
     const handleRemoveDialogOpen = () => {
-        setRemoveDialogOpen(true);
+        validateRowSelection() && setRemoveDialogOpen(true);
     };
 
     const handleRemoveDialogClose = () => {
@@ -47,7 +50,7 @@ export default function StaffNav({setSearchParams}: StaffNavProps) {
     };
 
     const handleOpenCopyEmail = () => {
-        setCopyEmailOpen(true);
+        validateRowSelection() && setCopyEmailOpen(true);
     };
 
     const handleCloseCopyEmail = () => {

@@ -14,9 +14,10 @@ import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import {useMembers} from "../providers/MembersProvider";
-import {MemberProps} from "../utils/types";
-import MembersAutoComplete from "./MembersAutoComplete";
+import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
+import {useReservations} from "../providers/ReservationProvider";
+import {useGear} from "../providers/GearProvider";
 
 interface MemberAddDialog {
     open: boolean;
@@ -39,7 +40,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [submitErrorMessage, setSubmitErrorMessage] = React.useState<string | null>(null);
     const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
     const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
-    const [signedStaff, setSignedStaff] = React.useState<MemberProps | null>(null);
     const [localLivingAddress, setLocalLivingAddress] = React.useState("");
 
     const handleClose = () => {
@@ -49,17 +49,9 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {
-        handleMemberAdd,
-        membersData,
-        handleMemberUpdate,
-        retrieveMemberItem,
-        currentMemberData
-    } = useMembers();
-
-    React.useEffect(() => {
-        setSignedStaff(currentMemberData);
-    }, [currentMemberData]);
+    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem, currentMemberData} = useMembers();
+    const {retrieveReservationsByMemberId} = useReservations();
+    const {retrieveGearItem} = useGear();
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
@@ -71,7 +63,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         const value = e.target.value;
         setStokedLevel(value);
     };
-    const handleMembershipStatusChange = (event) => {
+    const handleMembershipStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setMembershipStatus(event.target.value);
     };
     const handleMembershipDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,10 +104,15 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPhoneNumber(value);
+        const cleanedPhoneNumber = value.replace(/[-()\s]/g, "");
 
-        const phoneRegex = /^(?:\+\d{1,3}[-.\s]?)?(?:\(\d{1,4}\)[-.\s]?)?\d{10}$/;
-        if (!phoneRegex.test(value)) {
-            setPhoneNumberError("Invalid phone number (10 digits required)");
+        setPhoneNumber(cleanedPhoneNumber);
+
+        const phoneRegex = /^(?:\+\d{1,3})?\d{10}$/;
+        if (!phoneRegex.test(cleanedPhoneNumber)) {
+            setPhoneNumberError(
+                "Invalid phone number. Start with + for international phone numbers."
+            );
         } else {
             setPhoneNumberError(null);
         }
@@ -168,8 +165,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             errorMessage = "Please enter your full name.";
         } else if (hasPaid === "no") {
             errorMessage = "Please ensure the new member has paid dues.";
-        } else if (!signedStaff) {
-            errorMessage = "Please ensure the staff enters signed up by details.";
         } else if (!localLivingAddress) {
             errorMessage = "Please fill in the address in which you live nearby.";
         }
@@ -239,7 +234,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: signedStaff._id,
+                signed_up_by: currentMemberData._id,
                 local_living_address: localLivingAddress
             });
         } catch (error) {
@@ -281,6 +276,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             return;
         }
 
+        const expirationDate = new Date();
+
         try {
             const memberWithEmail = membersData.find(
                 (member) => member.email.toLowerCase() === email.toLowerCase()
@@ -291,11 +288,56 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
 
             const memberId = memberWithEmail._id;
+            // TODO Convert to get overdue gear from member function
+            const reservations: ReservationProps[] = await retrieveReservationsByMemberId(memberId);
+            const today = new Date();
+
+            const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
+
+            await Promise.all(
+                reservations.map(async (reservation) => {
+                    const dueDate = new Date(reservation.due_date);
+
+                    await Promise.all(
+                        reservation.reserved_gear.map(async (gearId) => {
+                            const gearItem = await retrieveGearItem(gearId);
+
+                            if (
+                                gearItem.current_reservation === reservation._id &&
+                                dueDate <= today
+                            ) {
+                                overdueGearItems.push({gear: gearItem, due_date: dueDate});
+                            }
+                        })
+                    );
+                })
+            );
+
+            if (overdueGearItems.length > 0) {
+                const overdueGearMessage =
+                    `${fullName} has overdue gear reservations:\n` +
+                    overdueGearItems
+                        .map(({gear, due_date}) => {
+                            const gearItemName = gear ? gear.gear_name : "Unknown Gear";
+                            return `${gearItemName} (Due Date: ${new Date(
+                                due_date
+                            ).toLocaleDateString()})`;
+                        })
+                        .join("\n");
+
+                setSubmitErrorMessage(overdueGearMessage);
+                setErrorMessageTimeout();
+                return;
+            }
 
             const retrievedMemberData = retrieveMemberItem(memberId);
 
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration));
+            //Checking if member is not expired. If member is not expired than extend membership
+            retrievedMemberData.membership_expiration_date < Date.now()
+                ? expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration))
+                : expirationDate.setDate(
+                      retrievedMemberData.membership_expiration_date + parseInt(membershipDuration)
+                  );
 
             const memberData: MemberProps = {
                 _id: retrievedMemberData._id, //include id here
@@ -304,7 +346,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: signedStaff._id,
+                signed_up_by: currentMemberData._id,
                 membership_expiration_date: expirationDate.getTime(),
                 join_datetime: new Date().getTime(),
                 notes: retrievedMemberData.notes,
@@ -327,7 +369,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
         }
 
-        setSuccessMessage(`Membership renewed for ${fullName}`);
+        setSuccessMessage(`${fullName}'s membership extended through ${expirationDate}`);
         setErrorMessageTimeout();
 
         // Clear the form fields on successful submission
@@ -496,11 +538,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
                         For Staff Use Only:
                     </DialogContentText>
-                    <MembersAutoComplete
-                        overrideLabel={"Select a staff"}
-                        setMemberVal={setSignedStaff}
-                        memberVal={signedStaff}
-                    />
+                    <p>Signed up by: {currentMemberData.name}</p>
                     <div>
                         <p>Has this member paid you {calculatePrice()}?</p>
                         <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>

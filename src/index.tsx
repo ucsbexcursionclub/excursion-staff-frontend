@@ -12,27 +12,20 @@ import {getGearById, getMemberById, getReservationById, getStaffById} from "./ut
 import "./index.css";
 import {LoginProvider} from "./providers/LoginProvider";
 
-declare module "@mui/material" {
-    interface ModalComponentsPropsOverrides {
-        open: boolean;
-        onClose: () => void;
-    }
-}
-
 const defaultQueryFunction = async ({queryKey}: QueryFunctionContext<QueryKey>) => {
     const [type, id] = queryKey as string[];
 
     if (type === "gearItem" && id) {
-        console.log(`fetching gear ${id} from db`);
+        // console.log(`fetching gear ${id} from db`);
         return await getGearById(id);
     } else if (type === "memberItem" && id) {
-        console.log(`fetching member ${id} from db`);
+        // console.log(`fetching member ${id} from db`);
         return await getMemberById(id);
     } else if (type === "reservationItem" && id) {
-        console.log(`fetching reservation ${id} from db`);
+        // console.log(`fetching reservation ${id} from db`);
         return await getReservationById(id);
     } else if (type === "staffItem" && id) {
-        console.log(`fetching staff ${id} from db`);
+        // console.log(`fetching staff ${id} from db`);
         return await getStaffById(id);
     }
 };

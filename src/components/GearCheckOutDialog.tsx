@@ -7,12 +7,14 @@ import {
     Button,
     Typography,
     List,
-    ListItem
+    ListItem,
+    Alert
 } from "@mui/material";
 import MembersAutoComplete from "./MembersAutoComplete";
-import {MemberProps} from "../utils/types";
+import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {useReservations} from "../providers/ReservationProvider";
 
 type GearCheckOutDialogProps = {
     open: boolean;
@@ -30,6 +32,8 @@ TODO: handle overwrites to close reservations automatically with some notes mayb
 
 const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) => {
     const {retrieveGearItem, handleGearCheckout, gearRowSelectionModel} = useGear();
+    const {retrieveReservationsByMemberId} = useReservations();
+    const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
     const gearsToCheckOut = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
 
@@ -42,9 +46,64 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
     };
 
     const handleConfirmCheckOut = async () => {
+        // TODO Convert to get overdue gear from member function
         if (selectedMember) {
-            await handleGearCheckout(selectedMember, gearsToCheckOut);
-            handleClose();
+            const reservations: ReservationProps[] = await retrieveReservationsByMemberId(
+                selectedMember._id
+            );
+            const today = new Date();
+            const currentDateTime = new Date().getTime();
+
+            const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
+
+            await Promise.all(
+                reservations.map(async (reservation) => {
+                    const dueDate = new Date(reservation.due_date);
+
+                    await Promise.all(
+                        reservation.reserved_gear.map(async (gearId) => {
+                            const gearItem = await retrieveGearItem(gearId);
+
+                            if (
+                                gearItem.current_reservation === reservation._id &&
+                                dueDate <= today
+                            ) {
+                                overdueGearItems.push({gear: gearItem, due_date: dueDate});
+                            }
+                        })
+                    );
+                })
+            );
+
+            if (
+                selectedMember.membership_expiration_date < currentDateTime &&
+                selectedMember.membership_expiration_date !== null
+            ) {
+                setAlertMessage(
+                    `${selectedMember.name}'s membership expired on ${new Date(
+                        selectedMember.membership_expiration_date
+                    ).toLocaleDateString()} `
+                );
+            } else if (overdueGearItems.length > 0) {
+                // Display an alert for overdue gear reservations
+                const alertMessage =
+                    `${selectedMember.name} has overdue gear reservations:\n` +
+                    overdueGearItems
+                        .map(({gear, due_date}) => {
+                            const gearItemName = gear ? gear.gear_name : "Unknown Gear";
+                            return `${gearItemName} (Due Date: ${new Date(
+                                due_date
+                            ).toLocaleDateString()})`;
+                        })
+                        .join("\n");
+                const overdueGearMessage = alertMessage + overdueGearItems.join("\n");
+                setAlertMessage(overdueGearMessage);
+                console.log(overdueGearMessage);
+            } else {
+                // No overdue gear reservations, proceed with checkout
+                await handleGearCheckout(selectedMember, gearsToCheckOut);
+                handleClose();
+            }
         } else {
             setError(true);
         }
@@ -98,6 +157,11 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
                     Check Out
                 </Button>
             </DialogActions>
+            {alertMessage && (
+                <Alert severity="error" sx={{mt: 2}}>
+                    {alertMessage}
+                </Alert>
+            )}
         </Dialog>
     );
 };

@@ -4,8 +4,6 @@ import DialogContent from "@mui/material/DialogContent";
 import {useMembers} from "../providers/MembersProvider";
 import TextField from "@mui/material/TextField";
 import {BlurBackDrop} from "./HelperComponents";
-import {Typography} from "@mui/material";
-import {useState, useEffect} from "react";
 
 type MemberEmailDialogProps = {
     open: boolean;
@@ -21,20 +19,6 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
     copyEmailOption
 }) => {
     const {retrieveMemberItem, membersData, memberRowSelectionModel} = useMembers();
-    const [showDialog, setShowDialog] = useState(false);
-    const [showTextDialog, setShowTextDialog] = useState(false);
-
-    useEffect(() => {
-        // Check if we should show the dialog based on the conditions
-        if (copyEmailOption === "copySelected" && memberRowSelectionModel.length === 0) {
-            // If copyEmailOption is "copySelected" and no members are selected, don't show the dialog
-            setShowDialog(false);
-            setShowTextDialog(true);
-        } else {
-            setShowDialog(true);
-            setShowTextDialog(false);
-        }
-    }, [copyEmailOption, memberRowSelectionModel]);
 
     const handleClose = () => {
         onClose();
@@ -76,55 +60,37 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
         });
     }
 
-    const emailsJoined = memberEmails.join(", "); // Join emails with commas
+    const emailsJoined = memberEmails.join("\n"); // Join emails with commas
 
     const maxWidth = `${(screenwidth / 100) * 80}vw`;
 
     return (
-        <div>
-            <Dialog
-                open={showDialog && open} // Use showDialog state to control dialog visibility
-                onClose={handleClose}
-                style={{maxWidth}}
-                slots={{backdrop: BlurBackDrop}}
-                slotProps={{
-                    backdrop: {
-                        open: showDialog && open,
-                        onClose: handleClose
-                    }
-                }}
-            >
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        multiline
-                        value={emailsJoined}
-                        inputProps={{
-                            style: {
-                                overflowWrap: "break-word",
-                                width: maxWidth
-                            }
-                        }}
-                    />
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={showTextDialog && open} // Use showDialog state to control dialog visibility
-                onClose={handleClose}
-                style={{maxWidth}}
-                slots={{backdrop: BlurBackDrop}}
-                slotProps={{
-                    backdrop: {
-                        open: showTextDialog && open,
-                        onClose: handleClose
-                    }
-                }}
-            >
-                <DialogContent>
-                    <Typography>You must select a member to copy emails.</Typography>
-                </DialogContent>
-            </Dialog>
-        </div>
+        <Dialog
+            open={open} // Use showDialog state to control dialog visibility
+            onClose={handleClose}
+            style={{maxWidth}}
+            slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
+        >
+            <DialogContent>
+                <TextField
+                    fullWidth
+                    multiline
+                    value={emailsJoined}
+                    inputProps={{
+                        style: {
+                            overflowWrap: "break-word",
+                            width: maxWidth
+                        }
+                    }}
+                />
+            </DialogContent>
+        </Dialog>
     );
 };
 

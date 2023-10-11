@@ -84,10 +84,12 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
             localTotalCount++;
 
-            gear.current_reservation ? localCheckedOutCount++ : localAvailableCount++;
-
-            if (gear.reservationDetails && gear.reservationDetails.due_date < Date.now()) {
-                localOverdueCount++;
+            if (gear.reservationDetails) {
+                gear.reservationDetails.due_date < Date.now()
+                    ? localOverdueCount++
+                    : localCheckedOutCount++;
+            } else {
+                localAvailableCount++;
             }
         });
 
@@ -139,12 +141,14 @@ export default function GearToolBar({searchParams, onFilterChange}: GearToolBarP
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
-            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center"
+            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center sm:flex-col sm:space-y-2"
         >
-            <FilterSelect onFilterChange={onFilterChange} />
-            <Separator />
-            <SelectedCount />
-            <AvailibilityView searchParams={searchParams} />
+            <div className="flex flex-wrap items-center space-x-2 space-y-2">
+                <FilterSelect onFilterChange={onFilterChange} />
+                <Separator />
+                <SelectedCount />
+                <AvailibilityView searchParams={searchParams} />
+            </div>
         </GridToolbarContainer>
     );
 }
