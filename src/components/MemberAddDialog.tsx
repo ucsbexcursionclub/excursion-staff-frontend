@@ -16,7 +16,6 @@ import Box from "@mui/material/Box";
 import {useMembers} from "../providers/MembersProvider";
 import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
-import {useLogin} from "../providers/LoginProvider";
 import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
 
@@ -42,7 +41,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
     const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
     const [localLivingAddress, setLocalLivingAddress] = React.useState("");
-    const {identity} = useLogin();
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -51,12 +49,9 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
+    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem, currentMemberData} = useMembers();
     const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
-
-    const loggedInMember = identity ? retrieveMemberItem(identity.member_id) : null;
-    const loggedInMemberName = loggedInMember ? loggedInMember.name : "";
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
@@ -239,7 +234,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: identity?.member_id,
+                signed_up_by: currentMemberData._id,
                 local_living_address: localLivingAddress
             });
         } catch (error) {
@@ -351,7 +346,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 email: email.toLowerCase(),
                 membership_duration: parseInt(membershipDuration),
                 is_new_member: membershipStatus === "newMember",
-                signed_up_by: identity?.member_id,
+                signed_up_by: currentMemberData._id,
                 membership_expiration_date: expirationDate.getTime(),
                 join_datetime: new Date().getTime(),
                 notes: retrievedMemberData.notes,
@@ -543,7 +538,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
                         For Staff Use Only:
                     </DialogContentText>
-                    <p>Signed up by: {loggedInMemberName}</p>
+                    <p>Signed up by: {currentMemberData.name}</p>
                     <div>
                         <p>Has this member paid you {calculatePrice()}?</p>
                         <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>
