@@ -49,9 +49,18 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem, currentMemberData} = useMembers();
+    const {
+        handleMemberAdd,
+        membersData,
+        handleMemberUpdate,
+        retrieveMemberItem,
+        currentMemberData
+    } = useMembers();
+
     const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
+
+    if (!currentMemberData) return;
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         setHasWaiver(event.target.value);
