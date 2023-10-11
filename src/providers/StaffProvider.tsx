@@ -1,9 +1,10 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {addStaff, deleteStaff, getStaff, updateStaff} from "../utils/api"; // Adjust the API functions as needed
-import {NewStaffProps, StaffProps} from "../utils/types";
+import {NewStaffProps, NotificationProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {GridRowSelectionModel} from "@mui/x-data-grid";
+import {useSnackbar} from "./SnackBarProvider";
 
 interface StaffContextProps {
     staffData: StaffProps[];
@@ -16,6 +17,7 @@ interface StaffContextProps {
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
     handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
     handleFileUpload: (uploadedFile: File) => Promise<string>;
+    validateRowSelection: () => boolean;
 }
 
 const useStaffState = () => {
@@ -46,6 +48,7 @@ const useStaffState = () => {
 const useStaffOperations = (
     staffData: StaffProps[],
     setStaffData: React.Dispatch<React.SetStateAction<StaffProps[]>>,
+    staffRowSelectionModel: GridRowSelectionModel,
     setStaffRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
     const recomputeAggregatedStaff = () => {
@@ -55,6 +58,8 @@ const useStaffOperations = (
 
         setStaffData(aggregatedStaff);
     };
+
+    const {addNotification} = useSnackbar();
 
     const queryClient = useQueryClient();
 
@@ -107,13 +112,27 @@ const useStaffOperations = (
         //and then return back the link
     };
 
+    const validateRowSelection = () => {
+        if (staffRowSelectionModel.length === 0) {
+            const newNotification: NotificationProps = {
+                message: "Select at least one row of staff.",
+                type: "error"
+            };
+            addNotification(newNotification);
+            return false;
+        } else {
+            return true;
+        }
+    };
+
     return {
         handleStaffUpdate,
         handleFileUpload,
         retrieveStaffById,
         retrieveStaffByMemberID,
         handleStaffDelete,
-        handleStaffAdd
+        handleStaffAdd,
+        validateRowSelection
     };
 };
 
@@ -126,7 +145,12 @@ interface StaffProviderProps {
 export const StaffProvider: React.FC<StaffProviderProps> = ({children}) => {
     const {staffData, setStaffData} = useStaffState();
     const [staffRowSelectionModel, setStaffRowSelectionModel] = useState<GridRowSelectionModel>([]);
-    const staffOps = useStaffOperations(staffData, setStaffData, setStaffRowSelectionModel);
+    const staffOps = useStaffOperations(
+        staffData,
+        setStaffData,
+        staffRowSelectionModel,
+        setStaffRowSelectionModel
+    );
 
     return (
         <StaffContext.Provider

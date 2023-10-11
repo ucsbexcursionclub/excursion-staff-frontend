@@ -14,7 +14,7 @@ import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import {useMembers} from "../providers/MembersProvider";
-import {MemberProps} from "../utils/types";
+import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
 import {useLogin} from "../providers/LoginProvider";
 import {useReservations} from "../providers/ReservationProvider";
@@ -52,7 +52,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     };
 
     const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
-    const {memberOverDueReservations} = useReservations();
+    const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
 
     const loggedInMember = identity ? retrieveMemberItem(identity.member_id) : null;
@@ -281,6 +281,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             return;
         }
 
+        const expirationDate = new Date();
+
         try {
             const memberWithEmail = membersData.find(
                 (member) => member.email.toLowerCase() === email.toLowerCase()
@@ -291,23 +293,43 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
 
             const memberId = memberWithEmail._id;
+            // TODO Convert to get overdue gear from member function
+            const reservations: ReservationProps[] = await retrieveReservationsByMemberId(memberId);
+            const today = new Date();
 
-            const overdueReservations = await memberOverDueReservations(memberId);
+            const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
 
-            if (overdueReservations.length > 0) {
-                const overdueGearAlert = `${fullName} has overdue gear reservations:\n`;
-                const overdueGearItems = overdueReservations.map((reservation) => {
-                    const gearItems = reservation.reserved_gear.map((gearItemId) => {
-                        const gearItem = retrieveGearItem(gearItemId);
-                        const gearItemName = gearItem ? gearItem.gear_name : "Unknown Gear";
-                        return `${gearItemName}`;
-                    });
+            await Promise.all(
+                reservations.map(async (reservation) => {
+                    const dueDate = new Date(reservation.due_date);
 
-                    return `${gearItems.join(", ")} (Due Date: ${new Date(
-                        reservation.due_date
-                    ).toLocaleDateString()})`;
-                });
-                const overdueGearMessage = overdueGearAlert + overdueGearItems.join("\n");
+                    await Promise.all(
+                        reservation.reserved_gear.map(async (gearId) => {
+                            const gearItem = await retrieveGearItem(gearId);
+
+                            if (
+                                gearItem.current_reservation === reservation._id &&
+                                dueDate <= today
+                            ) {
+                                overdueGearItems.push({gear: gearItem, due_date: dueDate});
+                            }
+                        })
+                    );
+                })
+            );
+
+            if (overdueGearItems.length > 0) {
+                const overdueGearMessage =
+                    `${fullName} has overdue gear reservations:\n` +
+                    overdueGearItems
+                        .map(({gear, due_date}) => {
+                            const gearItemName = gear ? gear.gear_name : "Unknown Gear";
+                            return `${gearItemName} (Due Date: ${new Date(
+                                due_date
+                            ).toLocaleDateString()})`;
+                        })
+                        .join("\n");
+
                 setSubmitErrorMessage(overdueGearMessage);
                 setErrorMessageTimeout();
                 return;
@@ -315,8 +337,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
             const retrievedMemberData = retrieveMemberItem(memberId);
 
-            const expirationDate = new Date();
-            expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration));
+            //Checking if member is not expired. If member is not expired than extend membership
+            retrievedMemberData.membership_expiration_date < Date.now()
+                ? expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration))
+                : expirationDate.setDate(
+                      retrievedMemberData.membership_expiration_date + parseInt(membershipDuration)
+                  );
 
             const memberData: MemberProps = {
                 _id: retrievedMemberData._id, //include id here
@@ -348,7 +374,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
         }
 
-        setSuccessMessage(`Membership renewed for ${fullName}`);
+        setSuccessMessage(`${fullName}'s membership extended through ${expirationDate}`);
         setErrorMessageTimeout();
 
         // Clear the form fields on successful submission

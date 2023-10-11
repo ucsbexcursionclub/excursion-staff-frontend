@@ -1,7 +1,6 @@
 import React from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
-import Typography from "@mui/material/Typography";
 import {useStaff} from "../providers/StaffProvider"; // Import the staff provider
 import TextField from "@mui/material/TextField";
 import {BlurBackDrop} from "./HelperComponents";
@@ -18,26 +17,6 @@ const StaffEmailDialog: React.FC<StaffEmailDialogProps> = ({open, onClose, scree
     const handleClose = () => {
         onClose();
     };
-
-    if (staffRowSelectionModel.length === 0) {
-        return (
-            <Dialog
-                open={open}
-                onClose={handleClose}
-                slots={{backdrop: BlurBackDrop}}
-                slotProps={{
-                    backdrop: {
-                        open: open,
-                        onClose: handleClose
-                    }
-                }}
-            >
-                <DialogContent>
-                    <Typography>You must select a staff member to copy emails.</Typography>
-                </DialogContent>
-            </Dialog>
-        );
-    }
 
     const staffEmails = staffRowSelectionModel.map((id) => {
         const staff = retrieveStaffById(id.toString());

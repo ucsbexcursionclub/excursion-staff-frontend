@@ -40,6 +40,12 @@ const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) 
             fullWidth={true}
             maxWidth={"xs"}
             slots={{backdrop: BlurBackDrop}}
+            slotProps={{
+                backdrop: {
+                    open: open,
+                    onClose: handleClose
+                }
+            }}
         >
             <DialogTitle sx={{px: 3, fontWeight: "bold", fontSize: "24px"}}>
                 Confirm Deletion

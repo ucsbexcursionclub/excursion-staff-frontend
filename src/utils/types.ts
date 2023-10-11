@@ -1,3 +1,5 @@
+import {AlertColor} from "@mui/material";
+
 export type MemberProps = {
     _id: string;
     name: string;
@@ -11,6 +13,12 @@ export type MemberProps = {
     notes: string | null;
     staff_id?: string;
     local_living_address?: string;
+};
+
+export type NotificationProps = {
+    message: string;
+    key?: number;
+    type?: AlertColor;
 };
 
 export type IdentityProps = {

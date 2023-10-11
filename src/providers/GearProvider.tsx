@@ -2,9 +2,14 @@ import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {addGear, deleteGearItems, getGear, updateGear} from "../utils/api";
-import {GearProps, MemberProps, NewGearProps} from "../utils/types";
+<<<<<<< Updated upstream
+import {GearProps, MemberProps, NewGearProps, NotificationProps} from "../utils/types";
+=======
+import {GearProps, MemberProps, NewGearProps, ReservationProps} from "../utils/types";
+>>>>>>> Stashed changes
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
+import {useSnackbar} from "./SnackBarProvider";
 
 interface GearContextProps {
     gearData: GearProps[];
@@ -16,8 +21,10 @@ interface GearContextProps {
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
+    // getMemberOverdueGear: (selectedMemberId: string) => Promise<[GearProps, Date][]>;
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     gearRowSelectionModel: GridRowSelectionModel;
+    validateRowSelection: () => boolean;
 }
 
 const useGearState = () => {
@@ -48,11 +55,18 @@ const useGearState = () => {
 const useGearOperations = (
     gearData: GearProps[],
     setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>,
+    gearRowSelectionModel: GridRowSelectionModel,
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
 ) => {
     const queryClient = useQueryClient();
 
+<<<<<<< Updated upstream
     const {handleReservationAdd, handleReservationEnd} = useReservations();
+    const {addNotification} = useSnackbar();
+=======
+    const {handleReservationAdd, handleReservationEnd, retrieveReservationsByMemberId} =
+        useReservations();
+>>>>>>> Stashed changes
 
     const recomputeAggregatedGear = () => {
         const aggregatedGear = queryClient
@@ -136,6 +150,48 @@ const useGearOperations = (
         recomputeAggregatedGear();
     };
 
+<<<<<<< Updated upstream
+    const validateRowSelection = () => {
+        if (gearRowSelectionModel.length === 0) {
+            const newNotification: NotificationProps = {
+                message: "Select at least one row of gear.",
+                type: "error"
+            };
+            addNotification(newNotification);
+            return false;
+        } else {
+            return true;
+        }
+    };
+=======
+    // const getMemberOverdueGear = async (selectedMemberId: string) => {
+    //     const reservations: ReservationProps[] = await retrieveReservationsByMemberId(
+    //         selectedMemberId
+    //     );
+    //     const today = new Date();
+
+    //     const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
+
+    //     await Promise.all(
+    //         reservations.map(async (reservation) => {
+    //             const dueDate = new Date(reservation.due_date);
+
+    //             await Promise.all(
+    //                 reservation.reserved_gear.map(async (gearId) => {
+    //                     const gearItem = await retrieveGearItem(gearId);
+
+    //                     if (gearItem.current_reservation === reservation._id && dueDate <= today) {
+    //                         overdueGearItems.push({gear: gearItem, due_date: dueDate});
+    //                     }
+    //                 })
+    //             );
+    //         })
+    //     );
+
+    //     return overdueGearItems;
+    // };
+>>>>>>> Stashed changes
+
     return {
         handleGearUpdate,
         retrieveGearItem,
@@ -143,7 +199,13 @@ const useGearOperations = (
         handleGearDelete,
         handleGearAdd,
         handleGearCheckout,
+<<<<<<< Updated upstream
+        handleGearCheckin,
+        validateRowSelection
+=======
         handleGearCheckin
+        // getMemberOverdueGear
+>>>>>>> Stashed changes
     };
 };
 
@@ -156,7 +218,12 @@ interface DataProviderProps {
 export const GearProvider: React.FC<DataProviderProps> = ({children}) => {
     const {gearData, setGearData} = useGearState();
     const [gearRowSelectionModel, setGearRowSelectionModel] = useState<GridRowSelectionModel>([]);
-    const gearOps = useGearOperations(gearData, setGearData, setGearRowSelectionModel);
+    const gearOps = useGearOperations(
+        gearData,
+        setGearData,
+        gearRowSelectionModel,
+        setGearRowSelectionModel
+    );
 
     return (
         <GearContext.Provider

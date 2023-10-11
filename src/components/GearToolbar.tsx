@@ -78,14 +78,13 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
         let localCheckedOutCount = 0;
         let localOverdueCount = 0;
         let localTotalCount = 0;
-        const currentDate = new Date();
 
         visibleRows.map((row) => {
             const gear: GearProps = row.model as GearProps;
 
             localTotalCount++;
 
-            if (gear.current_reservation) {
+            if (gear.reservationDetails) {
                 gear.reservationDetails.due_date < Date.now()
                     ? localOverdueCount++
                     : localCheckedOutCount++;

@@ -1,12 +1,10 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
-import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
+import {AppBar, Toolbar, Typography, InputBase, Button, ButtonGroup} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MemberAddDialog from "./MemberAddDialog";
 import MemberRemoveDialog from "./MemberRemoveDialog";
-import FailMemberRemoveDialog from "./FailMemberRemoveDialog";
 import {useMembers} from "../providers/MembersProvider";
 import MemberEmailDialog from "./MemberEmailDialog";
-import {ToggleButtonGroup, ToggleButton} from "@mui/material";
 type MembersNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
 };
@@ -14,7 +12,6 @@ type MembersNavProps = {
 export default function MembersNav({setSearchParams}: MembersNavProps) {
     const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
     const [removeDialogOpen, setRemoveDialogOpen] = useState<boolean>(false);
-    const [failRemoveDialogOpen, setFailRemoveDialogOpen] = useState<boolean>(false);
     const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [copyEmailOption, setCopyEmailOption] = useState("");
@@ -27,20 +24,22 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
         window.addEventListener("resize", handleResize);
     }, [screenWidth]);
 
-    const {memberRowSelectionModel} = useMembers();
+    const {validateRowSelection} = useMembers();
 
     const handleOpenAddDialog = () => {
         setAddDialogOpen(true);
     };
 
-    const handleOpenCopyEmail = () => {
-        // Display the Snackbar when the "Copy Email(s)" button is clicked
+    const handleOpenCopyEmail = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        if (event.currentTarget.value === null) return;
+        if (event.currentTarget.value === "copySelected" && !validateRowSelection()) return;
+
+        setCopyEmailOption(event.currentTarget.value);
         setCopyEmailOpen(true);
     };
 
     const handleCloseCopyEmail = () => {
         // Display the Snackbar when the "Copy Email(s)" button is clicked
-        setCopyEmailOption("");
         setCopyEmailOpen(false);
     };
 
@@ -53,33 +52,15 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     };
 
     const handleOpenDeleteDialog = () => {
-        if (memberRowSelectionModel.length > 0) {
-            setRemoveDialogOpen(true);
-        } else {
-            setFailRemoveDialogOpen(true);
-        }
+        validateRowSelection() && setRemoveDialogOpen(true);
     };
 
     const handleCloseDeleteDialog = () => {
         setRemoveDialogOpen(false);
     };
 
-    const handleCloseFailDeleteDialog = () => {
-        setFailRemoveDialogOpen(false);
-    };
-
     const handleRemoveClick = () => {
         handleOpenDeleteDialog();
-    };
-
-    const handleCopyEmailOptionChange = (
-        event: React.MouseEvent<HTMLElement>,
-        newValue: string | null
-    ) => {
-        if (newValue !== null) {
-            setCopyEmailOption(newValue);
-            handleOpenCopyEmail();
-        }
     };
 
     const renderAppBar = () => {
@@ -182,32 +163,32 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                         <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                             Remove Member(s)
                         </Button>
-                        <ToggleButtonGroup
-                            exclusive
-                            value={copyEmailOption}
-                            onChange={handleCopyEmailOptionChange}
+                        <ButtonGroup
                             className="text-white" // Add text-white class to make text white
                             style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
                         >
-                            <ToggleButton
+                            <Button
+                                onClick={handleOpenCopyEmail}
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
                                 Copy Selected Members
-                            </ToggleButton>
-                            <ToggleButton
+                            </Button>
+                            <Button
+                                onClick={handleOpenCopyEmail}
                                 value="copyActive"
                                 className="text-white border-transparent"
                             >
                                 Copy Active Members
-                            </ToggleButton>
-                            <ToggleButton
+                            </Button>
+                            <Button
+                                onClick={handleOpenCopyEmail}
                                 value="copyExpired"
                                 className="text-white border-transparent"
                             >
                                 Copy Expired Members
-                            </ToggleButton>
-                        </ToggleButtonGroup>
+                            </Button>
+                        </ButtonGroup>
                     </div>
                 </AppBar>
             );
@@ -244,32 +225,32 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                             <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                                 Remove Member(s)
                             </Button>
-                            <ToggleButtonGroup
-                                exclusive
-                                value={copyEmailOption}
-                                onChange={handleCopyEmailOptionChange}
+                            <ButtonGroup
                                 className="text-white" // Add text-white class to make text white
                                 style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
                             >
-                                <ToggleButton
+                                <Button
+                                    onClick={handleOpenCopyEmail}
                                     value="copySelected"
                                     className="text-white border-transparent"
                                 >
                                     Copy Selected Members
-                                </ToggleButton>
-                                <ToggleButton
+                                </Button>
+                                <Button
+                                    onClick={handleOpenCopyEmail}
                                     value="copyActive"
                                     className="text-white border-transparent"
                                 >
                                     Copy Active Members
-                                </ToggleButton>
-                                <ToggleButton
+                                </Button>
+                                <Button
+                                    onClick={handleOpenCopyEmail}
                                     value="copyExpired"
                                     className="text-white border-transparent"
                                 >
                                     Copy Expired Members
-                                </ToggleButton>
-                            </ToggleButtonGroup>
+                                </Button>
+                            </ButtonGroup>
                         </div>
                     </Toolbar>
                 </AppBar>
@@ -282,10 +263,6 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
             {renderAppBar()}
             <MemberAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <MemberRemoveDialog open={removeDialogOpen} onClose={handleCloseDeleteDialog} />
-            <FailMemberRemoveDialog
-                open={failRemoveDialogOpen}
-                onClose={handleCloseFailDeleteDialog}
-            />
             <MemberEmailDialog
                 open={copyEmailOpen}
                 onClose={handleCloseCopyEmail}
