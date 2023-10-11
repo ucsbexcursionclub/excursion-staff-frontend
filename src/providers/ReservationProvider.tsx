@@ -16,6 +16,7 @@ interface ReservationsContextProps {
     setReservationRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     retrieveReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
+    memberOverDueReservations: (selectedMemberId: string) => Promise<ReservationProps[]>;
 }
 
 const useReservationsState = () => {
@@ -110,13 +111,28 @@ const useReservationsOperations = (
         recomputeAggregatedReservations();
     };
 
+    const memberOverDueReservations = async (selectedMemberId: string) => {
+        const reservations: ReservationProps[] = await retrieveReservationsByMemberId(
+            selectedMemberId
+        );
+        const today = new Date();
+
+        const overdueReservations = reservations.filter((reservation) => {
+            const dueDate = new Date(reservation.due_date);
+            return dueDate <= today;
+        });
+
+        return overdueReservations;
+    };
+
     return {
         handleReservationAdd,
         handleReservationEnd,
         retrieveReservation,
         retrieveReservations,
         retrieveReservationsByGearId,
-        retrieveReservationsByMemberId
+        retrieveReservationsByMemberId,
+        memberOverDueReservations
     };
 };
 

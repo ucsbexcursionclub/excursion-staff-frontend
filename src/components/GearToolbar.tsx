@@ -86,18 +86,11 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             localTotalCount++;
 
             if (gear.current_reservation) {
-                const dueDate = new Date(gear.reservationDetails?.due_date);
-                const timeDifference = currentDate.getTime() - dueDate.getTime();
-                const daysDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-                if (daysDifference <= 7) {
-                    localCheckedOutCount++;
-                }
+                gear.reservationDetails.due_date < Date.now()
+                    ? localOverdueCount++
+                    : localCheckedOutCount++;
             } else {
                 localAvailableCount++;
-            }
-
-            if (gear.reservationDetails && gear.reservationDetails.due_date < Date.now()) {
-                localOverdueCount++;
             }
         });
 
@@ -149,12 +142,14 @@ export default function GearToolBar({searchParams, onFilterChange}: GearToolBarP
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
-            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center"
+            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center sm:flex-col sm:space-y-2"
         >
-            <FilterSelect onFilterChange={onFilterChange} />
-            <Separator />
-            <SelectedCount />
-            <AvailibilityView searchParams={searchParams} />
+            <div className="flex flex-wrap items-center space-x-2 space-y-2">
+                <FilterSelect onFilterChange={onFilterChange} />
+                <Separator />
+                <SelectedCount />
+                <AvailibilityView searchParams={searchParams} />
+            </div>
         </GridToolbarContainer>
     );
 }

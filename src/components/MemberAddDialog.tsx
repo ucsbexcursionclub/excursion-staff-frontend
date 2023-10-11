@@ -52,7 +52,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     };
 
     const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem} = useMembers();
-    const {retrieveReservationsByMemberId} = useReservations();
+    const {memberOverDueReservations} = useReservations();
     const {retrieveGearItem} = useGear();
 
     const loggedInMember = identity ? retrieveMemberItem(identity.member_id) : null;
@@ -292,7 +292,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
             const memberId = memberWithEmail._id;
 
-            const overdueReservations = await retrieveReservationsByMemberId(memberId);
+            const overdueReservations = await memberOverDueReservations(memberId);
 
             if (overdueReservations.length > 0) {
                 const overdueGearAlert = `${fullName} has overdue gear reservations:\n`;

@@ -83,7 +83,72 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     };
 
     const renderAppBar = () => {
-        if (screenWidth < 1000) {
+        if (screenWidth < 530) {
+            // Render AppBar with buttons in the same row on wider screens
+            return (
+                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
+                    <Toolbar className="flex justify-between items-center py-1">
+                        <Typography variant="h4" className="pr-3">
+                            Members
+                        </Typography>
+                        <div className="flex flex-col items-center w-full">
+                            <Typography
+                                style={{userSelect: "none"}}
+                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                            >
+                                s
+                            </Typography>
+                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
+                                <SearchIcon className="absolute left-2" color="inherit" />
+                                <InputBase onChange={updateSearch} className="pl-10 w-full" />
+                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
+                                    Search
+                                </Button>
+                            </div>
+                            <Typography className="text-xs text-gray-200 italic">
+                                Name, Email, or Phone Number
+                            </Typography>
+                        </div>
+                    </Toolbar>
+                    <div className="flex justify-end pr-3">
+                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
+                            Add/Renew Member
+                        </Button>
+                        <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
+                            Remove Member(s)
+                        </Button>
+                    </div>
+                    <div className="flex justify-end pr-3">
+                        <ToggleButtonGroup
+                            exclusive
+                            value={copyEmailOption}
+                            onChange={handleCopyEmailOptionChange}
+                            className="text-white" // Add text-white class to make text white
+                            style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
+                        >
+                            <ToggleButton
+                                value="copySelected"
+                                className="text-white border-transparent"
+                            >
+                                Copy Selected Members
+                            </ToggleButton>
+                            <ToggleButton
+                                value="copyActive"
+                                className="text-white border-transparent"
+                            >
+                                Copy Active Members
+                            </ToggleButton>
+                            <ToggleButton
+                                value="copyExpired"
+                                className="text-white border-transparent"
+                            >
+                                Copy Expired Members
+                            </ToggleButton>
+                        </ToggleButtonGroup>
+                    </div>
+                </AppBar>
+            );
+        } else if (screenWidth < 1000) {
             // Render AppBar with buttons in the same row on wider screens
             return (
                 <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">

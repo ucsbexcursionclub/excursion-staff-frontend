@@ -11,7 +11,7 @@ import {
     Alert
 } from "@mui/material";
 import MembersAutoComplete from "./MembersAutoComplete";
-import {MemberProps} from "../utils/types";
+import {MemberProps, ReservationProps} from "../utils/types";
 import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
 import {useReservations} from "../providers/ReservationProvider";
@@ -32,7 +32,7 @@ TODO: handle overwrites to close reservations automatically with some notes mayb
 
 const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) => {
     const {retrieveGearItem, handleGearCheckout, gearRowSelectionModel} = useGear();
-    const {retrieveReservationsByMemberId} = useReservations();
+    const {memberOverDueReservations} = useReservations();
     const [overdueGearAlert, setOverdueGearAlert] = useState<string | null>(null);
 
     const gearsToCheckOut = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
@@ -47,23 +47,25 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
 
     const handleConfirmCheckOut = async () => {
         if (selectedMember) {
-            const overdueReservations = await retrieveReservationsByMemberId(selectedMember._id);
+            const overdueReservations = await memberOverDueReservations(selectedMember._id);
 
             if (overdueReservations.length > 0) {
                 // Display an alert for overdue gear reservations
                 const overdueGearAlert = `${selectedMember.name} has overdue gear reservations:\n`;
-                const overdueGearItems = overdueReservations.map((reservation) => {
-                    // Map each reserved_gear item
-                    const overdueGearItemNames = reservation.reserved_gear.map((gearItemId) => {
-                        const gearItem = retrieveGearItem(gearItemId);
-                        const gearItemName = gearItem ? gearItem.gear_name : "Unknown Gear";
-                        return gearItemName;
-                    });
+                const overdueGearItems = overdueReservations.map(
+                    (reservation: ReservationProps) => {
+                        // Map each reserved_gear item
+                        const overdueGearItemNames = reservation.reserved_gear.map((gearItemId) => {
+                            const gearItem = retrieveGearItem(gearItemId);
+                            const gearItemName = gearItem ? gearItem.gear_name : "Unknown Gear";
+                            return gearItemName;
+                        });
 
-                    return `${overdueGearItemNames.join(", ")} (Due Date: ${new Date(
-                        reservation.due_date
-                    ).toLocaleDateString()})`;
-                });
+                        return `${overdueGearItemNames.join(", ")} (Due Date: ${new Date(
+                            reservation.due_date
+                        ).toLocaleDateString()})`;
+                    }
+                );
                 const overdueGearMessage = overdueGearAlert + overdueGearItems.join("\n");
                 setOverdueGearAlert(overdueGearMessage);
                 console.log(overdueGearMessage);
