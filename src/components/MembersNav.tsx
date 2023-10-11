@@ -1,5 +1,14 @@
 import React, {ChangeEvent, useState, useEffect} from "react";
-import {AppBar, Toolbar, Typography, InputBase, Button, ButtonGroup} from "@mui/material";
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    InputBase,
+    Button,
+    ButtonGroup,
+    ToggleButton,
+    ToggleButtonGroup
+} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MemberAddDialog from "./MemberAddDialog";
 import MemberRemoveDialog from "./MemberRemoveDialog";
@@ -103,7 +112,6 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                         <ToggleButtonGroup
                             exclusive
                             value={copyEmailOption}
-                            onChange={handleCopyEmailOptionChange}
                             className="text-white" // Add text-white class to make text white
                             style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
                         >
