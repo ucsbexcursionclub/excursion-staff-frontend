@@ -17,7 +17,7 @@ interface EditProfileFormDialogProps {
 }
 
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
-    const {handleMemberUpdate, currentMemberData} = useMembers();
+    const {handleMemberUpdate, loggedInMember} = useMembers();
 
     //EDIT: only allow staff update if they are updating their own profile.
     const {retrieveStaffById, handleFileUpload, handleStaffUpdate} = useStaff();
@@ -29,15 +29,15 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     };
 
     useEffect(() => {
-        if (!currentMemberData) return;
+        if (!loggedInMember) return;
 
-        setName(currentMemberData.name);
-        const retrievedStaff = retrieveStaffById(currentMemberData.staff_id);
+        setName(loggedInMember.name);
+        const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
 
         setStaffDetails(retrievedStaff);
-    }, [currentMemberData, retrieveStaffById]);
+    }, [loggedInMember, retrieveStaffById]);
 
-    const [name, setName] = useState<string>(currentMemberData?.name || "");
+    const [name, setName] = useState<string>(loggedInMember?.name || "");
     const [bio, setBio] = useState<string>(staffDetails?.bio);
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [profilePicPreview, setProfilePicPreview] = useState<string>(
@@ -71,8 +71,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
     const handleSave = async () => {
         const profileImageUrl = await handleFileUpload(profilePic);
-        if (currentMemberData && name !== currentMemberData.name) {
-            await handleMemberUpdate({...currentMemberData, name});
+        if (loggedInMember && name !== loggedInMember.name) {
+            await handleMemberUpdate({...loggedInMember, name});
         }
 
         if (staffDetails && bio !== staffDetails?.bio) {

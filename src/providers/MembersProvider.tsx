@@ -9,7 +9,7 @@ import {useSnackbar} from "./SnackBarProvider";
 
 interface MembersContextProps {
     membersData: MemberProps[];
-    currentMemberData: MemberProps | null | undefined;
+    loggedInMember: MemberProps | null;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
     handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
     retrieveMemberItem: (id: string) => MemberProps | null;
@@ -23,7 +23,7 @@ interface MembersContextProps {
 const useMembersState = () => {
     const queryClient = useQueryClient();
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
-    const [currentMemberData, setCurrentMemberData] = useState<MemberProps | null>();
+    const [loggedInMember, setLoggedInMember] = useState<MemberProps | null>(null);
     const {isStaff} = useLogin();
     const {addNotification} = useSnackbar();
 
@@ -51,7 +51,7 @@ const useMembersState = () => {
         }
     }, [fetchMembersData, queryClient]);
 
-    return {membersData, setMembersData, currentMemberData, setCurrentMemberData};
+    return {membersData, setMembersData, loggedInMember, setLoggedInMember};
 };
 
 const useMembersOperations = (
@@ -59,7 +59,7 @@ const useMembersOperations = (
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>,
     memberRowSelectionModel: GridRowSelectionModel,
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>,
-    setCurrentMemberData: React.Dispatch<React.SetStateAction<MemberProps | undefined | null>>
+    setloggedInMember: React.Dispatch<React.SetStateAction<MemberProps | null>>
 ) => {
     const queryClient = useQueryClient();
 
@@ -99,8 +99,8 @@ const useMembersOperations = (
 
     useEffect(() => {
         if (!identity) return;
-        setCurrentMemberData(retrieveMemberItem(identity.member_id));
-    }, [identity, retrieveMemberItem, setCurrentMemberData]);
+        setloggedInMember(retrieveMemberItem(identity.member_id));
+    }, [identity, retrieveMemberItem, setloggedInMember]);
 
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);
@@ -126,7 +126,10 @@ const useMembersOperations = (
     const handleMemberAdd = async (newMemberData: NewMemberProps) => {
         const addedMember = await addMember(newMemberData);
 
-        console.log("member added");
+        if (!addedMember) {
+            addNotification({message: "Error adding member. Try again later.", type: "error"});
+            return;
+        }
 
         queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
         await queryClient.prefetchQuery(["memberItem", addedMember._id], {
@@ -166,8 +169,7 @@ interface DataProviderProps {
 }
 
 export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
-    const {membersData, setMembersData, currentMemberData, setCurrentMemberData} =
-        useMembersState();
+    const {membersData, setMembersData, loggedInMember, setLoggedInMember} = useMembersState();
     const [memberRowSelectionModel, setMemberRowSelectionModel] = useState<GridRowSelectionModel>(
         []
     );
@@ -176,7 +178,7 @@ export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
         setMembersData,
         memberRowSelectionModel,
         setMemberRowSelectionModel,
-        setCurrentMemberData
+        setLoggedInMember
     );
 
     return (
@@ -184,7 +186,7 @@ export const MembersProvider: React.FC<DataProviderProps> = ({children}) => {
             value={{
                 membersData,
                 setMembersData,
-                currentMemberData,
+                loggedInMember,
                 memberRowSelectionModel,
                 setMemberRowSelectionModel,
                 ...memberOps
