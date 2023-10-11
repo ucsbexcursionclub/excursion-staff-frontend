@@ -152,12 +152,14 @@ export default function MembersToolBar({searchParams, onFilterChange}: GearToolB
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
-            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center"
+            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center sm:flex-col sm:space-y-2"
         >
-            <FilterSelect onFilterChange={onFilterChange} />
-            <Separator />
-            <SelectedCount />
-            <AvailibilityView searchParams={searchParams} />
+            <div className="flex flex-wrap items-center space-x-2 space-y-2">
+                <FilterSelect onFilterChange={onFilterChange} />
+                <Separator />
+                <SelectedCount />
+                <AvailibilityView searchParams={searchParams} />
+            </div>
         </GridToolbarContainer>
     );
 }

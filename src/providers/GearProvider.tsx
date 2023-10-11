@@ -17,6 +17,7 @@ interface GearContextProps {
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
+    // getMemberOverdueGear: (selectedMemberId: string) => Promise<[GearProps, Date][]>;
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     gearRowSelectionModel: GridRowSelectionModel;
     validateRowSelection: () => boolean;

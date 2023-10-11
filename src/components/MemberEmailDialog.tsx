@@ -60,7 +60,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
         });
     }
 
-    const emailsJoined = memberEmails.join(", "); // Join emails with commas
+    const emailsJoined = memberEmails.join("\n"); // Join emails with commas
 
     const maxWidth = `${(screenwidth / 100) * 80}vw`;
 
