@@ -78,6 +78,7 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     useEffect(() => {
         if (!open) return;
 
+        setSelectedMember(null);
         resetForm();
     }, [open]);
 
