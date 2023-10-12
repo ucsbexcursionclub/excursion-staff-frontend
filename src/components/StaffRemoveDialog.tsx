@@ -9,6 +9,7 @@ import ListItem from "@mui/material/ListItem";
 import {useStaff} from "../providers/StaffProvider";
 import {BlurBackDrop} from "./HelperComponents";
 import {StaffProps} from "../utils/types";
+import {useMembers} from "../providers/MembersProvider";
 
 type StaffRemoveDialogProps = {
     open: boolean;
@@ -21,6 +22,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
     };
 
     const {retrieveStaffById, handleStaffDelete, staffRowSelectionModel} = useStaff();
+    const {markMembersStale} = useMembers();
 
     const staffMembersToDelete: StaffProps[] = staffRowSelectionModel
         .map((id) => retrieveStaffById(id.toString()))
@@ -28,6 +30,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
 
     async function handleConfirmDelete() {
         await handleStaffDelete(staffMembersToDelete);
+        await markMembersStale(staffMembersToDelete.map((member) => member.member_id));
         handleClose();
     }
 
