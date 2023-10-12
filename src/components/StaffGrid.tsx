@@ -2,15 +2,21 @@ import React from "react";
 import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import StaffCard from "./StaffCard"; // Import your StaffCard component
-import {useStaff} from "../providers/StaffProvider";
+import {useQuery} from "react-query";
+import {getStaffProfiles} from "../utils/api";
 
 const StaffGrid: React.FC = () => {
     //TODO: extract this to some safe function where we just pull staff information like name, email, bio
-    const {staffData} = useStaff();
+    const {data: staffProfiles} = useQuery({
+        queryKey: ["staffProfiles"],
+        queryFn: getStaffProfiles
+    });
     // console.log(staffData);
 
+    if (!staffProfiles) return;
+
     // Sort staff by position
-    const sortedStaff = [...staffData].sort((a, b) => {
+    const sortedStaff = [...staffProfiles].sort((a, b) => {
         // Define the order of positions
         const positionOrder: {[position: string]: number} = {
             Director: 1,
@@ -65,9 +71,9 @@ const StaffGrid: React.FC = () => {
                     Board
                 </Typography>
                 <Grid container justifyContent="left" spacing={4}>
-                    {boardStaff.map((staffMember) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
-                            <StaffCard staff={staffMember} />
+                    {boardStaff.map((staffProfile, index) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <StaffCard staff={staffProfile} />
                         </Grid>
                     ))}
                 </Grid>
@@ -83,9 +89,9 @@ const StaffGrid: React.FC = () => {
                     Staff
                 </Typography>
                 <Grid container justifyContent="left" spacing={4}>
-                    {generalStaff.map((staffMember) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
-                            <StaffCard staff={staffMember} />
+                    {generalStaff.map((staffProfile, index) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <StaffCard staff={staffProfile} />
                         </Grid>
                     ))}
                 </Grid>
@@ -101,9 +107,9 @@ const StaffGrid: React.FC = () => {
                     Prospective Staff
                 </Typography>
                 <Grid container justifyContent="left" spacing={4}>
-                    {prospectiveStaff.map((staffMember) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={staffMember._id}>
-                            <StaffCard staff={staffMember} />
+                    {prospectiveStaff.map((staffProfile, index) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <StaffCard staff={staffProfile} />
                         </Grid>
                     ))}
                 </Grid>

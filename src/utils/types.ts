@@ -21,6 +21,14 @@ export type NotificationProps = {
     type?: AlertColor;
 };
 
+export type StaffProfile = {
+    name: string;
+    email: string;
+    positions: string[];
+    profileImageUrl: string;
+    bio: string;
+};
+
 export type IdentityProps = {
     member_id: string;
     _id: string;
