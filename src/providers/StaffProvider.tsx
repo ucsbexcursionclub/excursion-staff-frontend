@@ -71,6 +71,8 @@ const useStaffOperations = (
         return staffData.filter((staff) => staff.member_id === member_id)[0];
     };
 
+    //TODO NEED TO INVALIDATE AND REFETCH MEMBER DATA WHENEVER STAFF DATA IS REMOVED OR ADDED
+
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
         const staffIds = selectedStaff.map((staff) => staff._id);
 

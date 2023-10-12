@@ -23,11 +23,12 @@ type StaffAddDialogProps = {
 };
 
 export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
-    const [selectedPositions, setSelectedPositions] = useState([]);
+    const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
     const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
     const [error, setError] = useState<boolean>(false);
     const [disableAdd, setDisableAdd] = useState<boolean>(false);
     const [role, setRole] = useState<IdentityProps["role"]>("staff");
+    const [disableActions, setDisabledActions] = useState<boolean>(false);
 
     const {handleStaffAdd, handleStaffUpdate, retrieveStaffById} = useStaff();
     const {handleMemberUpdate} = useMembers();
@@ -45,22 +46,41 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
         );
     };
 
+    const resetForm = () => {
+        setSelectedPositions([]);
+        setRole("staff");
+        setDisableAdd(false);
+    };
+
     const handleRoleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const position = event.target.value as "user" | "staff" | "admin";
         setRole(position);
     };
 
     useEffect(() => {
-        const staffId = selectedMember?.staff_id;
+        if (!selectedMember) {
+            setDisableAdd(false);
+            return;
+        }
 
-        const existingStaff = staffId && retrieveStaffById(staffId);
+        const {staff_id: staffId} = selectedMember;
 
-        setDisableAdd(!!existingStaff);
-
-        existingStaff?.role && setRole(existingStaff.role);
-
-        setSelectedPositions(existingStaff?.positions || []);
+        if (staffId) {
+            const existingStaff = retrieveStaffById(staffId);
+            existingStaff?.role && setRole(existingStaff.role);
+            setSelectedPositions(existingStaff?.positions || []);
+            setDisableAdd(true);
+        } else {
+            resetForm();
+        }
     }, [selectedMember, retrieveStaffById]);
+
+    useEffect(() => {
+        if (!open) return;
+
+        setSelectedMember(null);
+        resetForm();
+    }, [open]);
 
     const handleAddStaffMember = async () => {
         if (!selectedMember) return;
@@ -74,22 +94,23 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
             role: role
         };
 
+        setDisabledActions(true);
         // Call the handleStaffAdd function to add the staff member
         await handleStaffAdd(newStaffData);
         await handleMemberUpdate(selectedMember);
 
-        // Reset the form fields
-        setSelectedPositions([]);
-        setSelectedMember(null);
+        setDisabledActions(false);
 
         // Close the dialog
         handleClose();
     };
 
     const handleUpdateStaffMember = async () => {
-        if (!selectedMember) return;
+        if (!selectedMember?.staff_id) return;
 
         const existingStaff = retrieveStaffById(selectedMember.staff_id);
+
+        if (!existingStaff) return;
 
         // Create the staff member object with updated data while maintaining existing values
         const updatedStaff = {
@@ -98,12 +119,11 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
             role: role
         };
 
+        setDisabledActions(true);
         // Call the handleStaffUpdate function to update the staff member
         await handleStaffUpdate(updatedStaff);
 
-        // Reset the form fields
-        setSelectedPositions([]);
-        setSelectedMember(null);
+        setDisabledActions(false);
 
         // Close the dialog
         handleClose();
@@ -161,7 +181,7 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
             </DialogContent>
             <DialogActions>
                 <Button
-                    disabled={!disableAdd}
+                    disabled={!disableAdd || disableActions}
                     variant="outlined"
                     onClick={handleUpdateStaffMember}
                     color="primary"
@@ -169,7 +189,7 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
                     Update
                 </Button>
                 <Button
-                    disabled={disableAdd}
+                    disabled={disableAdd || disableActions}
                     variant="outlined"
                     onClick={handleAddStaffMember}
                     color="primary"

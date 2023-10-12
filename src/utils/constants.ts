@@ -26,3 +26,5 @@ export enum MemberFilterOptions {
     SHOW_HAS_OVERDUE_GEAR = "SHOW_HAS_OVERDUE_GEAR",
     SHOW_ALL = "SHOW_ALL"
 }
+
+export const MILLISECONDS_IN_DAY = 86400000;

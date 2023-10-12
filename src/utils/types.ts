@@ -6,13 +6,13 @@ export type MemberProps = {
     email: string;
     phone_number: string;
     membership_duration: number;
+    local_living_address: string;
     is_new_member: boolean;
     signed_up_by: string;
-    membership_expiration_date: number | null;
+    membership_expiration_date: number;
     join_datetime: number;
     notes: string | null;
     staff_id?: string;
-    local_living_address?: string;
 };
 
 export type NotificationProps = {

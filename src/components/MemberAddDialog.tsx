@@ -18,15 +18,23 @@ import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
 import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
+import {MILLISECONDS_IN_DAY} from "../utils/constants";
 
 interface MemberAddDialog {
     open: boolean;
     onClose: () => void;
 }
 
+enum MembershipType {
+    NEW_MEMBER = "newMember",
+    RETURNING_MEMBER = "returningMember"
+}
+
 const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
-    const [membershipStatus, setMembershipStatus] = React.useState("newMember"); // Default to "New Member"
-    const [membershipDuration, setMembershipDuration] = React.useState("365"); // Default to 1 year
+    const [membershipStatus, setMembershipStatus] = React.useState<MembershipType>(
+        MembershipType.NEW_MEMBER
+    );
+    const [membershipDuration, setMembershipDuration] = React.useState<90 | 180 | 365>(365); // Default to 1 year
     const [stokedLevel, setStokedLevel] = React.useState(""); // Stoked level state
     const [email, setEmail] = React.useState("");
     const [reEnterEmail, setReEnterEmail] = React.useState("");
@@ -38,8 +46,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [validationEnabled, setValidationEnabled] = React.useState(false); // Enable validation when the user hits submit
     const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
     const [submitErrorMessage, setSubmitErrorMessage] = React.useState<string | null>(null);
-    const [hasWaiver, setHasWaiver] = React.useState("no"); // Default to "Yes" for the waiver
-    const [hasPaid, setHasPaid] = React.useState("no"); // Default to "Yes" for the waiver
+    const [hasWaiver, setHasWaiver] = React.useState<boolean>(false);
+    const [hasPaid, setHasPaid] = React.useState<boolean>(false);
     const [localLivingAddress, setLocalLivingAddress] = React.useState("");
 
     const handleClose = () => {
@@ -49,7 +57,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         onClose();
     };
 
-    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberItem, loggedInMember} =
+    const {handleMemberAdd, membersData, handleMemberUpdate, retrieveMemberById, loggedInMember} =
         useMembers();
 
     const {retrieveReservationsByMemberId} = useReservations();
@@ -58,20 +66,25 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     if (!loggedInMember) return;
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setHasWaiver(event.target.value);
+        const value = event.target.value === "true";
+        setHasWaiver(value);
     };
+
     const handleHasPaid = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setHasPaid(event.target.value);
+        const value = event.target.value === "true";
+        setHasPaid(value);
     };
     const handleStokedLevelChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setStokedLevel(value);
     };
     const handleMembershipStatusChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setMembershipStatus(event.target.value);
+        const value = event.target.value as MembershipType;
+        setMembershipStatus(value);
     };
     const handleMembershipDurationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setMembershipDuration(event.target.value);
+        const value = Number(event.target.value) as 90 | 180 | 365;
+        setMembershipDuration(value);
     };
     const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -127,25 +140,31 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setLocalLivingAddress(value);
     };
 
+    function setErrorMessageTimeout() {
+        setTimeout(() => {
+            setSubmitErrorMessage(null);
+        }, 5000); // 5000 milliseconds (5 seconds)
+    }
+
     const calculatePrice = () => {
         if (membershipStatus === "newMember") {
             switch (membershipDuration) {
-                case "365":
+                case 365:
                     return "$60";
-                case "180":
+                case 180:
                     return "$50";
-                case "90":
+                case 90:
                     return "$30";
                 default:
                     return "";
             }
         } else if (membershipStatus === "returningMember") {
             switch (membershipDuration) {
-                case "365":
+                case 365:
                     return "$40";
-                case "180":
+                case 180:
                     return "$30";
-                case "90":
+                case 90:
                     return "$20";
                 default:
                     return "";
@@ -157,7 +176,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const validateForm = () => {
         let errorMessage = "";
 
-        if (hasWaiver === "no") {
+        if (!hasWaiver) {
             errorMessage = "Please fill out the waiver.";
         } else if (emailError) {
             errorMessage = "Please enter a valid email.";
@@ -167,13 +186,26 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             errorMessage = "Please enter a valid phone number.";
         } else if (!fullName) {
             errorMessage = "Please enter your full name.";
-        } else if (hasPaid === "no") {
+        } else if (!hasPaid) {
             errorMessage = "Please ensure the new member has paid dues.";
         } else if (!localLivingAddress) {
             errorMessage = "Please fill in the address in which you live nearby.";
         }
 
         return errorMessage;
+    };
+
+    const clearForm = () => {
+        // Clear the form fields on successful submission
+        setFullName("");
+        setEmail("");
+        setReEnterEmail("");
+        setPhoneNumber("");
+        setValidationEnabled(false);
+        setStokedLevel("");
+        setHasWaiver(false);
+        setHasPaid(false);
+        setLocalLivingAddress("");
     };
 
     const handleSubmit = async () => {
@@ -236,7 +268,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 name: fullName,
                 email: email,
                 phone_number: phoneNumber,
-                membership_duration: parseInt(membershipDuration),
+                membership_duration: membershipDuration,
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: loggedInMember._id,
                 local_living_address: localLivingAddress
@@ -250,21 +282,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setSuccessMessage(`Welcome, ${fullName}! You have successfully signed up.`);
         setErrorMessageTimeout();
 
-        setFullName("");
-        setEmail("");
-        setReEnterEmail("");
-        setPhoneNumber("");
-        setValidationEnabled(false);
-        setStokedLevel("");
-        setHasWaiver("no");
-        setHasPaid("no");
-        setLocalLivingAddress("");
-
-        function setErrorMessageTimeout() {
-            setTimeout(() => {
-                setSubmitErrorMessage(null);
-            }, 5000); // 5000 milliseconds (5 seconds)
-        }
+        clearForm();
     };
 
     const handleRenew = async () => {
@@ -279,8 +297,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             setErrorMessageTimeout();
             return;
         }
-
-        const expirationDate = new Date();
 
         try {
             const memberWithEmail = membersData.find(
@@ -333,32 +349,41 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 setErrorMessageTimeout();
                 return;
             }
+            const retrievedMemberData = retrieveMemberById(memberId)!;
 
-            const retrievedMemberData = retrieveMemberItem(memberId)!;
-
-            const memberExpirationDate =
-                retrievedMemberData.membership_expiration_date || Date.now();
+            let newMembershipExpiration = retrievedMemberData.membership_expiration_date;
 
             //Checking if member is not expired. If member is not expired than extend membership
-            memberExpirationDate < Date.now()
-                ? expirationDate.setDate(expirationDate.getDate() + parseInt(membershipDuration))
-                : expirationDate.setDate(memberExpirationDate + parseInt(membershipDuration));
+            if (newMembershipExpiration < Date.now()) {
+                newMembershipExpiration += membershipDuration * MILLISECONDS_IN_DAY;
+            } else {
+                newMembershipExpiration = Date.now() + membershipDuration * MILLISECONDS_IN_DAY;
+            }
 
             const memberData: MemberProps = {
-                _id: retrievedMemberData._id, //include id here
+                _id: retrievedMemberData._id,
                 name: fullName.toLowerCase(),
                 phone_number: phoneNumber,
                 email: email.toLowerCase(),
-                membership_duration: parseInt(membershipDuration),
+                membership_duration: membershipDuration,
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: loggedInMember._id,
-                membership_expiration_date: expirationDate.getTime(),
-                join_datetime: new Date().getTime(),
+                membership_expiration_date: newMembershipExpiration,
+                join_datetime: Date.now(),
                 notes: retrievedMemberData.notes,
                 local_living_address: localLivingAddress
             };
 
             await handleMemberUpdate(memberData);
+
+            setSuccessMessage(
+                `${fullName}'s membership extended to ${new Date(
+                    newMembershipExpiration
+                ).toLocaleDateString()}`
+            );
+            setErrorMessageTimeout();
+
+            clearForm();
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
                 setSubmitErrorMessage("Member not found. Please double check name and email.");
@@ -372,26 +397,6 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 setErrorMessageTimeout();
                 return;
             }
-        }
-
-        setSuccessMessage(`${fullName}'s membership extended through ${expirationDate}`);
-        setErrorMessageTimeout();
-
-        // Clear the form fields on successful submission
-        setFullName("");
-        setEmail("");
-        setReEnterEmail("");
-        setPhoneNumber("");
-        setValidationEnabled(false);
-        setStokedLevel("");
-        setHasWaiver("no");
-        setHasPaid("no");
-        setLocalLivingAddress("");
-
-        function setErrorMessageTimeout() {
-            setTimeout(() => {
-                setSubmitErrorMessage(null);
-            }, 5000); // 5000 milliseconds (5 seconds)
         }
     };
 
@@ -424,8 +429,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     style={{width: "100px", height: "100px"}}
                 />
                 <RadioGroup row name="isMember" value={hasWaiver} onChange={handleHasWaiver}>
-                    <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                    <FormControlLabel value="no" control={<Radio />} label="No" />
+                    <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                    <FormControlLabel value={false} control={<Radio />} label="No" />
                 </RadioGroup>
                 <TextField
                     autoFocus
@@ -515,12 +520,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                         onChange={handleMembershipStatusChange}
                     >
                         <FormControlLabel
-                            value="newMember"
+                            value={MembershipType.NEW_MEMBER}
                             control={<Radio />}
                             label="New Member"
                         />
                         <FormControlLabel
-                            value="returningMember"
+                            value={MembershipType.RETURNING_MEMBER}
                             control={<Radio />}
                             label="Returning Member"
                         />
@@ -534,9 +539,9 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                         value={membershipDuration}
                         onChange={handleMembershipDurationChange}
                     >
-                        <FormControlLabel value="90" control={<Radio />} label="90 days" />
-                        <FormControlLabel value="180" control={<Radio />} label="180 days" />
-                        <FormControlLabel value="365" control={<Radio />} label="365 days" />
+                        <FormControlLabel value={90} control={<Radio />} label="90 days" />
+                        <FormControlLabel value={180} control={<Radio />} label="180 days" />
+                        <FormControlLabel value={365} control={<Radio />} label="365 days" />
                     </RadioGroup>
                 </FormControl>
                 <Box sx={{my: 2, border: "1px solid black", p: 2}}>
@@ -547,8 +552,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     <div>
                         <p>Has this member paid you {calculatePrice()}?</p>
                         <RadioGroup row name="hasPaid" value={hasPaid} onChange={handleHasPaid}>
-                            <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                            <FormControlLabel value="no" control={<Radio />} label="No" />
+                            <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                            <FormControlLabel value={false} control={<Radio />} label="No" />
                         </RadioGroup>
                     </div>
                 </Box>

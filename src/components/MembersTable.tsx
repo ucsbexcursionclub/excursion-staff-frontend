@@ -172,8 +172,9 @@ const getColumns = (
             headerName: "Signed Up By",
             width: 140,
             valueFormatter: (params) => {
-                if (params.value) {
-                    return getMemberById(params.value)?.name;
+                const name = getMemberById(params.value)?.name;
+                if (name) {
+                    return capitalizeFirstLetter(name);
                 }
                 return "N/A";
             }
@@ -213,7 +214,7 @@ type MembersTableProps = {
 export default function MembersTable({searchParams}: MembersTableProps) {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
-    const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberItem} =
+    const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberById} =
         useMembers();
     const {retrieveReservationsByMemberId} = useReservations();
     const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
@@ -275,7 +276,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         setSelectedMember(null);
     };
 
-    const columns = getColumns(retrieveMemberItem, retrieveReservationsByMemberId);
+    const columns = getColumns(retrieveMemberById, retrieveReservationsByMemberId);
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
