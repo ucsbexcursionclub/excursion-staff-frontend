@@ -23,8 +23,8 @@ type StaffAddDialogProps = {
 };
 
 export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
-    const [selectedPositions, setSelectedPositions] = useState([]);
-    const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
+    const [selectedPositions, setSelectedPositions] = useState<string[]>([]);
+    const [selectedMember, setSelectedMember] = useState<MemberProps | null>();
     const [error, setError] = useState<boolean>(false);
     const [disableAdd, setDisableAdd] = useState<boolean>(false);
     const [role, setRole] = useState<IdentityProps["role"]>("staff");
@@ -51,15 +51,17 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     };
 
     useEffect(() => {
-        const staffId = selectedMember?.staff_id;
+        if (!selectedMember) return;
 
-        const existingStaff = staffId && retrieveStaffById(staffId);
+        const staffId = selectedMember.staff_id;
 
-        setDisableAdd(!!existingStaff);
+        if (staffId) {
+            const existingStaff = retrieveStaffById(staffId);
+            existingStaff?.role && setRole(existingStaff.role);
+            setSelectedPositions(existingStaff?.positions || []);
+        }
 
-        existingStaff?.role && setRole(existingStaff.role);
-
-        setSelectedPositions(existingStaff?.positions || []);
+        setDisableAdd(!!staffId);
     }, [selectedMember, retrieveStaffById]);
 
     const handleAddStaffMember = async () => {
@@ -87,9 +89,11 @@ export default function StaffAddDialog({open, onClose}: StaffAddDialogProps) {
     };
 
     const handleUpdateStaffMember = async () => {
-        if (!selectedMember) return;
+        if (!selectedMember?.staff_id) return;
 
         const existingStaff = retrieveStaffById(selectedMember.staff_id);
+
+        if (!existingStaff) return;
 
         // Create the staff member object with updated data while maintaining existing values
         const updatedStaff = {
