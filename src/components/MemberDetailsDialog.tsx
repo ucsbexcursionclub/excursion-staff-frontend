@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {
     Dialog,
     DialogTitle,
@@ -14,6 +14,7 @@ import {
 import {MemberProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {capitalizeFirstLetter} from "../utils/utils";
 
 type MemberDetailsDialogProps = {
     open: boolean;
@@ -24,7 +25,7 @@ type MemberDetailsDialogProps = {
 const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose, member}) => {
     const [notes, setNotes] = useState(member?.notes || "");
     const [initialNotes, setInitialNotes] = useState(member?.notes || "");
-    const {handleMemberUpdate} = useMembers();
+    const {handleMemberUpdate, retrieveMemberById} = useMembers();
 
     const handleClose = () => {
         onClose();
@@ -39,6 +40,14 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
         setNotes(event.target.value);
     };
 
+    const signedUpBy = useCallback(() => {
+        const staffName = member && retrieveMemberById(member.signed_up_by)?.name;
+
+        return staffName ? capitalizeFirstLetter(staffName) : "N/A";
+    }, [member]);
+
+    if (!member) return null;
+
     const handleNotesBlur = async () => {
         if (notes !== initialNotes) {
             try {
@@ -48,8 +57,6 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
             }
         }
     };
-
-    if (!member) return null;
 
     return (
         <Dialog
@@ -88,7 +95,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                     </ListItem>
                     <ListItem>
                         <Typography>
-                            <strong>Signed Up By: </strong> {member.signed_up_by}
+                            <strong>Signed Up By: </strong> {signedUpBy()}
                         </Typography>
                     </ListItem>
                     <ListItem>

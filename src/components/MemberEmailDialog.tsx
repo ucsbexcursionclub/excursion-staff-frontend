@@ -18,7 +18,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
     screenwidth,
     copyEmailOption
 }) => {
-    const {retrieveMemberItem, membersData, memberRowSelectionModel} = useMembers();
+    const {retrieveMemberById, membersData, memberRowSelectionModel} = useMembers();
 
     const handleClose = () => {
         onClose();
@@ -28,7 +28,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
 
     if (copyEmailOption === "copySelected" && memberRowSelectionModel.length > 0) {
         memberEmails = memberRowSelectionModel.map((id) => {
-            const member = retrieveMemberItem(id.toString());
+            const member = retrieveMemberById(id.toString());
             return member?.email || ""; // Return the email or an empty string if member not found
         });
     } else {

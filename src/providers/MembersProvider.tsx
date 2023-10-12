@@ -12,7 +12,7 @@ interface MembersContextProps {
     loggedInMember: MemberProps | null;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
     handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
-    retrieveMemberItem: (id: string) => MemberProps | null;
+    retrieveMemberById: (id: string) => MemberProps | null;
     handleMemberDelete: (selectedMember: MemberProps[]) => Promise<void>;
     handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
     memberRowSelectionModel: GridRowSelectionModel;
@@ -90,7 +90,7 @@ const useMembersOperations = (
      * @returns a member from the local database, different from getMember which fetches from mongodb
      * . Doing to limit unnecessary api calls.
      */
-    const retrieveMemberItem = useCallback(
+    const retrieveMemberById = useCallback(
         (id: string) => {
             return membersData.filter((member) => member._id === id)[0];
         },
@@ -99,8 +99,8 @@ const useMembersOperations = (
 
     useEffect(() => {
         if (!identity) return;
-        setloggedInMember(retrieveMemberItem(identity.member_id));
-    }, [identity, retrieveMemberItem, setloggedInMember]);
+        setloggedInMember(retrieveMemberById(identity.member_id));
+    }, [identity, retrieveMemberById, setloggedInMember]);
 
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);
@@ -155,7 +155,7 @@ const useMembersOperations = (
 
     return {
         handleMemberUpdate,
-        retrieveMemberItem,
+        retrieveMemberById,
         handleMemberDelete,
         handleMemberAdd,
         validateRowSelection
