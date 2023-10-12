@@ -44,7 +44,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
         const staffName = member && retrieveMemberById(member.signed_up_by)?.name;
 
         return staffName ? capitalizeFirstLetter(staffName) : "N/A";
-    }, [member]);
+    }, [member, retrieveMemberById]);
 
     if (!member) return null;
 

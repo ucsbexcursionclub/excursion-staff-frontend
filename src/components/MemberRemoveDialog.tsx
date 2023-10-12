@@ -22,7 +22,8 @@ const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) 
         onClose();
     };
 
-    const {retrieveMemberById, handleMemberDelete, memberRowSelectionModel} = useMembers();
+    const {retrieveMemberById, handleMemberDelete, memberRowSelectionModel, markMembersStale} =
+        useMembers();
 
     const membersToDelete = memberRowSelectionModel
         .map((id) => retrieveMemberById(id.toString()))
@@ -30,6 +31,7 @@ const MemberRemoveDialog: React.FC<MemberRemoveDialogProps> = ({open, onClose}) 
 
     async function handleConfirmDelete() {
         await handleMemberDelete(membersToDelete);
+        await markMembersStale(membersToDelete.map((member) => member._id));
         handleClose();
     }
 

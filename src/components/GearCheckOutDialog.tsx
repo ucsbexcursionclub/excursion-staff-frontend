@@ -35,7 +35,9 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
     const {retrieveReservationsByMemberId} = useReservations();
     const [alertMessage, setAlertMessage] = useState<string | null>(null);
 
-    const gearsToCheckOut = gearRowSelectionModel.map((id) => retrieveGearItem(id.toString()));
+    const gearsToCheckOut = gearRowSelectionModel
+        .map((id) => retrieveGearItem(id.toString()))
+        .filter(Boolean) as GearProps[];
 
     const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
 
@@ -62,7 +64,7 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
 
                     await Promise.all(
                         reservation.reserved_gear.map(async (gearId) => {
-                            const gearItem = await retrieveGearItem(gearId);
+                            const gearItem = retrieveGearItem(gearId)!;
 
                             if (
                                 gearItem.current_reservation === reservation._id &&
