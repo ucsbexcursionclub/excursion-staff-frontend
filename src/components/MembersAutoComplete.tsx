@@ -132,7 +132,7 @@ type MembersAutoCompleteProps = {
     setError?: React.Dispatch<React.SetStateAction<boolean>>;
     overrideLabel?: string;
     memberVal: MemberProps | undefined | null;
-    setMemberVal: React.Dispatch<React.SetStateAction<MemberProps | undefined | null>>;
+    setMemberVal: React.Dispatch<React.SetStateAction<MemberProps | null>>;
 };
 
 export default function MembersAutoComplete({

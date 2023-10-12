@@ -18,6 +18,7 @@ interface MembersContextProps {
     memberRowSelectionModel: GridRowSelectionModel;
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     validateRowSelection: () => boolean;
+    markMembersStale: (ids: string[]) => Promise<void>;
 }
 
 const useMembersState = () => {
@@ -140,6 +141,17 @@ const useMembersOperations = (
         recomputeAggregatedMembers();
     };
 
+    const markMembersStale = async (ids: string[]) => {
+        await Promise.all(
+            ids.map((id) => {
+                console.log("marking", id, "as stale");
+                return queryClient.refetchQueries({queryKey: ["memberItem", id]});
+            })
+        );
+
+        recomputeAggregatedMembers();
+    };
+
     const validateRowSelection = () => {
         if (memberRowSelectionModel.length === 0) {
             const newNotification: NotificationProps = {
@@ -158,7 +170,8 @@ const useMembersOperations = (
         retrieveMemberById,
         handleMemberDelete,
         handleMemberAdd,
-        validateRowSelection
+        validateRowSelection,
+        markMembersStale
     };
 };
 
