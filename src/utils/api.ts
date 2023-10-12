@@ -7,7 +7,8 @@ import {
     NewMemberProps,
     StaffProps,
     NewStaffProps,
-    IdentityProps
+    IdentityProps,
+    StaffProfile
 } from "./types";
 import axios from "axios";
 
@@ -308,6 +309,14 @@ export async function getStaff(): Promise<StaffProps[]> {
     const staffData: StaffProps[] = response.data.data;
 
     return staffData;
+}
+
+export async function getStaffProfiles(): Promise<StaffProfile[]> {
+    const response = await axios.get(`${baseURL}/api/v1/staff_protected`);
+
+    const staffProfiles: StaffProfile[] = response.data.data;
+
+    return staffProfiles;
 }
 
 export async function getStaffById(staffId: string): Promise<StaffProps> {

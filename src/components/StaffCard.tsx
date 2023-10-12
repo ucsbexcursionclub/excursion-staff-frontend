@@ -1,11 +1,11 @@
 import React from "react";
 import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import {StaffProps} from "../utils/types";
+import {StaffProfile} from "../utils/types";
 import {capitalizeFirstLetter} from "../utils/utils"; // Import the function
 
 interface StaffCardProps {
-    staff: StaffProps;
+    staff: StaffProfile;
 }
 
 const StyledStaffCard = styled("div")(({theme}) => ({
@@ -38,7 +38,7 @@ const StyledAvatar = styled("img")({
 });
 
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
-    const nameParts = staff.memberDetails?.name.split(" ");
+    const nameParts = staff.name.split(" ");
     const firstName = nameParts ? capitalizeFirstLetter(nameParts[0]) : "";
     const lastName =
         nameParts && nameParts.length > 1
@@ -52,7 +52,7 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
                     staff.profileImageUrl ||
                     "https://d36olvmp8krees.cloudfront.net/resources/avatar.png"
                 }
-                alt={staff.memberDetails?.name}
+                alt={staff.name}
                 className="avatar"
             />
             <div className="info">
@@ -68,7 +68,7 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
                     {staff.bio}
                 </Typography>
                 <Typography variant="body2" className="email">
-                    {staff.memberDetails?.email}
+                    {staff.email}
                 </Typography>
             </div>
         </div>
