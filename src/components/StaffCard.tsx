@@ -1,74 +1,39 @@
 import React from "react";
-import {styled} from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
 import {StaffProfile} from "../utils/types";
 import {capitalizeFirstLetter} from "../utils/utils"; // Import the function
+import {Avatar} from "@mui/material";
 
 interface StaffCardProps {
     staff: StaffProfile;
 }
 
-const StyledStaffCard = styled("div")(({theme}) => ({
-    backgroundColor: "rgba(232, 236, 230, 1)",
-    ...theme.typography.body2,
-    color: "rgba(60, 66, 57, 255)",
-    cursor: "pointer",
-    "&:hover": {
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)"
-    },
-    borderRadius: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    display: "flex",
-    flexDirection: "column", // Display as a column
-    alignItems: "center", // Center items horizontally
-    textAlign: "center", // Center text horizontally
-    width: "max-content", // Set width to fit content
-    padding: `10px` // Add some padding
-}));
-
-StyledStaffCard;
-
-const StyledAvatar = styled("img")({
-    maxWidth: "100%",
-    width: "150px",
-    height: "150px",
-    objectFit: "cover",
-    borderRadius: "8px",
-    marginBottom: "8px" // Add some space between the image and text
-});
-
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
-    const nameParts = staff.name.split(" ");
-    const firstName = nameParts ? capitalizeFirstLetter(nameParts[0]) : "";
-    const lastName =
-        nameParts && nameParts.length > 1
-            ? capitalizeFirstLetter(nameParts[nameParts.length - 1])
-            : "";
-
     return (
-        <div>
-            <StyledAvatar
+        <div className="flex flex-col items-center w-min bg-gray-100 p-8 rounded-2xl shadow-sm">
+            <Avatar
                 src={
                     staff.profileImageUrl ||
                     "https://d36olvmp8krees.cloudfront.net/resources/avatar.png"
                 }
                 alt={staff.name}
-                className="avatar"
+                className="w-52 h-52 object-cover rounded-md mb-2"
             />
             <div className="info">
                 <Typography variant="h6" className="font-bold">
-                    {firstName} {lastName}
+                    {capitalizeFirstLetter(staff.name)}
+                </Typography>
+                <Typography variant="body2" className="email mb-1">
+                    {staff.email}
                 </Typography>
                 <div className="positions">
-                    <Typography variant="body2" className="position">
+                    <Typography variant="body2" className="position font-bold mb-3">
                         {staff.positions.join(", ")}
                     </Typography>
                 </div>
+
                 <Typography variant="body2" className="bio">
                     {staff.bio}
-                </Typography>
-                <Typography variant="body2" className="email">
-                    {staff.email}
                 </Typography>
             </div>
         </div>

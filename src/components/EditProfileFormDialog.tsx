@@ -6,10 +6,16 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import Avatar from "@mui/material/Avatar";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 import {useStaff} from "../providers/StaffProvider";
-import {StaffProps} from "../utils/types";
+import {MemberProps, StaffProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
+import {uploadFileToS3} from "../utils/api";
+import {MAX_FILE_SIZE, MAX_FILE_SIZE_MB} from "../utils/constants";
+import {useSnackbar} from "../providers/SnackBarProvider";
+import {capitalizeFirstLetter} from "../utils/utils";
 
 interface EditProfileFormDialogProps {
     isOpen: boolean;
@@ -20,33 +26,35 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     const {handleMemberUpdate, loggedInMember} = useMembers();
 
     //EDIT: only allow staff update if they are updating their own profile.
-    const {retrieveStaffById, handleFileUpload, handleStaffUpdate} = useStaff();
+    const {retrieveStaffById, handleStaffUpdate} = useStaff();
+    const {addNotification} = useSnackbar();
 
-    const [staffDetails, setStaffDetails] = useState<StaffProps>();
+    const [staffDetails, setStaffDetails] = useState<StaffProps | null>();
 
     const handleClose = () => {
         onClose();
     };
 
     useEffect(() => {
-        if (!loggedInMember) return;
+        if (!loggedInMember?.staff_id) return;
 
         setName(loggedInMember.name);
         const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
-
         setStaffDetails(retrievedStaff);
     }, [loggedInMember, retrieveStaffById]);
 
-    const [name, setName] = useState<string>(loggedInMember?.name || "");
-    const [bio, setBio] = useState<string>(staffDetails?.bio);
+    const [name, setName] = useState<string | undefined>(
+        capitalizeFirstLetter(loggedInMember?.name ?? "")
+    );
+    const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
     const [profilePic, setProfilePic] = useState<File | null>(null);
-    const [profilePicPreview, setProfilePicPreview] = useState<string>(
-        staffDetails?.profileImageUrl || ""
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
+        staffDetails?.profileImageUrl || null
     );
 
     useEffect(() => {
         setBio(staffDetails?.bio);
-        setProfilePicPreview(staffDetails?.profileImageUrl);
+        setProfileImageUrl(staffDetails?.profileImageUrl || null);
     }, [staffDetails]);
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -59,27 +67,67 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
     const handleProfilePicChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
+
         if (file) {
+            // Check for file size
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`Please upload an image smaller than ${MAX_FILE_SIZE_MB} MB.`);
+                return;
+            }
+
+            // Check for file type
+            const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp"];
+            if (!validImageTypes.includes(file.type)) {
+                alert("Please upload a valid image type (JPEG, PNG, GIF, or BMP).");
+                return;
+            }
+
             setProfilePic(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setProfilePicPreview(reader.result as string);
+                setProfileImageUrl(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
     const handleSave = async () => {
-        const profileImageUrl = await handleFileUpload(profilePic);
-        if (loggedInMember && name !== loggedInMember.name) {
-            await handleMemberUpdate({...loggedInMember, name});
+        const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
+        const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
+
+        const newProfileImageUrl = profilePic ? await uploadFileToS3(profilePic) : null;
+
+        if (loggedInMember?.name && name !== loggedInMember.name) {
+            memberUpdates.name = name;
         }
 
-        if (staffDetails && bio !== staffDetails?.bio) {
-            await handleStaffUpdate({...staffDetails, bio, profileImageUrl});
+        if (staffDetails) {
+            if (bio && bio !== staffDetails.bio) {
+                staffUpdates.bio = bio;
+            }
+
+            // If profilePicPreview is empty, set profileImageUrl to null
+            staffUpdates.profileImageUrl = newProfileImageUrl;
         }
 
-        handleClose();
+        let updatedMember = true;
+        let updatedStaff = true;
+
+        updatedMember = Boolean(
+            await handleMemberUpdate({...loggedInMember, ...memberUpdates} as MemberProps)
+        );
+
+        updatedStaff = Boolean(
+            await handleStaffUpdate({...staffDetails, ...staffUpdates} as StaffProps)
+        );
+
+        if (updatedMember && updatedStaff) {
+            addNotification({
+                message: `Successfully updated profile!`,
+                type: "success"
+            });
+            handleClose();
+        }
     };
 
     return (
@@ -98,11 +146,26 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         >
             <DialogTitle className="text-center">Edit Profile</DialogTitle>
             <DialogContent className="flex flex-col items-center">
-                <Avatar
-                    src={profilePicPreview}
-                    className="mb-4 mt-2"
-                    style={{width: 100, height: 100}}
-                />
+                <div>
+                    {profileImageUrl && (
+                        <IconButton
+                            className="absolute z-10 m-0 rounded-2xl text-white bg-black"
+                            style={{padding: "2px"}}
+                            onClick={() => {
+                                setProfilePic(null);
+                                setProfileImageUrl("");
+                            }}
+                        >
+                            <CloseIcon color="inherit" />
+                        </IconButton>
+                    )}
+                    <Avatar
+                        src={profileImageUrl || ""}
+                        className="mb-4 mt-2 border-solid border-gray-400"
+                        style={{width: 100, height: 100}}
+                    ></Avatar>
+                </div>
+
                 <label htmlFor="raised-button-file" className="mb-2">
                     <Button
                         variant="contained"

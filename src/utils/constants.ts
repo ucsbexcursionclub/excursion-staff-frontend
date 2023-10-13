@@ -28,3 +28,6 @@ export enum MemberFilterOptions {
 }
 
 export const MILLISECONDS_IN_DAY = 86400000;
+
+export const MAX_FILE_SIZE_MB = 5;
+export const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024; // Convert to bytes

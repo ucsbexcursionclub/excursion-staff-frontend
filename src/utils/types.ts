@@ -25,7 +25,7 @@ export type StaffProfile = {
     name: string;
     email: string;
     positions: string[];
-    profileImageUrl: string;
+    profileImageUrl: string | null;
     bio: string;
 };
 
@@ -40,7 +40,7 @@ export type StaffProps = {
     member_id: string;
     memberDetails?: MemberProps;
     positions: string[];
-    profileImageUrl: string;
+    profileImageUrl: string | null;
     bio: string;
     role?: IdentityProps["role"];
 };
