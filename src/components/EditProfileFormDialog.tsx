@@ -71,14 +71,20 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         if (file) {
             // Check for file size
             if (file.size > MAX_FILE_SIZE) {
-                alert(`Please upload an image smaller than ${MAX_FILE_SIZE_MB} MB.`);
+                addNotification({
+                    message: `Please upload an image smaller than ${MAX_FILE_SIZE_MB} MB.`,
+                    type: "error"
+                });
                 return;
             }
 
             // Check for file type
             const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp"];
             if (!validImageTypes.includes(file.type)) {
-                alert("Please upload a valid image type (JPEG, PNG, GIF, or BMP).");
+                addNotification({
+                    message: "Please upload a valid image type (JPEG, PNG, GIF, or BMP).",
+                    type: "error"
+                });
                 return;
             }
 
