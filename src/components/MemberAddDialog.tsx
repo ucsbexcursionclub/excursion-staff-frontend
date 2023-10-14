@@ -374,16 +374,20 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 local_living_address: localLivingAddress
             };
 
-            await handleMemberUpdate(memberData);
+            const updatedMember = await handleMemberUpdate(memberData);
 
-            setSuccessMessage(
-                `${fullName}'s membership extended to ${new Date(
-                    newMembershipExpiration
-                ).toLocaleDateString()}`
-            );
-            setErrorMessageTimeout();
+            if (updatedMember) {
+                setSuccessMessage(
+                    `${fullName}'s membership extended to ${new Date(
+                        newMembershipExpiration
+                    ).toLocaleDateString()}`
+                );
+                setErrorMessageTimeout();
 
-            clearForm();
+                clearForm();
+            } else {
+                throw new Error("Error retrieving updated member");
+            }
         } catch (error: any) {
             if (error.response && error.response.status === 404) {
                 setSubmitErrorMessage("Member not found. Please double check name and email.");

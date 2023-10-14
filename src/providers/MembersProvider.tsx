@@ -11,7 +11,7 @@ interface MembersContextProps {
     membersData: MemberProps[];
     loggedInMember: MemberProps | null;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
-    handleMemberUpdate: (modifiedMember: MemberProps) => Promise<void>;
+    handleMemberUpdate: (modifiedMember: MemberProps) => Promise<MemberProps | null>;
     retrieveMemberById: (id: string) => MemberProps | null;
     handleMemberDelete: (selectedMember: MemberProps[]) => Promise<void>;
     handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
@@ -78,11 +78,20 @@ const useMembersOperations = (
         setMembersData(aggregatedMembers);
     };
 
-    const handleMemberUpdate = async (modifiedMember: MemberProps) => {
-        const updatedMember = await updateMembers(modifiedMember);
+    const handleMemberUpdate = async (modifiedMember: MemberProps): Promise<MemberProps | null> => {
+        try {
+            const updatedMember = await updateMembers(modifiedMember);
 
-        await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
-        recomputeAggregatedMembers();
+            console.log(updatedMember);
+
+            await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
+            recomputeAggregatedMembers();
+
+            return updatedMember;
+        } catch (error: any) {
+            addNotification({message: error.message, type: "error"});
+            return null;
+        }
     };
 
     /**
@@ -98,10 +107,15 @@ const useMembersOperations = (
         [membersData]
     );
 
+    const loggedInMemberData = queryClient.getQueryData<MemberProps>([
+        "memberItem",
+        identity?.member_id
+    ]);
+
     useEffect(() => {
-        if (!identity) return;
-        setloggedInMember(retrieveMemberById(identity.member_id));
-    }, [identity, retrieveMemberById, setloggedInMember]);
+        if (!loggedInMemberData) return;
+        setloggedInMember(loggedInMemberData);
+    }, [loggedInMemberData, setloggedInMember]);
 
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);

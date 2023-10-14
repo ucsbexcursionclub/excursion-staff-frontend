@@ -15,8 +15,7 @@ interface StaffContextProps {
     retrieveStaffByMemberID: (memberID: string) => StaffProps | null;
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
-    handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<void>;
-    handleFileUpload: (uploadedFile: File) => Promise<string>;
+    handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<StaffProps | null>;
     validateRowSelection: () => boolean;
 }
 
@@ -101,17 +100,18 @@ const useStaffOperations = (
         recomputeAggregatedStaff();
     };
     const handleStaffUpdate = async (modifiedStaff: StaffProps) => {
-        const updatedStaff = await updateStaff(modifiedStaff);
+        console.log(modifiedStaff);
+        try {
+            const updatedStaff = await updateStaff(modifiedStaff);
 
-        await queryClient.refetchQueries({queryKey: ["staffItem", updatedStaff._id]});
-        recomputeAggregatedStaff();
-    };
+            await queryClient.refetchQueries({queryKey: ["staffItem", updatedStaff._id]});
+            recomputeAggregatedStaff();
 
-    const handleFileUpload = async (uploadedFile: File) => {
-        uploadedFile;
-        return "";
-        //need this to upload the image to the backend, backend uploads the image to s3 and cloudfront
-        //and then return back the link
+            return updatedStaff;
+        } catch (error: any) {
+            addNotification({message: error.message, type: "error"});
+            return null;
+        }
     };
 
     const validateRowSelection = () => {
@@ -129,7 +129,6 @@ const useStaffOperations = (
 
     return {
         handleStaffUpdate,
-        handleFileUpload,
         retrieveStaffById,
         retrieveStaffByMemberID,
         handleStaffDelete,

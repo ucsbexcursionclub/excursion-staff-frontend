@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useGoogleLogin, TokenResponse} from "@react-oauth/google";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
@@ -7,13 +7,13 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import GoogleIcon from "@mui/icons-material/Google";
 import Avatar from "@mui/material/Avatar";
 import Logout from "@mui/icons-material/Logout";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
 import {useLogin} from "../providers/LoginProvider";
 import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
 import {Edit} from "@mui/icons-material";
 import {useMembers} from "../providers/MembersProvider";
+import {useStaff} from "../providers/StaffProvider";
 
 const cookies = new Cookies();
 
@@ -22,11 +22,18 @@ type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "e
 function LoginButton() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
+    const [profileImageLink, setProfileImageLink] = useState<string | null>(null);
     const open = Boolean(anchorEl);
 
     const {isLoggedIn, login, isFetching} = useLogin();
 
     const {loggedInMember} = useMembers();
+    const {retrieveStaffByMemberID} = useStaff();
+
+    useEffect(() => {
+        if (!loggedInMember) return;
+        setProfileImageLink(retrieveStaffByMemberID(loggedInMember._id)?.profileImageUrl || null);
+    }, [loggedInMember, retrieveStaffByMemberID]);
 
     function handleSuccess(tokenResponse: tokenResponseProps) {
         login(tokenResponse.access_token);
@@ -66,11 +73,7 @@ function LoginButton() {
             {isLoggedIn ? (
                 <>
                     <IconButton onClick={handleClick} aria-label="profile">
-                        <AccountCircleIcon
-                            fontSize="large"
-                            style={{color: "#f9f9f9"}}
-                            color="inherit"
-                        />
+                        <Avatar sx={{width: 40, height: 40}} src={profileImageLink || ""} />
                     </IconButton>
                     <Menu
                         id="login-positioned-menu"
@@ -88,7 +91,11 @@ function LoginButton() {
                         }}
                     >
                         <MenuItem>
-                            <Avatar sx={{width: 40, height: 40}} className="mr-2" />
+                            <Avatar
+                                sx={{width: 40, height: 40}}
+                                className="mr-2"
+                                src={profileImageLink || ""}
+                            />
                             <span>{loggedInMember?.email || ""}</span>
                         </MenuItem>
                         <MenuItem onClick={handleEditProfileOpen}>
