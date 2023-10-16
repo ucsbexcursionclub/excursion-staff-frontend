@@ -218,7 +218,7 @@ export default function HomePage() {
                     </Typography>
                     <div style={paragraphStyle}>
                         During the academic year, come to one of our general meetings, which are
-                        held most Tuesdays at 8:00 pm in Embaracadero Hall (check our instagram
+                        held most Tuesdays at 8:00 pm in Embarcadero Hall (check our instagram
                         @excursionclubucsb day of), or come out to office hours every Wednesday and
                         Thursday from 4-6 pm at 1026 Camino Lindo, and bring cash or check (made out
                         to The Excursion Club using black or blue ink) to the meeting for the

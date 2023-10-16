@@ -47,7 +47,7 @@ export type StaffProps = {
 
 export type NewMemberProps = Omit<
     MemberProps,
-    "_id" | "membership_expiration_date" | "join_datetime" | "notes"
+    "_id" | "membership_expiration_date" | "join_datetime"
 >;
 
 export type NewStaffProps = Partial<StaffProps>;
