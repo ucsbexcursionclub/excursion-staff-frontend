@@ -58,6 +58,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
         staffDetails?.profileImageUrl || null
     );
+    const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
 
     useEffect(() => {
         setBio(staffDetails?.bio);
@@ -117,7 +118,11 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
         const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
 
-        const newProfileImageUrl = profilePic ? await uploadFileToS3(profilePic) : null;
+        const newProfileImageUrl = profilePic
+            ? await uploadFileToS3(profilePic)
+            : deleteProfilePic
+            ? null
+            : staffDetails?.profileImageUrl;
 
         if (loggedInMember?.name && name !== loggedInMember.name) {
             memberUpdates.name = name;
