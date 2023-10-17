@@ -47,7 +47,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
         setName(loggedInMember.name);
         const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
-        setBio(retrievedStaff?.bio || null);
+        setBio(retrievedStaff?.bio);
         setProfileImageUrl(retrievedStaff?.profileImageUrl || null);
         setDeleteProfilePic(false);
         setStaffDetails(retrievedStaff);
@@ -56,7 +56,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     const [name, setName] = useState<string | undefined>(
         capitalizeFirstLetter(loggedInMember?.name ?? "")
     );
-    const [bio, setBio] = useState<string | null>(staffDetails?.bio || null);
+    const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
         staffDetails?.profileImageUrl || null
@@ -127,7 +127,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         }
 
         if (staffDetails) {
-            if (bio && bio !== staffDetails.bio) {
+            if (bio !== staffDetails.bio) {
                 staffUpdates.bio = bio;
             }
 
