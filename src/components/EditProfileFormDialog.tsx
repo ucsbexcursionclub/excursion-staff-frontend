@@ -16,6 +16,13 @@ import {uploadFileToS3} from "../utils/api";
 import {MAX_FILE_SIZE, MAX_FILE_SIZE_MB} from "../utils/constants";
 import {useSnackbar} from "../providers/SnackBarProvider";
 import {capitalizeFirstLetter} from "../utils/utils";
+import {readAndCompressImage} from "browser-image-resizer";
+
+const userConfig = {
+    quality: 1,
+    maxWidth: 500,
+    autoRotate: true
+};
 
 interface EditProfileFormDialogProps {
     isOpen: boolean;
@@ -65,7 +72,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         setBio(event.target.value);
     };
 
-    const handleProfilePicChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleProfilePicChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
 
         if (file) {
@@ -88,12 +95,21 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                 return;
             }
 
-            setProfilePic(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setProfileImageUrl(reader.result as string);
-            };
-            reader.readAsDataURL(file);
+            try {
+                const resizedImageBlob = await readAndCompressImage(file, userConfig);
+                setProfilePic(new File([resizedImageBlob], file.name, {type: file.type}));
+
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setProfileImageUrl(reader.result as string);
+                };
+                reader.readAsDataURL(resizedImageBlob);
+            } catch (err) {
+                addNotification({
+                    message: "Error resizing the image. Please try again.",
+                    type: "error"
+                });
+            }
         }
     };
 
