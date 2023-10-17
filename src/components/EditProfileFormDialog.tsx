@@ -47,22 +47,21 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
         setName(loggedInMember.name);
         const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
+        setBio(retrievedStaff?.bio || null);
+        setProfileImageUrl(retrievedStaff?.profileImageUrl || null);
+        setDeleteProfilePic(false);
         setStaffDetails(retrievedStaff);
     }, [loggedInMember, retrieveStaffById]);
 
     const [name, setName] = useState<string | undefined>(
         capitalizeFirstLetter(loggedInMember?.name ?? "")
     );
-    const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
+    const [bio, setBio] = useState<string | null>(staffDetails?.bio || null);
     const [profilePic, setProfilePic] = useState<File | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
         staffDetails?.profileImageUrl || null
     );
-
-    useEffect(() => {
-        setBio(staffDetails?.bio);
-        setProfileImageUrl(staffDetails?.profileImageUrl || null);
-    }, [staffDetails]);
+    const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
@@ -117,7 +116,11 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
         const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
 
-        const newProfileImageUrl = profilePic ? await uploadFileToS3(profilePic) : null;
+        const newProfileImageUrl = profilePic
+            ? await uploadFileToS3(profilePic)
+            : deleteProfilePic
+            ? null
+            : staffDetails?.profileImageUrl;
 
         if (loggedInMember?.name && name !== loggedInMember.name) {
             memberUpdates.name = name;
@@ -174,6 +177,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                             className="absolute z-10 m-0 rounded-2xl text-white bg-black"
                             style={{padding: "2px"}}
                             onClick={() => {
+                                setDeleteProfilePic(true);
                                 setProfilePic(null);
                                 setProfileImageUrl("");
                             }}
