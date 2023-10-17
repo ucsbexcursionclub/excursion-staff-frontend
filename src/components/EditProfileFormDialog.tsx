@@ -47,6 +47,9 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
         setName(loggedInMember.name);
         const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
+        setBio(retrievedStaff?.bio);
+        setProfileImageUrl(retrievedStaff?.profileImageUrl || null);
+        setDeleteProfilePic(false);
         setStaffDetails(retrievedStaff);
     }, [loggedInMember, retrieveStaffById]);
 
@@ -59,11 +62,6 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         staffDetails?.profileImageUrl || null
     );
     const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
-
-    useEffect(() => {
-        setBio(staffDetails?.bio);
-        setProfileImageUrl(staffDetails?.profileImageUrl || null);
-    }, [staffDetails]);
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
