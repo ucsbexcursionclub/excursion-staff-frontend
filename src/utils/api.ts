@@ -128,16 +128,24 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
 }
 
 export async function updateMembers(updatedMember: MemberProps): Promise<MemberProps> {
-    const copiedMember = {...updatedMember};
+    try {
+        const copiedMember = {...updatedMember};
 
-    const url = `${baseURL}/api/v1/members/${copiedMember._id}`;
-    const response = await axios.patch(url, copiedMember, {
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
+        const url = `${baseURL}/api/v1/members/${copiedMember._id}`;
+        const response = await axios.patch(url, copiedMember, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+        const newMember: MemberProps | null = response.data.data;
+        if (newMember) {
+            return newMember;
+        } else {
+            throw new Error();
         }
-    });
-    const newMember: MemberProps = response.data.data;
-    return newMember;
+    } catch (error: any) {
+        throw new Error("Error updating member details. Try again later.");
+    }
 }
 
 export async function deleteGearItems(ids: string[]): Promise<number> {
@@ -268,6 +276,22 @@ export const verifyAccessToken = async (accessToken: string): Promise<IdentityPr
     }
 };
 
+export const uploadFileToS3 = async (uploadedFile: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append("profilePic", uploadedFile);
+
+    try {
+        const response = await axios.post(`${baseURL}/api/v1/upload`, formData, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+        return response.data.data as string | null;
+    } catch (error) {
+        throw new Error("Failed to upload image to server");
+    }
+};
+
 export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null> {
     try {
         const response = await axios.post(`${baseURL}/api/v1/auth/verify`, {
@@ -334,20 +358,28 @@ export async function getStaffById(staffId: string): Promise<StaffProps> {
 }
 
 export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps> {
-    const copiedStaff = {...updatedStaff};
-    delete copiedStaff.memberDetails;
+    try {
+        const copiedStaff = {...updatedStaff};
+        delete copiedStaff.memberDetails;
 
-    const url = `${baseURL}/api/v1/staff/${copiedStaff._id}`;
+        const url = `${baseURL}/api/v1/staff/${copiedStaff._id}`;
 
-    const response = await axios.patch(url, copiedStaff, {
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
+        const response = await axios.patch(url, copiedStaff, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+
+        const staff: StaffProps | null = response.data.data;
+
+        if (staff) {
+            return staff;
+        } else {
+            throw new Error();
         }
-    });
-
-    const staff: StaffProps = response.data.data;
-
-    return staff;
+    } catch (error: any) {
+        throw new Error("Error updating member details. Try again later.");
+    }
 }
 
 export async function deleteStaff(ids: string[]): Promise<number> {

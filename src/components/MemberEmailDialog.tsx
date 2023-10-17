@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogContent from "@mui/material/DialogContent";
 import {useMembers} from "../providers/MembersProvider";
@@ -18,49 +18,46 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
     screenwidth,
     copyEmailOption
 }) => {
+    const [emails, setEmails] = useState<string[]>();
     const {retrieveMemberById, membersData, memberRowSelectionModel} = useMembers();
 
     const handleClose = () => {
         onClose();
     };
 
-    let memberEmails: string[] = [];
+    useEffect(() => {
+        if (!open) return;
 
-    if (copyEmailOption === "copySelected" && memberRowSelectionModel.length > 0) {
-        memberEmails = memberRowSelectionModel.map((id) => {
-            const member = retrieveMemberById(id.toString());
-            return member?.email || ""; // Return the email or an empty string if member not found
-        });
-    } else {
-        // Filter membersData based on the copyEmailOption
-        let filteredData = membersData.slice(); // Create a copy of membersData
+        const today = Date.now();
+
+        let emails;
 
         switch (copyEmailOption) {
+            case "copySelected":
+                emails = memberRowSelectionModel
+                    .map((id) => retrieveMemberById(id.toString())?.email)
+                    .filter(Boolean) as string[];
+                break;
             case "copyActive":
-                filteredData = filteredData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date || Infinity);
-                    const today = new Date();
-                    today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
-                    return expirationDate >= today || row.membership_expiration_date === null;
-                });
+                emails = membersData
+                    .filter((member) => {
+                        if (!member) return false;
+                        return member.membership_expiration_date > today;
+                    })
+                    .map((member) => member.email);
                 break;
             case "copyExpired":
-                filteredData = filteredData.filter((row) => {
-                    const expirationDate = new Date(row.membership_expiration_date || Infinity);
-                    const today = new Date();
-                    today.setHours(today.getHours() - 8); // Convert to PST timezone (America/Los_Angeles)
-                    return expirationDate < today && row.membership_expiration_date !== null;
-                });
+                emails = membersData
+                    .filter((member) => {
+                        if (!member) return false;
+                        return member.membership_expiration_date < today;
+                    })
+                    .map((member) => member.email);
                 break;
-            // No default case needed as we want to return all members for other options
         }
 
-        memberEmails = filteredData.map((row) => {
-            return row.email || "";
-        });
-    }
-
-    const emailsJoined = memberEmails.join("\n"); // Join emails with commas
+        setEmails(emails);
+    }, [open, copyEmailOption, memberRowSelectionModel, retrieveMemberById, membersData]);
 
     const maxWidth = `${(screenwidth / 100) * 80}vw`;
 
@@ -81,7 +78,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
                 <TextField
                     fullWidth
                     multiline
-                    value={emailsJoined}
+                    value={emails?.join(", ")}
                     inputProps={{
                         style: {
                             overflowWrap: "break-word",

@@ -174,25 +174,21 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     };
 
     const validateForm = () => {
-        let errorMessage = "";
-
         if (!hasWaiver) {
-            errorMessage = "Please fill out the waiver.";
+            throw new Error("Please fill out the waiver.");
         } else if (emailError) {
-            errorMessage = "Please enter a valid email.";
+            throw new Error("Please enter a valid email.");
         } else if (reEnterEmail !== email) {
-            errorMessage = "Please make sure your emails match.";
+            throw new Error("Please make sure your emails match.");
         } else if (phoneNumberError) {
-            errorMessage = "Please enter a valid phone number.";
+            throw new Error("Please enter a valid phone number.");
         } else if (!fullName) {
-            errorMessage = "Please enter your full name.";
+            throw new Error("Please enter your full name.");
         } else if (!hasPaid) {
-            errorMessage = "Please ensure the new member has paid dues.";
+            throw new Error("Please ensure the new member has paid dues.");
         } else if (!localLivingAddress) {
-            errorMessage = "Please fill in the address in which you live nearby.";
+            throw new Error("Please fill in the address in which you live nearby.");
         }
-
-        return errorMessage;
     };
 
     const clearForm = () => {
@@ -229,36 +225,31 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             if (isDuplicateFullName || isDuplicateEmail || isDuplicatePhoneNumber) {
                 let duplicateType = "";
                 if (isDuplicateFullName) {
-                    duplicateType = "Full Name";
+                    duplicateType = "full name";
                 } else if (isDuplicateEmail) {
-                    duplicateType = "Email";
+                    duplicateType = "email";
                 } else if (isDuplicatePhoneNumber) {
-                    duplicateType = "Phone Number";
+                    duplicateType = "phone number";
                 }
 
                 if (duplicateType) {
-                    setSubmitErrorMessage(
-                        `A member with the same ${duplicateType} already exists.`
-                    );
-                    setErrorMessageTimeout();
-                    return;
+                    throw new Error(`A member with the same ${duplicateType} already exists.`);
                 }
             }
+
+            if (!fullName.trim().includes(" ")) {
+                throw new Error("Please enter your first and last name.");
+            }
+            if (membershipStatus !== MembershipType.NEW_MEMBER) {
+                throw new Error(
+                    "Please select new member if you are a new member or press 'renew' if you are renewing your membership."
+                );
+            }
+
+            validateForm();
         } catch (error: any) {
             console.error("Failed to check member existence:", error);
-            if (error.response && error.response.status === 400) {
-                setSubmitErrorMessage("Invalid request data. Please check your input.");
-            } else {
-                setSubmitErrorMessage("Failed to check member existence. Please try again later.");
-            }
-            setErrorMessageTimeout();
-            return;
-        }
-
-        let errorMessage = "";
-        errorMessage = validateForm();
-        if (errorMessage !== "") {
-            setSubmitErrorMessage(errorMessage);
+            setSubmitErrorMessage(error.message);
             setErrorMessageTimeout();
             return;
         }
@@ -271,11 +262,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 membership_duration: membershipDuration,
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: loggedInMember._id,
+                notes: "Stoked Level: " + stokedLevel,
                 local_living_address: localLivingAddress
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to add member:", error);
-            setSubmitErrorMessage("Failed to send memberData to the database.");
+            setSubmitErrorMessage(error.message);
             return;
         }
 
@@ -290,24 +282,40 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setSuccessMessage(null);
         setSubmitErrorMessage(null);
 
-        let errorMessage = "";
-        errorMessage = validateForm();
-        if (errorMessage !== "") {
-            setSubmitErrorMessage(errorMessage);
-            setErrorMessageTimeout();
-            return;
-        }
-
         try {
+            validateForm();
+
             const memberWithEmail = membersData.find(
                 (member) => member.email.toLowerCase() === email.toLowerCase()
             );
 
             if (!memberWithEmail) {
-                throw new Error("Member not found. Please double-check email.");
+                throw new Error(
+                    "Member not found. Please double-check email is the same from previous membership."
+                );
             }
 
             const memberId = memberWithEmail._id;
+            const retrievedMemberData = retrieveMemberById(memberId);
+            if (!retrievedMemberData) {
+                throw new Error(
+                    "Error retrieving member from DB, contact tech support and try again later."
+                );
+            }
+            const retrievedName = retrievedMemberData.name.toLowerCase();
+
+            if (fullName.trim().toLowerCase() !== retrievedName) {
+                throw new Error(
+                    `Please double-check name and email is the same from previous membership. Name associated with given email: ${retrievedName}`
+                );
+            }
+
+            if (membershipStatus === MembershipType.NEW_MEMBER) {
+                throw new Error(
+                    "Please select returning member if you are not a new member or press 'Sign Up' if you are."
+                );
+            }
+
             // TODO Convert to get overdue gear from member function
             const reservations: ReservationProps[] = retrieveReservationsByMemberId(memberId);
             const today = new Date();
@@ -345,16 +353,13 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                         })
                         .join("\n");
 
-                setSubmitErrorMessage(overdueGearMessage);
-                setErrorMessageTimeout();
-                return;
+                throw new Error(overdueGearMessage);
             }
-            const retrievedMemberData = retrieveMemberById(memberId)!;
 
             let newMembershipExpiration = retrievedMemberData.membership_expiration_date;
 
             //Checking if member is not expired. If member is not expired than extend membership
-            if (newMembershipExpiration < Date.now()) {
+            if (newMembershipExpiration > Date.now()) {
                 newMembershipExpiration += membershipDuration * MILLISECONDS_IN_DAY;
             } else {
                 newMembershipExpiration = Date.now() + membershipDuration * MILLISECONDS_IN_DAY;
@@ -366,37 +371,32 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 phone_number: phoneNumber,
                 email: email.toLowerCase(),
                 membership_duration: membershipDuration,
-                is_new_member: membershipStatus === "newMember",
+                is_new_member: false,
                 signed_up_by: loggedInMember._id,
                 membership_expiration_date: newMembershipExpiration,
                 join_datetime: Date.now(),
-                notes: retrievedMemberData.notes,
+                notes: retrievedMemberData.notes + "\nReturning Stoked Level: " + stokedLevel,
                 local_living_address: localLivingAddress
             };
 
-            await handleMemberUpdate(memberData);
+            const updatedMember = await handleMemberUpdate(memberData);
 
-            setSuccessMessage(
-                `${fullName}'s membership extended to ${new Date(
-                    newMembershipExpiration
-                ).toLocaleDateString()}`
-            );
-            setErrorMessageTimeout();
-
-            clearForm();
-        } catch (error: any) {
-            if (error.response && error.response.status === 404) {
-                setSubmitErrorMessage("Member not found. Please double check name and email.");
+            if (updatedMember) {
+                setSuccessMessage(
+                    `${fullName}'s membership extended to ${new Date(
+                        newMembershipExpiration
+                    ).toLocaleDateString()}`
+                );
                 setErrorMessageTimeout();
-                console.error("Member not found for renewal:", error);
-                return;
+
+                clearForm();
             } else {
-                // Handle errors, e.g., show an error message to the user
-                console.error("Failed to renew member:", error);
-                setSubmitErrorMessage("Failed to renew member.");
-                setErrorMessageTimeout();
-                return;
+                throw new Error("Error retrieving updated member");
             }
+        } catch (error: any) {
+            setSubmitErrorMessage(error.message);
+            setErrorMessageTimeout();
+            return;
         }
     };
 
