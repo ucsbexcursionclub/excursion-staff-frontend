@@ -78,7 +78,7 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
                 <TextField
                     fullWidth
                     multiline
-                    value={emails?.join(", ")}
+                    value={emails?.join("\n")}
                     inputProps={{
                         style: {
                             overflowWrap: "break-word",
