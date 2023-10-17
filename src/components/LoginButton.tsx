@@ -22,7 +22,8 @@ type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "e
 function LoginButton() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
-    const [profileImageLink, setProfileImageLink] = useState<string | null>(null);
+    const [profileImageLink, setProfileImageLink] = useState<string | null>();
+    const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const open = Boolean(anchorEl);
 
     const {isLoggedIn, login, isFetching} = useLogin();
@@ -33,6 +34,7 @@ function LoginButton() {
     useEffect(() => {
         if (!loggedInMember) return;
         setProfileImageLink(retrieveStaffByMemberID(loggedInMember._id)?.profileImageUrl || null);
+        setIsLoaded(true);
     }, [loggedInMember, retrieveStaffByMemberID]);
 
     function handleSuccess(tokenResponse: tokenResponseProps) {
@@ -70,7 +72,7 @@ function LoginButton() {
 
     return (
         <>
-            {isLoggedIn ? (
+            {isLoggedIn && isLoaded ? (
                 <>
                     <IconButton onClick={handleClick} aria-label="profile">
                         <Avatar sx={{width: 40, height: 40}} src={profileImageLink || ""} />
@@ -116,7 +118,7 @@ function LoginButton() {
                         onClose={handleEditProfileClose}
                     />
                 </>
-            ) : isFetching ? (
+            ) : isFetching || !isLoaded ? (
                 <CircularProgress color="inherit" size={40} />
             ) : (
                 <IconButton onClick={() => handleLogin()} aria-label="login">
