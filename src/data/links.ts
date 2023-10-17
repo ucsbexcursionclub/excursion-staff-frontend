@@ -25,7 +25,7 @@ export const prospectiveMembers: linkGroupType = {
             title: "Meeting Minutes",
             description:
                 "Whose working office hours, general meeting, and our weekly meeting notes",
-            href: "https://docs.google.com/document/d/1S3cmX6LGvFyaHEszCvRq32sDJ4BYhf7z-c4l3J9zXcw/edit?usp=sharing",
+            href: "https://docs.google.com/document/d/1WiDV_YgvW2ypGcJp0yxej-DeDH2ybcTfeYz9fKx60-k/edit?usp=sharing",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleDocsLogo.PNG"
         },
         {
