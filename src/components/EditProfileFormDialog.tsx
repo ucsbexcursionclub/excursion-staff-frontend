@@ -179,6 +179,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                             className="absolute z-10 m-0 rounded-2xl text-white bg-black"
                             style={{padding: "2px"}}
                             onClick={() => {
+                                setDeleteProfilePic(true);
                                 setProfilePic(null);
                                 setProfileImageUrl("");
                             }}
