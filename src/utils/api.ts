@@ -378,7 +378,7 @@ export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps>
             throw new Error();
         }
     } catch (error: any) {
-        throw new Error("Error updating member details. Try again later.");
+        throw new Error("Error updating staff details. Try again later.");
     }
 }
 
