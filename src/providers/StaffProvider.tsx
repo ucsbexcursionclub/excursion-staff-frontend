@@ -100,7 +100,6 @@ const useStaffOperations = (
         recomputeAggregatedStaff();
     };
     const handleStaffUpdate = async (modifiedStaff: StaffProps) => {
-        console.log(modifiedStaff);
         try {
             const updatedStaff = await updateStaff(modifiedStaff);
 
