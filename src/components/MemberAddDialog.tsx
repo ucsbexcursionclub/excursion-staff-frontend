@@ -296,7 +296,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
 
             const memberId = memberWithEmail._id;
-            const retrievedMemberData = retrieveMemberById(memberId)!;
+            const retrievedMemberData = retrieveMemberById(memberId);
+            if (!retrievedMemberData) {
+                throw new Error(
+                    "Error retrieving member from DB, contact tech support and try again later."
+                );
+            }
             const retrievedName = retrievedMemberData.name.toLowerCase();
 
             if (fullName.trim().toLowerCase() !== retrievedName) {
