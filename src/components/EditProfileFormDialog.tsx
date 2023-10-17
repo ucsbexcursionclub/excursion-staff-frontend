@@ -62,6 +62,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         staffDetails?.profileImageUrl || null
     );
     const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
@@ -138,6 +139,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         let updatedMember = true;
         let updatedStaff = true;
 
+        setIsLoading(true);
+
         updatedMember = Boolean(
             await handleMemberUpdate({...loggedInMember, ...memberUpdates} as MemberProps)
         );
@@ -145,6 +148,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         updatedStaff = Boolean(
             await handleStaffUpdate({...staffDetails, ...staffUpdates} as StaffProps)
         );
+
+        setIsLoading(false);
 
         if (updatedMember && updatedStaff) {
             addNotification({
@@ -236,11 +241,17 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                     onClick={handleClose}
                     variant="outlined"
                     className="border-2"
+                    disabled={isLoading}
                     color="primary"
                 >
                     Cancel
                 </Button>
-                <Button onClick={handleSave} variant="contained" color="primary">
+                <Button
+                    onClick={handleSave}
+                    variant="contained"
+                    color="primary"
+                    disabled={isLoading}
+                >
                     Save
                 </Button>
             </DialogActions>
