@@ -118,7 +118,7 @@ function LoginButton() {
                         onClose={handleEditProfileClose}
                     />
                 </>
-            ) : isFetching || !isLoaded ? (
+            ) : isFetching || (isLoggedIn && !isLoaded) ? (
                 <CircularProgress color="inherit" size={40} />
             ) : (
                 <IconButton onClick={() => handleLogin()} aria-label="login">
