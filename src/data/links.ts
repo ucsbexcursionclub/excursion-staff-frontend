@@ -22,6 +22,13 @@ export const prospectiveMembers: linkGroupType = {
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/qr-code-waiver.png"
         },
         {
+            title: "Meeting Minutes",
+            description:
+                "Whose working office hours, general meeting, and our weekly meeting notes",
+            href: "https://docs.google.com/document/d/1S3cmX6LGvFyaHEszCvRq32sDJ4BYhf7z-c4l3J9zXcw/edit?usp=sharing",
+            imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleDocsLogo.PNG"
+        },
+        {
             title: "Excursion Club Spiel",
             description: "What to say at office hours & general meeting to prospective members",
             href: "https://docs.google.com/spreadsheets/d/1mEN-sp-X4ZLK0ayVb0ITfRY5kDti5P4gwu_GtZOxbQo/edit#gid=0",
