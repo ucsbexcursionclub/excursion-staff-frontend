@@ -44,6 +44,7 @@
         "react-dom": "^18.2.0",
         "react-query": "^3.39.3",
         "react-router-dom": "^6.16.0",
+        "react-social-media-embed": "^2.3.6",
         "react-window": "^1.8.9",
         "universal-cookie": "^6.1.1"
     }

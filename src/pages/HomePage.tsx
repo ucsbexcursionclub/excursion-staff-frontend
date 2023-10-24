@@ -9,6 +9,7 @@ import FeedbackForm from "../components/homepage/FeedbackForm";
 import ImageContainer from "../components/homepage/ImageContainer";
 import PricingColumns from "../components/homepage/PricingColumns";
 import ResponsiveImageRow from "../components/homepage/ResponsiveImageRow";
+import { InstagramEmbed } from 'react-social-media-embed';
 
 const merchImageUrls = [
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",
@@ -139,6 +140,7 @@ export default function HomePage() {
                     >
                         What is The Excursion Club?
                     </Typography>
+
                     <div style={paragraphStyle}>
                         The Excursion Club at UCSB is an entirely student-run, volunteer
                         organization that is committed to getting people stoked on the outdoors. The
@@ -230,6 +232,9 @@ export default function HomePage() {
                         finals week. If you are unable to sign-up during our general meeting or
                         office hours, contact us directly through the form at the bottom of this
                         site and we will find a time to sign you up!
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <InstagramEmbed url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading" width="60%" />
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
