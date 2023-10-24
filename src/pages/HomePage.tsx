@@ -233,10 +233,10 @@ export default function HomePage() {
                         office hours, contact us directly through the form at the bottom of this
                         site and we will find a time to sign you up!
                     </div>
+                    <PricingColumns medFontSize={medFontSize} />
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
                         <InstagramEmbed url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading" width="60%" />
                     </div>
-                    <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
             </Card>
             <ResponsiveImageRow imageUrls={merchImageUrls} screenWidth={screenWidth} />
