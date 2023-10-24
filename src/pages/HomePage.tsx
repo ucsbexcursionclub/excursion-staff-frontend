@@ -234,7 +234,7 @@ export default function HomePage() {
                         site and we will find a time to sign you up!
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <InstagramEmbed url="https://www.instagram.com/excursionclubucsb/" width="60%" />
+                        <InstagramEmbed url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading" width="60%" />
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
