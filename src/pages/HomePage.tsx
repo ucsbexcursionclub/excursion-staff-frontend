@@ -140,9 +140,7 @@ export default function HomePage() {
                     >
                         What is The Excursion Club?
                     </Typography>
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <InstagramEmbed url="https://www.instagram.com/excursionclubucsb/" width={328} />
-                    </div>
+
                     <div style={paragraphStyle}>
                         The Excursion Club at UCSB is an entirely student-run, volunteer
                         organization that is committed to getting people stoked on the outdoors. The
@@ -234,6 +232,9 @@ export default function HomePage() {
                         finals week. If you are unable to sign-up during our general meeting or
                         office hours, contact us directly through the form at the bottom of this
                         site and we will find a time to sign you up!
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <InstagramEmbed url="https://www.instagram.com/excursionclubucsb/" width="60%" />
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
                 </CardContent>
