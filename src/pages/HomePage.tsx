@@ -234,11 +234,13 @@ export default function HomePage() {
                         site and we will find a time to sign you up!
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
-                    <div className="flex justify-center mt-10">
-                        <InstagramEmbed
-                            url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading"
-                            width="60%"
-                        />
+                    <div className="mt-10 w-full flex justify-center">
+                        <div className="min-w-80 w-6/10">
+                            <InstagramEmbed
+                                url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading"
+                                width="100%"
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
