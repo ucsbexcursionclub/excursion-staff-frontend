@@ -9,7 +9,7 @@ import FeedbackForm from "../components/homepage/FeedbackForm";
 import ImageContainer from "../components/homepage/ImageContainer";
 import PricingColumns from "../components/homepage/PricingColumns";
 import ResponsiveImageRow from "../components/homepage/ResponsiveImageRow";
-import { InstagramEmbed } from 'react-social-media-embed';
+import {InstagramEmbed} from "react-social-media-embed";
 
 const merchImageUrls = [
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",
@@ -234,8 +234,11 @@ export default function HomePage() {
                         site and we will find a time to sign you up!
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
-                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                        <InstagramEmbed url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading" width="60%" />
+                    <div className="flex justify-center mt-10">
+                        <InstagramEmbed
+                            url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading"
+                            width="60%"
+                        />
                     </div>
                 </CardContent>
             </Card>
