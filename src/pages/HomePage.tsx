@@ -9,6 +9,7 @@ import FeedbackForm from "../components/homepage/FeedbackForm";
 import ImageContainer from "../components/homepage/ImageContainer";
 import PricingColumns from "../components/homepage/PricingColumns";
 import ResponsiveImageRow from "../components/homepage/ResponsiveImageRow";
+import {InstagramEmbed} from "react-social-media-embed";
 
 const merchImageUrls = [
     "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",
@@ -139,6 +140,7 @@ export default function HomePage() {
                     >
                         What is The Excursion Club?
                     </Typography>
+
                     <div style={paragraphStyle}>
                         The Excursion Club at UCSB is an entirely student-run, volunteer
                         organization that is committed to getting people stoked on the outdoors. The
@@ -232,6 +234,14 @@ export default function HomePage() {
                         site and we will find a time to sign you up!
                     </div>
                     <PricingColumns medFontSize={medFontSize} />
+                    <div className="mt-10 w-full flex justify-center">
+                        <div className="min-w-80 w-6/10">
+                            <InstagramEmbed
+                                url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading"
+                                width="100%"
+                            />
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
             <ResponsiveImageRow imageUrls={merchImageUrls} screenWidth={screenWidth} />
