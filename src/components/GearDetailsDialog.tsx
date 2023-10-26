@@ -51,7 +51,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const handleNotesBlur = async () => {
         if (notes !== initialNotes) {
             try {
-                handleGearUpdate({...gear, notes});
+                gear && handleGearUpdate({...gear, notes});
             } catch (error) {
                 console.error("Failed to update notes:", error);
             }
@@ -160,9 +160,10 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                                 <ListItem>
                                     <Typography color={isOverdue ? "red" : "black"}>
                                         <strong>Due Date: </strong>
-                                        {new Date(
-                                            gear.reservationDetails?.due_date
-                                        ).toLocaleDateString()}
+                                        {gear.reservationDetails &&
+                                            new Date(
+                                                gear.reservationDetails.due_date
+                                            ).toLocaleDateString()}
                                     </Typography>
                                 </ListItem>
                                 <ListItem>

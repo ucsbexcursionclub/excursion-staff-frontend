@@ -12,11 +12,13 @@ import {
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
+import IconButton from "@mui/material/IconButton";
 import React, {useState} from "react";
 import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 import {GearFilterOptions} from "../utils/constants";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
@@ -67,7 +69,21 @@ const dateComparator: GridComparatorFn<number | null> = (v1, v2) => {
 
 const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
-    {field: "rfid", headerName: "RFID", width: 150},
+    {
+        field: "view",
+        width: 75,
+        sortable: false,
+        align: "center",
+        headerName: "View",
+        renderCell: () => (
+            <div>
+                <IconButton color="inherit">
+                    <VisibilityIcon />
+                </IconButton>
+            </div>
+        )
+    },
+    {field: "rfid", headerName: "RFID", width: 100, getApplyQuickFilterFn: undefined},
     {field: "gear_name", headerName: "Gear Name", width: 150},
     {
         field: "is_missing",
@@ -167,7 +183,7 @@ export default function GearTable({searchParams}: GearTableProps) {
     );
 
     const handleCellClick = (params: any) => {
-        if (params.field === "gear_name") {
+        if (params.field === "view") {
             setSelectedGear(params.row);
             setDialogOpen(true);
         }

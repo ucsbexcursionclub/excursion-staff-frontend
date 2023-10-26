@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addGear, deleteGearItems, getGear, updateGear} from "../utils/api";
+import {addGear, checkInGear, deleteGearItems, getGear, updateGear} from "../utils/api";
 import {GearProps, MemberProps, NewGearProps, NotificationProps} from "../utils/types";
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
@@ -56,7 +56,7 @@ const useGearOperations = (
 ) => {
     const queryClient = useQueryClient();
 
-    const {handleReservationAdd, handleReservationEnd} = useReservations();
+    const {handleReservationAdd, refetchReservations} = useReservations();
     const {addNotification} = useSnackbar();
 
     const recomputeAggregatedGear = () => {
@@ -126,17 +126,19 @@ const useGearOperations = (
     const handleGearCheckin = async (selectedGear: GearProps[]) => {
         setGearRowSelectionModel([]);
 
-        const reservationIds = [
-            ...new Set(selectedGear.map((gear) => gear.current_reservation).filter(Boolean))
-        ] as string[];
-
-        await handleReservationEnd(reservationIds);
+        await checkInGear(selectedGear.map((gear) => gear._id));
 
         await Promise.all(
             selectedGear.map(async (gear) => {
                 return await queryClient.refetchQueries({queryKey: ["gearItem", gear._id]});
             })
         );
+
+        const reservationIds = selectedGear
+            .map((gear) => gear.current_reservation)
+            .filter(Boolean) as string[];
+
+        await refetchReservations(reservationIds);
 
         recomputeAggregatedGear();
     };

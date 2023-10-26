@@ -230,6 +230,20 @@ export async function addReservation(
     return response.data.data;
 }
 
+export async function checkInGear(gearIds: string[]) {
+    const response = await axios.put(
+        `${baseURL}/api/v1/gear/checkIn`,
+        {
+            ids: gearIds
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        }
+    );
+    return response.data.data;
+}
 export async function endReservations(reservationIds: string[]) {
     const response = await axios.put(
         `${baseURL}/api/v1/reservations/end`,
