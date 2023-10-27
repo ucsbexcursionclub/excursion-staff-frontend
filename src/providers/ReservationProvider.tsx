@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addReservation, endReservations, getReservations} from "../utils/api";
+import {addReservation, getReservations} from "../utils/api";
 import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 
@@ -18,6 +18,7 @@ interface ReservationsContextProps {
     retrieveOpenReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
     retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[];
+    handleReservationUpdate: (modifiedReservation: ReservationProps) => Promise<void>;
 }
 
 const useReservationsState = () => {
@@ -91,6 +92,10 @@ const useReservationsOperations = (
         return reservationsData.filter((reservation) => reservation.checked_out_gear.includes(id));
     };
 
+    const handleReservationUpdate = async (modifiedReservation: ReservationProps) => {
+        console.log("todo");
+    };
+
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
         const newReservationData: NewReservationProps = {
             checked_out_gear: selectedGear.map((gear) => gear._id),
@@ -126,6 +131,7 @@ const useReservationsOperations = (
 
     return {
         handleReservationAdd,
+        handleReservationUpdate,
         refetchReservations,
         retrieveReservation,
         retrieveReservations,

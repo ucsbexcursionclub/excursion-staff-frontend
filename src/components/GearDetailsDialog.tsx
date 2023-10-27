@@ -5,18 +5,20 @@ import {
     DialogActions,
     Button,
     TextField,
-    List,
-    ListItem,
     Tabs,
     Tab,
     Box,
     Typography,
-    DialogContent
+    DialogContent,
+    FormControlLabel,
+    Switch
 } from "@mui/material";
 import {GearProps} from "../utils/types";
-import {useGear} from "../providers/GearProvider";
 import CheckoutHistory from "./CheckoutHistory";
 import {BlurBackDrop} from "./HelperComponents";
+import {FormControl} from "@mui/material";
+import {useGear} from "../providers/GearProvider";
+import {useReservations} from "../providers/ReservationProvider";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -25,47 +27,74 @@ type GearDetailsDialogProps = {
 };
 
 const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gear}) => {
-    const [notes, setNotes] = useState(gear?.notes || "");
-    const [initialNotes, setInitialNotes] = useState(gear?.notes || "");
-    const [value, setValue] = useState(0);
+    const [tabValue, setTabValue] = useState(0);
+
+    const [rfid, setRfid] = useState<string>(gear?.rfid || "");
+    const [lastContacted, setLastContacted] = useState<number | null>(
+        gear?.reservationDetails?.last_contacted || null
+    );
+    const [isMissing, setIsMissing] = useState<boolean>(gear?.is_missing || false);
+    const [isBroken, setIsBroken] = useState<boolean>(gear?.is_broken || false);
+    const [description, setDescription] = useState<string>(gear?.description || "");
+    const [notes, setNotes] = useState<string>(gear?.notes || "");
 
     const {handleGearUpdate} = useGear();
+    const {handleReservationUpdate} = useReservations();
 
     const handleClose = () => {
         onClose();
     };
 
     useEffect(() => {
-        setNotes(gear?.notes || "");
-        setInitialNotes(gear?.notes || "");
-    }, [gear]);
-
-    useEffect(() => {
-        open && setValue(0);
+        open && setTabValue(0);
     }, [open]);
 
-    const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setNotes(event.target.value);
-    };
-
-    const handleNotesBlur = async () => {
-        if (notes !== initialNotes) {
-            try {
-                gear && handleGearUpdate({...gear, notes});
-            } catch (error) {
-                console.error("Failed to update notes:", error);
-            }
+    useEffect(() => {
+        setIsMissing(gear?.is_missing || false);
+        setIsBroken(gear?.is_broken || false);
+        setRfid(gear?.rfid || "");
+        setLastContacted(gear?.reservationDetails?.last_contacted || null);
+        setDescription(gear?.description || "");
+        setNotes(gear?.notes || "");
+    }, [gear]);
+    const handleFormSubmit = async () => {
+        if (!gear) {
+            handleClose();
+            return;
         }
+
+        const modifiedGear: GearProps = {
+            ...gear,
+            rfid,
+            is_missing: isMissing,
+            is_broken: isBroken,
+            description,
+            notes
+        };
+        await handleGearUpdate(modifiedGear);
+
+        if (!gear.reservationDetails) {
+            handleClose();
+            return;
+        }
+
+        const oldLastContacted = gear.reservationDetails?.last_contacted;
+
+        if (oldLastContacted && lastContacted !== oldLastContacted) {
+            console.log(oldLastContacted, lastContacted);
+            handleReservationUpdate(gear.reservationDetails);
+        }
+
+        handleClose();
     };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-        setValue(newValue);
+        setTabValue(newValue);
     };
 
     if (!gear) return null;
 
-    const isOverdue = (gear.reservationDetails?.due_date || Infinity) < new Date().getTime();
-
+    console.log(gear?.date_added);
     return (
         <Dialog
             open={open}
@@ -83,120 +112,116 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
         >
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{gear.gear_name} Details</DialogTitle>
             <Box sx={{borderBottom: 1, borderColor: "divider"}}>
-                <Tabs value={value} onChange={handleTabChange} aria-label="gear details tabs">
+                <Tabs value={tabValue} onChange={handleTabChange} aria-label="gear details tabs">
                     <Tab label="Details" {...a11yProps(0)} />
                     <Tab label="History" {...a11yProps(1)} />
                 </Tabs>
             </Box>
             <DialogContent dividers={true}>
-                <CustomTabPanel value={value} index={0}>
+                <CustomTabPanel value={tabValue} index={0}>
                     <Typography variant="h6" sx={{marginBottom: "1rem"}}>
                         <strong>Item Details</strong>
                     </Typography>
-                    <List sx={{pt: 0, px: 2}}>
-                        <ListItem>
-                            <Typography>
-                                <strong>RFID:</strong> {gear.rfid}
-                            </Typography>
-                        </ListItem>
-                        <ListItem>
-                            <Typography>
-                                <strong>Date Added:</strong>{" "}
-                                {new Date(gear.date_added).toLocaleDateString()}
-                            </Typography>
-                        </ListItem>
-                        <ListItem>
-                            <Typography>
-                                <strong>Missing:</strong> {gear.is_missing ? "Yes" : "No"}
-                            </Typography>
-                        </ListItem>
-                        <ListItem>
-                            <Typography>
-                                <strong>Broken:</strong> {gear.is_broken ? "Yes" : "No"}
-                            </Typography>
-                        </ListItem>
-                        <ListItem sx={{pb: 2}}>
-                            <Typography>
-                                <strong>Description:</strong> {gear.description}
-                            </Typography>
-                        </ListItem>
-                        <ListItem>
+                    <FormControl className="w-full">
+                        <TextField
+                            label="RFID"
+                            value={rfid}
+                            onChange={(e) => setRfid(e.target.value)}
+                            variant="outlined"
+                            className="w-full mb-4"
+                        />
+                        <TextField
+                            label="Date Added"
+                            type="date"
+                            defaultValue={new Date(gear.date_added).toISOString().split("T")[0]}
+                            disabled
+                            variant="outlined"
+                            InputLabelProps={{
+                                shrink: true
+                            }}
+                            className="w-full mb-4"
+                        />
+                        <div className="flex space-x-2">
                             <TextField
-                                label="Notes"
+                                label="Date Last Contacted (Reserving Member)"
+                                disabled={Boolean(!gear.reservationDetails)}
+                                type="date"
+                                onChange={
+                                    (e) => setLastContacted(new Date(e.target.value).getTime()) //might be wrong
+                                }
+                                value={
+                                    lastContacted &&
+                                    new Date(lastContacted).toISOString().split("T")[0]
+                                }
                                 variant="outlined"
-                                multiline
-                                rows={4}
-                                fullWidth
-                                value={notes}
-                                onChange={handleNotesChange}
-                                onBlur={handleNotesBlur}
+                                InputLabelProps={{
+                                    shrink: true
+                                }}
+                                className="w-full mb-4"
                             />
-                        </ListItem>
-                    </List>
-                    {gear.memberDetails && (
-                        <>
-                            <Typography variant="h6" sx={{marginBottom: "1rem"}}>
-                                <strong>Reservations Details</strong>
-                            </Typography>
-                            <List sx={{pt: 0, px: 2}}>
-                                <ListItem>
-                                    <Typography>
-                                        <strong>Member: </strong>
-                                        {gear.memberDetails.name}
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography>
-                                        <strong>Email: </strong>
-                                        {gear.memberDetails.email}
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography>
-                                        <strong>Phone Number: </strong>
-                                        {gear.memberDetails.phone_number}
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography color={isOverdue ? "red" : "black"}>
-                                        <strong>Due Date: </strong>
-                                        {gear.reservationDetails &&
-                                            new Date(
-                                                gear.reservationDetails.due_date
-                                            ).toLocaleDateString()}
-                                    </Typography>
-                                </ListItem>
-                                <ListItem>
-                                    <Typography
-                                        sx={{
-                                            whiteSpace: "nowrap",
-                                            fontStyle: "bold",
-                                            marginRight: "8px"
-                                        }}
-                                    >
-                                        <strong>Last Contacted: </strong>
-                                    </Typography>
-                                    <TextField
-                                        margin="dense"
-                                        id="lastContacted"
-                                        type="date"
-                                        fullWidth
-                                        variant="standard"
-                                        required
-                                        aria-required="true"
+                            <Button
+                                className="mb-4"
+                                onClick={() => setLastContacted(Date.now())}
+                                color="primary"
+                                variant="outlined"
+                            >
+                                Today
+                            </Button>
+                        </div>
+                        <div className="flex">
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={isMissing}
+                                        onChange={(e) => setIsMissing(e.target.checked)}
+                                        name="isMissing"
                                     />
-                                </ListItem>
-                            </List>
-                        </>
-                    )}
+                                }
+                                label="Missing"
+                                className="mb-4"
+                            />
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={isBroken}
+                                        onChange={(e) => setIsBroken(e.target.checked)}
+                                        name="isBroken"
+                                    />
+                                }
+                                label="Broken"
+                                className="mb-4"
+                            />
+                        </div>
+                        <TextField
+                            label="Description"
+                            value={gear.description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            variant="outlined"
+                            rows={3}
+                            className="w-full mb-4"
+                            multiline
+                        />
+                        <TextField
+                            label="Notes"
+                            value={gear.notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            variant="outlined"
+                            className="w-full mb-4"
+                            rows={5}
+                            multiline
+                        />
+                    </FormControl>
                 </CustomTabPanel>
-                <CustomTabPanel value={value} index={1}>
+                <CustomTabPanel value={tabValue} index={1}>
                     <CheckoutHistory gearId={gear._id} />
                 </CustomTabPanel>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} color="primary">
+                <Button onClick={handleClose} color="primary" variant="outlined">
                     Close
+                </Button>
+                <Button onClick={handleFormSubmit} color="primary" variant="contained">
+                    Update
                 </Button>
             </DialogActions>
         </Dialog>
