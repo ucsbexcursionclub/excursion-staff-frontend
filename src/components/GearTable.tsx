@@ -18,7 +18,7 @@ import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
-import VisibilityIcon from "@mui/icons-material/Visibility";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import {GearFilterOptions} from "../utils/constants";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
@@ -69,33 +69,20 @@ const dateComparator: GridComparatorFn<number | null> = (v1, v2) => {
 
 const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
+    {field: "gear_name", headerName: "Gear Name", width: 150},
     {
         field: "view",
-        width: 75,
+        width: 51,
         sortable: false,
         align: "center",
         headerName: "View",
         renderCell: () => (
-            <div>
+            <div className="opacity-25">
                 <IconButton color="inherit">
-                    <VisibilityIcon />
+                    <RemoveRedEyeOutlinedIcon />
                 </IconButton>
             </div>
         )
-    },
-    {field: "rfid", headerName: "RFID", width: 100, getApplyQuickFilterFn: undefined},
-    {field: "gear_name", headerName: "Gear Name", width: 150},
-    {
-        field: "is_missing",
-        headerName: "Missing?",
-        width: 100,
-        type: "boolean"
-    },
-    {
-        field: "is_broken",
-        headerName: "Broken?",
-        width: 100,
-        type: "boolean"
     },
     {
         field: "checked_out_to",
@@ -141,7 +128,20 @@ const columns: GridColDef<GearProps, any, any>[] = [
             }
             return "";
         }
-    }
+    },
+    {
+        field: "is_missing",
+        headerName: "Missing?",
+        width: 100,
+        type: "boolean"
+    },
+    {
+        field: "is_broken",
+        headerName: "Broken?",
+        width: 100,
+        type: "boolean"
+    },
+    {field: "rfid", headerName: "RFID", width: 100, getApplyQuickFilterFn: undefined}
 ];
 
 function Pagination({
