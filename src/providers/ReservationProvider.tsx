@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addReservation, endReservations, getReservations} from "../utils/api";
+import {addReservation, endReservations, getReservations, updateReservation} from "../utils/api";
 import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 
@@ -9,6 +9,7 @@ interface ReservationsContextProps {
     reservationsData: ReservationProps[];
     setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>;
     handleReservationAdd: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
+    handleReservationUpdate: (modifiedReservation: ReservationProps) => Promise<void>;
     refetchReservations: (reservationIds: string[]) => Promise<void>;
     reservationRowSelectionModel: GridRowSelectionModel;
     retrieveReservation: (id: string) => ReservationProps;
@@ -112,6 +113,13 @@ const useReservationsOperations = (
         recomputeAggregatedReservations();
     };
 
+    const handleReservationUpdate = async (modifiedReservation: ReservationProps) => {
+        const updatedReservation = await updateReservation(modifiedReservation);
+
+        await queryClient.refetchQueries({queryKey: ["reservationItem", updatedReservation._id]});
+        recomputeAggregatedReservations();
+    };
+
     const refetchReservations = async (reservationIds: string[]) => {
         await Promise.all(
             reservationIds.map(async (reservationId) => {
@@ -126,6 +134,7 @@ const useReservationsOperations = (
 
     return {
         handleReservationAdd,
+        handleReservationUpdate,
         refetchReservations,
         retrieveReservation,
         retrieveReservations,
