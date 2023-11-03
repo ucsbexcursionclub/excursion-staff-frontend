@@ -266,20 +266,6 @@ export async function checkInGear(gearIds: string[]) {
     );
     return response.data.data;
 }
-export async function endReservations(reservationIds: string[]) {
-    const response = await axios.put(
-        `${baseURL}/api/v1/reservations/end`,
-        {
-            ids: reservationIds
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        }
-    );
-    return response.data.data;
-}
 
 export const verifyAccessToken = async (accessToken: string): Promise<IdentityProps | null> => {
     try {
