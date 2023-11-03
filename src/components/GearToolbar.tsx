@@ -28,10 +28,6 @@ function SelectedCount() {
     );
 }
 
-function Separator() {
-    return <div style={{minWidth: "2px", maxWidth: "2px"}} className="bg-black mx-2"></div>;
-}
-
 type AvailibilityViewProps = {
     searchParams: string;
 };
@@ -99,8 +95,8 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
     const filter = searchParams || "All";
 
     return (
-        <div className="px-4 py-2 bg-gray-100 shadow-md rounded-2xl flex">
-            <Typography>
+        <div className="flex border-solid border-gray-100 rounded-2xl max-[600px]:flex-wrap justify-center space-x-2">
+            <Typography className="px-4 py-2 rounded-2xl border-solid border-gray-300 bg-gray-100">
                 {"For "}
                 <strong>
                     {`"`}
@@ -108,23 +104,23 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
                     {`"`}
                 </strong>
             </Typography>
-            <Separator />
-            <Typography>
+
+            <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-green-100">
                 <strong>{availableCount}</strong>
                 {" Available "}
             </Typography>
-            <Separator />
-            <Typography>
+
+            <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-amber-50">
                 <strong>{checkedOutCount}</strong>
                 {" Checked Out "}
             </Typography>
-            <Separator />
-            <Typography>
+
+            <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-red-100">
                 <strong>{overdueCount}</strong>
                 {" Overdue "}
             </Typography>
-            <Separator />
-            <Typography>
+
+            <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-gray-100">
                 <strong>{totalCount}</strong>
                 {" Total "}
             </Typography>
@@ -141,12 +137,13 @@ export default function GearToolBar({searchParams, onFilterChange}: GearToolBarP
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
-            className="bg-gray-200 rounded-2xl rounded-b-none flex flex-row lg:flex-row items-center sm:flex-col sm:space-y-2"
+            className="bg-gray-200 rounded-2xl rounded-b-none"
         >
-            <div className="flex flex-wrap items-center space-x-2 space-y-2">
+            <div className="flex grow space-x-4 justify-evenly">
                 <FilterSelect onFilterChange={onFilterChange} />
-                <Separator />
                 <SelectedCount />
+            </div>
+            <div className="flex grow justify-center">
                 <AvailibilityView searchParams={searchParams} />
             </div>
         </GridToolbarContainer>

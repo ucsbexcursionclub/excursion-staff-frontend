@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {addReservation, endReservations, getReservations} from "../utils/api";
+import {addReservation, getReservations, updateReservation} from "../utils/api";
 import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 
@@ -9,13 +9,16 @@ interface ReservationsContextProps {
     reservationsData: ReservationProps[];
     setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>;
     handleReservationAdd: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
-    handleReservationEnd: (reservationIds: string[]) => Promise<void>;
+    handleReservationUpdate: (modifiedReservation: ReservationProps) => Promise<void>;
+    refetchReservations: (reservationIds: string[]) => Promise<void>;
     reservationRowSelectionModel: GridRowSelectionModel;
     retrieveReservation: (id: string) => ReservationProps;
     retrieveReservations: (ids: string[]) => ReservationProps[];
     setReservationRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     retrieveReservationsByGearId: (id: string) => ReservationProps[];
+    retrieveOpenReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
+    retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[];
 }
 
 const useReservationsState = () => {
@@ -45,12 +48,9 @@ const useReservationsState = () => {
 
 const useReservationsOperations = (
     reservationsData: ReservationProps[],
-    setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>,
-    setReservationRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>
+    setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>
 ) => {
     const queryClient = useQueryClient();
-
-    setReservationRowSelectionModel; //same as above
 
     const recomputeAggregatedReservations = () => {
         const aggregatedReservations = queryClient
@@ -72,16 +72,29 @@ const useReservationsOperations = (
     };
 
     const retrieveReservationsByGearId = (id: string) => {
-        return reservationsData.filter((reservation) => reservation.reserved_gear.includes(id));
+        return reservationsData.filter((reservation) =>
+            [...reservation.checked_in_gear, reservation.checked_out_gear].includes(id)
+        );
     };
 
     const retrieveReservationsByMemberId = (id: string) => {
         return reservationsData.filter((reservation) => reservation.reserving_member === id);
     };
 
+    const retrieveOpenReservationsByMemberId = (id: string) => {
+        return reservationsData.filter(
+            (reservation) =>
+                reservation.reserving_member === id && reservation.checked_out_gear.length > 0
+        );
+    };
+
+    const retrieveOpenReservationsByGearId = (id: string) => {
+        return reservationsData.filter((reservation) => reservation.checked_out_gear.includes(id));
+    };
+
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
         const newReservationData: NewReservationProps = {
-            reserved_gear: selectedGear.map((gear) => gear._id),
+            checked_out_gear: selectedGear.map((gear) => gear._id),
             reserving_member: selectedMember._id
         };
 
@@ -93,12 +106,21 @@ const useReservationsOperations = (
             staleTime: Infinity
         });
 
+        await refetchReservations(
+            selectedGear.map((gear) => gear.current_reservation).filter(Boolean) as string[]
+        );
+
         recomputeAggregatedReservations();
     };
 
-    const handleReservationEnd = async (reservationIds: string[]) => {
-        await endReservations(reservationIds);
+    const handleReservationUpdate = async (modifiedReservation: ReservationProps) => {
+        const updatedReservation = await updateReservation(modifiedReservation);
 
+        await queryClient.refetchQueries({queryKey: ["reservationItem", updatedReservation._id]});
+        recomputeAggregatedReservations();
+    };
+
+    const refetchReservations = async (reservationIds: string[]) => {
         await Promise.all(
             reservationIds.map(async (reservationId) => {
                 return await queryClient.refetchQueries({
@@ -112,11 +134,14 @@ const useReservationsOperations = (
 
     return {
         handleReservationAdd,
-        handleReservationEnd,
+        handleReservationUpdate,
+        refetchReservations,
         retrieveReservation,
         retrieveReservations,
         retrieveReservationsByGearId,
-        retrieveReservationsByMemberId
+        retrieveReservationsByMemberId,
+        retrieveOpenReservationsByGearId,
+        retrieveOpenReservationsByMemberId
     };
 };
 
@@ -130,11 +155,7 @@ export const ReservationsProvider: React.FC<DataProviderProps> = ({children}) =>
     const {reservationsData, setReservationsData} = useReservationsState();
     const [reservationRowSelectionModel, setReservationRowSelectionModel] =
         useState<GridRowSelectionModel>([]);
-    const reservationOps = useReservationsOperations(
-        reservationsData,
-        setReservationsData,
-        setReservationRowSelectionModel
-    );
+    const reservationOps = useReservationsOperations(reservationsData, setReservationsData);
 
     return (
         <ReservationsContext.Provider

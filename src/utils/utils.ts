@@ -31,3 +31,11 @@ export function isIdentityProps(obj: any): obj is IdentityProps {
         (obj.role === "user" || obj.role === "staff" || obj.role === "admin")
     );
 }
+
+export function convertToMUIDate(datetime: number): string {
+    const [month, day, year] = new Date(datetime).toLocaleDateString().split("/");
+
+    const formattedDay = day.length === 1 ? "0" + day : day;
+
+    return `${year}-${month}-${formattedDay}`;
+}

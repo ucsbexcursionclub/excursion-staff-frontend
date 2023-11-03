@@ -302,11 +302,10 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     "Error retrieving member from DB, contact tech support and try again later."
                 );
             }
-            const retrievedName = retrievedMemberData.name.toLowerCase();
 
-            if (fullName.trim().toLowerCase() !== retrievedName) {
+            if (fullName.trim().toLowerCase() !== retrievedMemberData.name.toLowerCase()) {
                 throw new Error(
-                    `Please double-check name and email is the same from previous membership. Name associated with given email: ${retrievedName}`
+                    `Please double-check name and email is the same from previous membership. Name associated with given email: ${retrievedMemberData.name}`
                 );
             }
 
@@ -327,7 +326,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     const dueDate = new Date(reservation.due_date);
 
                     await Promise.all(
-                        reservation.reserved_gear.map(async (gearId) => {
+                        reservation.checked_out_gear.map(async (gearId) => {
                             const gearItem = retrieveGearItem(gearId)!;
 
                             if (
@@ -367,7 +366,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
             const memberData: MemberProps = {
                 _id: retrievedMemberData._id,
-                name: fullName.toLowerCase(),
+                name: fullName,
                 phone_number: phoneNumber,
                 email: email.toLowerCase(),
                 membership_duration: membershipDuration,

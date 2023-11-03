@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import {
     Dialog,
     DialogTitle,
@@ -32,12 +32,17 @@ TODO: handle overwrites to close reservations automatically with some notes mayb
 
 const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) => {
     const {retrieveGearItem, handleGearCheckout, gearRowSelectionModel} = useGear();
-    const {retrieveReservationsByMemberId} = useReservations();
-    const [alertMessage, setAlertMessage] = useState<string | null>(null);
+    const {retrieveOpenReservationsByMemberId, retrieveOpenReservationsByGearId} =
+        useReservations();
+    const [alertMessage, setAlertMessage] = useState<string[]>([]);
 
-    const gearsToCheckOut = gearRowSelectionModel
-        .map((id) => retrieveGearItem(id.toString()))
-        .filter(Boolean) as GearProps[];
+    const gearsToCheckOut = useMemo(
+        () =>
+            gearRowSelectionModel
+                .map((id) => retrieveGearItem(id.toString()))
+                .filter(Boolean) as GearProps[],
+        [gearRowSelectionModel, retrieveGearItem]
+    );
 
     const [selectedMember, setSelectedMember] = useState<MemberProps | null>(null);
 
@@ -47,60 +52,83 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
         onClose();
     };
 
+    useEffect(() => {
+        setSelectedMember(null);
+        setAlertMessage([]);
+    }, [open]);
+
+    useEffect(() => {
+        const alreadyCheckedOutGears = gearsToCheckOut.filter((gear) => gear.current_reservation);
+        const brokenGears = gearsToCheckOut.filter((gear) => gear.is_broken);
+        if (open && brokenGears.length > 0) {
+            const alertMessage =
+                "WARNING: Some gear is marked as broken.\n\n" +
+                brokenGears
+                    .map((gear) => {
+                        const gearItemName = gear.gear_name || "Unknown Gear";
+                        return `${gearItemName}\n`;
+                    })
+                    .join("");
+
+            console.log("triggering");
+            setAlertMessage((prevMsg) => [...prevMsg, alertMessage]);
+        }
+        if (open && alreadyCheckedOutGears.length > 0) {
+            const alertMessage =
+                "WARNING: Some gear is already checked out. Checking out again will override previous reservation.\n\n" +
+                alreadyCheckedOutGears
+                    .map((gear) => {
+                        const reservation = retrieveOpenReservationsByGearId(gear._id)[0];
+                        const gearItemName = gear.gear_name || "Unknown Gear";
+                        return `${gearItemName} (Checked out to: ${
+                            reservation.memberDetails?.name || "Unknown Member"
+                        })\n`;
+                    })
+                    .join("");
+
+            setAlertMessage((prevMsg) => [...prevMsg, alertMessage]);
+        }
+    }, [open, gearsToCheckOut, retrieveOpenReservationsByGearId]);
+
     const handleConfirmCheckOut = async () => {
-        // TODO Convert to get overdue gear from member function
         if (selectedMember) {
-            const reservations: ReservationProps[] = await retrieveReservationsByMemberId(
+            const openReservations: ReservationProps[] = retrieveOpenReservationsByMemberId(
                 selectedMember._id
             );
-            const today = new Date();
             const currentDateTime = new Date().getTime();
 
-            const overdueGearItems: {gear: GearProps; due_date: Date}[] = [];
+            const overdueGearItems: {gear: GearProps; due_date: number}[] = [];
 
-            await Promise.all(
-                reservations.map(async (reservation) => {
-                    const dueDate = new Date(reservation.due_date);
-
-                    await Promise.all(
-                        reservation.reserved_gear.map(async (gearId) => {
-                            const gearItem = retrieveGearItem(gearId)!;
-
-                            if (
-                                gearItem.current_reservation === reservation._id &&
-                                dueDate <= today
-                            ) {
-                                overdueGearItems.push({gear: gearItem, due_date: dueDate});
-                            }
-                        })
-                    );
-                })
-            );
+            openReservations.map((reservation) => {
+                if (reservation.due_date < Date.now()) {
+                    reservation.checked_out_gear.map(async (gearId) => {
+                        const gearItem = retrieveGearItem(gearId)!;
+                        overdueGearItems.push({gear: gearItem, due_date: reservation.due_date});
+                    });
+                }
+            });
 
             if (
                 selectedMember.membership_expiration_date < currentDateTime &&
                 selectedMember.membership_expiration_date !== null
             ) {
-                setAlertMessage(
-                    `${selectedMember.name}'s membership expired on ${new Date(
-                        selectedMember.membership_expiration_date
-                    ).toLocaleDateString()} `
-                );
+                const alertMessage = `${selectedMember.name}'s membership expired on ${new Date(
+                    selectedMember.membership_expiration_date
+                ).toLocaleDateString()} `;
+
+                setAlertMessage((prevMsg) => [...prevMsg, alertMessage]);
             } else if (overdueGearItems.length > 0) {
                 // Display an alert for overdue gear reservations
                 const alertMessage =
-                    `${selectedMember.name} has overdue gear reservations:\n` +
-                    overdueGearItems
-                        .map(({gear, due_date}) => {
-                            const gearItemName = gear ? gear.gear_name : "Unknown Gear";
-                            return `${gearItemName} (Due Date: ${new Date(
-                                due_date
-                            ).toLocaleDateString()})`;
-                        })
-                        .join("\n");
-                const overdueGearMessage = alertMessage + overdueGearItems.join("\n");
-                setAlertMessage(overdueGearMessage);
-                console.log(overdueGearMessage);
+                    `${selectedMember.name} has overdue gear reservations:\n\n` +
+                    overdueGearItems.map(({gear, due_date}) => {
+                        const gearItemName = gear ? gear.gear_name : "Unknown Gear";
+                        return `${gearItemName} (Due Date: ${new Date(
+                            due_date
+                        ).toLocaleDateString()})\n`;
+                    });
+
+                setAlertMessage((prevMsg) => [...prevMsg, alertMessage]);
             } else {
                 // No overdue gear reservations, proceed with checkout
                 await handleGearCheckout(selectedMember, gearsToCheckOut);
@@ -129,7 +157,7 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
                 Check Out Gear
             </DialogTitle>
 
-            <DialogContent>
+            <DialogContent className="min-h-80">
                 <Typography gutterBottom>
                     {`Please confirm the gear items you want to check out and provide the member's
                     name:`}
@@ -151,7 +179,7 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
                 />
             </DialogContent>
 
-            <DialogActions>
+            <DialogActions className="mb-2">
                 <Button onClick={handleClose} variant="contained" color="primary">
                     Cancel
                 </Button>
@@ -159,11 +187,11 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
                     Check Out
                 </Button>
             </DialogActions>
-            {alertMessage && (
-                <Alert severity="error" sx={{mt: 2}}>
-                    {alertMessage}
+            {alertMessage.map((alert, index) => (
+                <Alert key={index} severity="error" className="whitespace-pre-wrap">
+                    {alert}
                 </Alert>
-            )}
+            ))}
         </Dialog>
     );
 };
