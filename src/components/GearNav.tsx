@@ -68,97 +68,42 @@ export default function GearNav({setSearchParams}: GearNavProps) {
         handleOpenDeleteDialog();
     };
 
-    const renderAppBar = () => {
-        if (screenWidth < 600) {
-            // Render AppBar with buttons below on smaller screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4">Gear</Typography>
-                        <div className="flex flex-col items-center">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10" />
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Gear Name or RFID
-                            </Typography>
+    return (
+        <>
+            <AppBar position="static" className="rounded-xl mb-4 bg-lime-100 px-4">
+                <Toolbar className="flex items-center flex-wrap py-1 px-0 justify-between max-[800px]:justify-center">
+                    <Typography variant="h4">Gear</Typography>
+                    <div className="flex flex-col items-center">
+                        <Typography
+                            style={{userSelect: "none"}}
+                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                        >
+                            s
+                        </Typography>
+                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black">
+                            <SearchIcon className="absolute left-2" color="inherit" />
+                            <InputBase onChange={updateSearch} className="pl-10" />
                         </div>
-                    </Toolbar>
+                        <Typography className="text-xs text-gray-200 italic">
+                            Gear Name or RFID
+                        </Typography>
+                    </div>
                     <div className="flex justify-between items-center py-1">
-                        <Button color="inherit" className="mx-1" onClick={handleOpenCheckInDialog}>
+                        <Button color="inherit" onClick={handleOpenCheckInDialog}>
                             Check In
                         </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleOpenCheckOutDialog}>
+                        <Button color="inherit" onClick={handleOpenCheckOutDialog}>
                             Check Out
                         </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
+                        <Button color="inherit" onClick={handleOpenAddDialog}>
                             Add Gear
                         </Button>
-                        <Button color="inherit" className="" onClick={handleRemoveClick}>
+                        <Button color="inherit" onClick={handleRemoveClick}>
                             Remove Gear
                         </Button>
                     </div>
-                </AppBar>
-            );
-        } else {
-            // Render AppBar with buttons in the same row on wider screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4">Gear</Typography>
-                        <div className="flex flex-col items-center">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10" />
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Gear Name or RFID
-                            </Typography>
-                        </div>
-                        <div className="flex">
-                            <Button
-                                color="inherit"
-                                className="mx-1"
-                                onClick={handleOpenCheckInDialog}
-                            >
-                                Check In
-                            </Button>
-                            <Button
-                                color="inherit"
-                                className="mx-1"
-                                onClick={handleOpenCheckOutDialog}
-                            >
-                                Check Out
-                            </Button>
-                            <Button color="inherit" className="" onClick={handleOpenAddDialog}>
-                                Add Gear
-                            </Button>
-                            <Button color="inherit" className="" onClick={handleRemoveClick}>
-                                Remove Gear
-                            </Button>
-                        </div>
-                    </Toolbar>
-                </AppBar>
-            );
-        }
-    };
-
-    return (
-        <>
-            {renderAppBar()}
+                </Toolbar>
+            </AppBar>
             <GearRemoveDialog open={removeDialogOpen} onClose={handleCloseDeleteDialog} />
             <GearAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <GearCheckOutDialog open={checkOutDialogOpen} onClose={handleCloseCheckOutDialog} />

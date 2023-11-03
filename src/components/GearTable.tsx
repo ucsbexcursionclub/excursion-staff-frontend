@@ -12,11 +12,13 @@ import {
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
+import IconButton from "@mui/material/IconButton";
 import React, {useState} from "react";
 import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
+import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import {GearFilterOptions} from "../utils/constants";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
@@ -67,19 +69,20 @@ const dateComparator: GridComparatorFn<number | null> = (v1, v2) => {
 
 const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
-    {field: "rfid", headerName: "RFID", width: 150},
     {field: "gear_name", headerName: "Gear Name", width: 150},
     {
-        field: "is_missing",
-        headerName: "Missing?",
-        width: 100,
-        type: "boolean"
-    },
-    {
-        field: "is_broken",
-        headerName: "Broken?",
-        width: 100,
-        type: "boolean"
+        field: "view",
+        width: 51,
+        sortable: false,
+        align: "center",
+        headerName: "View",
+        renderCell: () => (
+            <div className="opacity-25">
+                <IconButton color="inherit">
+                    <RemoveRedEyeOutlinedIcon />
+                </IconButton>
+            </div>
+        )
     },
     {
         field: "checked_out_to",
@@ -120,12 +123,24 @@ const columns: GridColDef<GearProps, any, any>[] = [
         valueGetter: (params) => params.row.reservationDetails?.last_contacted,
         valueFormatter: (params) => {
             if (params.value) {
-                const date = new Date(params.value as number);
-                return date.toLocaleDateString();
+                return new Date(params.value).toLocaleDateString();
             }
             return "";
         }
-    }
+    },
+    {
+        field: "is_missing",
+        headerName: "Missing?",
+        width: 100,
+        type: "boolean"
+    },
+    {
+        field: "is_broken",
+        headerName: "Broken?",
+        width: 100,
+        type: "boolean"
+    },
+    {field: "rfid", headerName: "RFID", width: 100, getApplyQuickFilterFn: undefined}
 ];
 
 function Pagination({
@@ -167,7 +182,7 @@ export default function GearTable({searchParams}: GearTableProps) {
     );
 
     const handleCellClick = (params: any) => {
-        if (params.field === "gear_name") {
+        if (params.field === "view") {
             setSelectedGear(params.row);
             setDialogOpen(true);
         }
