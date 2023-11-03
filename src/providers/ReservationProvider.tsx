@@ -19,6 +19,7 @@ interface ReservationsContextProps {
     retrieveOpenReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
     retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[];
+    handleReservationUpdate: (modifiedReservation: ReservationProps) => Promise<void>;
 }
 
 const useReservationsState = () => {
@@ -90,6 +91,10 @@ const useReservationsOperations = (
 
     const retrieveOpenReservationsByGearId = (id: string) => {
         return reservationsData.filter((reservation) => reservation.checked_out_gear.includes(id));
+    };
+
+    const handleReservationUpdate = async (modifiedReservation: ReservationProps) => {
+        console.log("todo");
     };
 
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
