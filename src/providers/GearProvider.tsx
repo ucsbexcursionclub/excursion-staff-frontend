@@ -70,8 +70,22 @@ const useGearOperations = (
     const handleGearUpdate = async (modifiedGear: GearProps) => {
         const updatedGear = await updateGear(modifiedGear);
 
-        await queryClient.refetchQueries({queryKey: ["gearItem", updatedGear._id]});
-        recomputeAggregatedGear();
+        if (updatedGear) {
+            const newNotification: NotificationProps = {
+                message: "Successfully updated gear properties.",
+                type: "success"
+            };
+            addNotification(newNotification);
+
+            await queryClient.refetchQueries({queryKey: ["gearItem", updatedGear._id]});
+            recomputeAggregatedGear();
+        } else {
+            const newNotification: NotificationProps = {
+                message: "Server error while updating gear properties.",
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     };
 
     const retrieveGearItem = (id: string) => {

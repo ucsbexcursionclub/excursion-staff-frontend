@@ -19,6 +19,7 @@ import {BlurBackDrop} from "./HelperComponents";
 import {FormControl} from "@mui/material";
 import {useGear} from "../providers/GearProvider";
 import {useReservations} from "../providers/ReservationProvider";
+import {convertToMUIDate} from "../utils/utils";
 
 type GearDetailsDialogProps = {
     open: boolean;
@@ -57,10 +58,22 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
         setDescription(gear?.description || "");
         setNotes(gear?.notes || "");
     }, [gear]);
+
     const handleFormSubmit = async () => {
         if (!gear) {
             handleClose();
             return;
+        }
+
+        if (gear.reservationDetails) {
+            const oldLastContacted = gear.reservationDetails?.last_contacted;
+
+            if (lastContacted && lastContacted !== oldLastContacted) {
+                handleReservationUpdate({
+                    ...gear.reservationDetails,
+                    last_contacted: lastContacted
+                });
+            }
         }
 
         const modifiedGear: GearProps = {
@@ -71,19 +84,8 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
             description,
             notes
         };
+
         await handleGearUpdate(modifiedGear);
-
-        if (!gear.reservationDetails) {
-            handleClose();
-            return;
-        }
-
-        const oldLastContacted = gear.reservationDetails?.last_contacted;
-
-        if (oldLastContacted && lastContacted !== oldLastContacted) {
-            console.log(oldLastContacted, lastContacted);
-            handleReservationUpdate(gear.reservationDetails);
-        }
 
         handleClose();
     };
@@ -94,7 +96,6 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
 
     if (!gear) return null;
 
-    console.log(gear?.date_added);
     return (
         <Dialog
             open={open}
@@ -133,7 +134,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                         <TextField
                             label="Date Added"
                             type="date"
-                            defaultValue={new Date(gear.date_added).toISOString().split("T")[0]}
+                            defaultValue={convertToMUIDate(gear.date_added)}
                             disabled
                             variant="outlined"
                             InputLabelProps={{
@@ -142,25 +143,41 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                             className="w-full mb-4"
                         />
                         <div className="flex space-x-2">
-                            <TextField
-                                label="Date Last Contacted (Reserving Member)"
-                                disabled={Boolean(!gear.reservationDetails)}
-                                type="date"
-                                onChange={
-                                    (e) => setLastContacted(new Date(e.target.value).getTime()) //might be wrong
-                                }
-                                value={
-                                    lastContacted &&
-                                    new Date(lastContacted).toISOString().split("T")[0]
-                                }
-                                variant="outlined"
-                                InputLabelProps={{
-                                    shrink: true
-                                }}
-                                className="w-full mb-4"
-                            />
+                            {lastContacted ? (
+                                <TextField
+                                    key={0}
+                                    label="Date Last Contacted (Reserving Member)"
+                                    disabled={Boolean(!gear.reservationDetails)}
+                                    type={"date"}
+                                    onChange={
+                                        (e) => setLastContacted(new Date(e.target.value).getTime()) //might be wrong
+                                    }
+                                    value={convertToMUIDate(lastContacted)}
+                                    variant="outlined"
+                                    InputLabelProps={{
+                                        shrink: true
+                                    }}
+                                    className="w-full mb-4"
+                                />
+                            ) : (
+                                <TextField
+                                    key={1}
+                                    label="Date Last Contacted (Reserving Member)"
+                                    disabled={Boolean(!gear.reservationDetails)}
+                                    type={"date"}
+                                    onChange={
+                                        (e) => setLastContacted(new Date(e.target.value).getTime()) //might be wrong
+                                    }
+                                    variant="outlined"
+                                    InputLabelProps={{
+                                        shrink: true
+                                    }}
+                                    className="w-full mb-4"
+                                />
+                            )}
                             <Button
                                 className="mb-4"
+                                disabled={Boolean(!gear.reservationDetails)}
                                 onClick={() => setLastContacted(Date.now())}
                                 color="primary"
                                 variant="outlined"
@@ -194,7 +211,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                         </div>
                         <TextField
                             label="Description"
-                            value={gear.description}
+                            value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             variant="outlined"
                             rows={3}
@@ -203,7 +220,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                         />
                         <TextField
                             label="Notes"
-                            value={gear.notes}
+                            value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             variant="outlined"
                             className="w-full mb-4"

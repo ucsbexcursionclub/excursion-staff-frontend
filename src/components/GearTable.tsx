@@ -123,8 +123,7 @@ const columns: GridColDef<GearProps, any, any>[] = [
         valueGetter: (params) => params.row.reservationDetails?.last_contacted,
         valueFormatter: (params) => {
             if (params.value) {
-                const date = new Date(params.value as number);
-                return date.toLocaleDateString();
+                return new Date(params.value).toLocaleDateString();
             }
             return "";
         }

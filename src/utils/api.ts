@@ -106,7 +106,7 @@ export async function getReservationById(id: string): Promise<ReservationProps> 
     return reservation;
 }
 
-export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
+export async function updateGear(updatedGear: GearProps): Promise<GearProps | null> {
     const copiedGear = {...updatedGear};
     delete copiedGear.reservationDetails;
     delete copiedGear.memberDetails;
@@ -122,7 +122,7 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
     });
 
     // Assuming the updated gear data is returned in the response
-    const newGear: GearProps = response.data.data;
+    const newGear: GearProps | null = response.data.data || null;
 
     return newGear;
 }
