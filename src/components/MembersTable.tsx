@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useMemo} from "react";
 import {
     DataGrid,
     GridColDef,
@@ -276,7 +276,10 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         setSelectedMember(null);
     };
 
-    const columns = getColumns(retrieveMemberById, retrieveReservationsByMemberId);
+    const columns = useMemo(
+        () => getColumns(retrieveMemberById, retrieveReservationsByMemberId),
+        [retrieveMemberById, retrieveReservationsByMemberId]
+    );
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
