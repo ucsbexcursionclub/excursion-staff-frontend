@@ -170,6 +170,7 @@ const getColumns = (
         {
             field: "signed_up_by",
             headerName: "Signed Up By",
+            getApplyQuickFilterFn: undefined,
             width: 140,
             valueFormatter: (params) => {
                 const name = getMemberById(params.value)?.name;
@@ -198,6 +199,29 @@ const getColumns = (
                         second: "2-digit"
                     };
                     return date.toLocaleDateString("en-US", options);
+                }
+                return "N/A";
+            }
+        },
+        {
+            field: "is_new_member",
+            headerName: "New?",
+            width: 75,
+            type: "boolean"
+        },
+        {
+            field: "membership_duration",
+            headerName: "Duration",
+            width: 100,
+            valueFormatter: (params) => {
+                if (params.value) {
+                    if (params.value === 90) {
+                        return "3 Months";
+                    } else if (params.value === 180) {
+                        return "6 Months";
+                    } else if (params.value === 365) {
+                        return "1 Year";
+                    }
                 }
                 return "N/A";
             }
