@@ -12,6 +12,7 @@
         "preview": "vite preview"
     },
     "devDependencies": {
+        "@types/lodash": "^4.14.200",
         "@types/react": "^18.2.15",
         "@types/react-dom": "^18.2.7",
         "@types/react-window": "^1.8.6",
@@ -39,6 +40,7 @@
         "browser-image-resizer": "^2.4.1",
         "csv-parser": "^3.0.0",
         "fs": "^0.0.1-security",
+        "lodash": "^4.17.21",
         "mongodb": "^6.1.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
