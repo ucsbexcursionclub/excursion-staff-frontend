@@ -142,7 +142,7 @@ export const tripResources: linkGroupType = {
         {
             title: "Calendar",
             description: "Google calendar with overnight trips",
-            href: "https://calendar.google.com/calendar/embed?src=8mshv4d0hf4q9v6h0lmjlk9uq4%40group.calendar.google.com&ctz=America%2FLos_Angeles",
+            href: "https://docs.google.com/document/d/1VlBlU3KzjnMlBuJ1UmcLcJAqf9KbmRjjiluMguhzcwI/edit?usp=sharing",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleCalendarLogo.PNG"
         },
         {

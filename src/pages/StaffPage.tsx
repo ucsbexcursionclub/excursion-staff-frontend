@@ -5,9 +5,7 @@ import ImageContainer from "../components/homepage/ImageContainer";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 
-const pageContainerStyle = "flex flex-col items-center justify-start min-h-screen";
 const cardStyle = "flex flex-col items-center justify-end min-w-0 w-full";
-const greenCardStyle = "flex flex-col items-start justify-end min-w-0 text-white";
 
 const StaffPage = () => {
     const [smallFontSize, setSmallFontSize] = useState("18px");
@@ -33,7 +31,7 @@ const StaffPage = () => {
     }, [screenWidth]);
 
     return (
-        <div className={pageContainerStyle}>
+        <div className="flex flex-col items-center justify-start min-h-screen">
             <ImageContainer
                 imgurl="https://d36olvmp8krees.cloudfront.net/resources/MountainHammock.png"
                 bigFontSize={bigFontSize}
@@ -57,14 +55,14 @@ const StaffPage = () => {
                 </CardContent>
             </Card>
             <Card square className={cardStyle}>
-                <CardContent>
+                <CardContent className="w-full">
                     <StaffGrid />
                 </CardContent>
             </Card>
             <Card>
                 <CardContent
                     style={{backgroundColor: "rgba(60,66,57,255)"}}
-                    className={greenCardStyle}
+                    className="flex flex-col items-start justify-end min-w-0 text-white"
                 >
                     <div style={{backgroundColor: "rgba(60,66,57,255)"}}>
                         <Typography
