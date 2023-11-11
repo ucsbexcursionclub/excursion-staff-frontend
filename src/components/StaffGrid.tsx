@@ -19,18 +19,18 @@ const StaffGrid: React.FC = () => {
     const sortedStaff = [...staffProfiles].sort((a, b) => {
         // Define the order of positions
         const positionOrder: {[position: string]: number} = {
-            Director: 10,
-            Treasurer: 4,
-            "General Board": 4,
-            "Web Developer": 3,
-            "Camping Gear Head": 3,
-            "Climbing Gear Head": 3,
-            "Head of Water Sports": 3,
-            "Head of Medicine": 3,
-            "Social Media Head": 3,
-            "Gear Fairy": 3,
-            "Full Staff": 2,
-            "Prospective Staff": 1
+            "director": 10,
+            "treasurer": 4,
+            "general board": 4,
+            "web developer": 3,
+            "camping gear head": 3,
+            "climbing gear head": 3,
+            "head of water sports": 3,
+            "head of medicine": 3,
+            "social media head": 3,
+            "gear fairy": 3,
+            "full staff": 2,
+            "prospective staff": 1
         };
 
         const positionA = a.positions[0].toLowerCase();
