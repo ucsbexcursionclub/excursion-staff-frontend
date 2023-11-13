@@ -20,6 +20,7 @@ import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import {GearFilterOptions} from "../utils/constants";
+import {xor} from "lodash";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
         value: "<",
@@ -60,11 +61,14 @@ const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     }
 ];
 
-const dateComparator: GridComparatorFn<number | null> = (v1, v2) => {
+const dateComparator: GridComparatorFn<number | undefined | null> = (v1, v2) => {
+    if (v1 === undefined && v2 === undefined) return 0;
+    if (v1 === undefined) return -1;
+    if (v2 === undefined) return 1;
     if (v1 === null && v2 === null) return 0;
-    if (v1 === null) return 1;
-    if (v2 === null) return -1;
-    return v1 - v2;
+    if (v1 === null) return -1;
+    if (v2 === null) return 1;
+    return (v1 as number) - (v2 as number);
 };
 
 const columns: GridColDef<GearProps, any, any>[] = [
@@ -113,7 +117,8 @@ const columns: GridColDef<GearProps, any, any>[] = [
             return "";
         },
         sortComparator: dateComparator,
-        filterOperators: dateOperators
+        filterOperators: dateOperators,
+        sortable: true
     },
     {
         field: "date_last_contacted",
