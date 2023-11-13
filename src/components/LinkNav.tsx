@@ -1,6 +1,5 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
-import Box from "@mui/material/Box";
 import {linkGroupType} from "../data/links";
 
 interface Props {
