@@ -96,9 +96,7 @@ const getIdOperators = (
 
                     return (
                         (retrieveOpenReservationsByMemberId(memberId) ?? []).filter(
-                            (reservation) =>
-                                reservation.due_date < Date.now() &&
-                                reservation.checked_out_gear.length > 0
+                            (reservation) => reservation.due_date < Date.now()
                         ).length > 0
                     );
                 };

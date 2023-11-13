@@ -20,7 +20,6 @@ import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
 import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
 import {GearFilterOptions} from "../utils/constants";
-import {xor} from "lodash";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
         value: "<",
