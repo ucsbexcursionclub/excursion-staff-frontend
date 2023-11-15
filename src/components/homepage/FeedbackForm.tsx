@@ -51,7 +51,7 @@ export default function FeedbackForm({fontSize}: Props) {
             setSubject("");
             setFeedback("");
             setLoading(false);
-        } catch (error) {
+        } catch (error: any) {
             setLoading(false); // Reset loading state on error
             console.error("Error submitting feedback:", error);
         }

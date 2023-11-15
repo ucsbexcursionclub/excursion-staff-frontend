@@ -1,6 +1,6 @@
 import MembersNav from "../components/MembersNav";
 import MembersTable from "../components/MembersTable";
-import React, {useState, useCallback, useEffect} from "react";
+import React, {useState, useEffect} from "react";
 import {debounce} from "lodash";
 
 function useDebouncedSearch(
@@ -10,18 +10,17 @@ function useDebouncedSearch(
     const [inputValue, setInputValue] = useState(initialValue);
     const [debouncedValue, setDebouncedValue] = useState(initialValue);
 
-    const debouncedSetDebouncedValue = useCallback(
-        debounce((nextValue: string) => {
-            setDebouncedValue(nextValue);
-        }, delay),
-        [delay]
-    );
-
     useEffect(() => {
+        const debouncedSetDebouncedValue = debounce((nextValue: string) => {
+            setDebouncedValue(nextValue);
+        }, delay);
+
         debouncedSetDebouncedValue(inputValue);
 
-        return debouncedSetDebouncedValue.cancel;
-    }, [inputValue, debouncedSetDebouncedValue]);
+        return () => {
+            debouncedSetDebouncedValue.cancel();
+        };
+    }, [inputValue, delay]);
 
     return [debouncedValue, setInputValue];
 }

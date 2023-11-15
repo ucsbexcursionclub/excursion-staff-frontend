@@ -1,7 +1,7 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
-import {getMembers, addMember, deleteMembers, updateMembers} from "../utils/api";
+import {getMembers, addMember, deleteMembers, updateMember} from "../utils/api";
 import {MemberProps, NewMemberProps, NotificationProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {useStaff} from "./StaffProvider";
@@ -18,7 +18,7 @@ interface MembersContextProps {
     memberRowSelectionModel: GridRowSelectionModel;
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     validateRowSelection: () => boolean;
-    markMembersStale: (ids: string[]) => Promise<void>;
+    refetchMembers: (ids: string[]) => Promise<void>;
 }
 
 const useMembersState = () => {
@@ -68,7 +68,8 @@ const useMembersOperations = (
     const {addNotification} = useSnackbar();
 
     //TODO: don't allow staff to be deleted from members table.
-    const {retrieveStaffById, handleStaffDelete} = useStaff();
+
+    const {retrieveStaffById} = useStaff();
 
     const recomputeAggregatedMembers = () => {
         const aggregatedMembers = queryClient
@@ -80,11 +81,12 @@ const useMembersOperations = (
 
     const handleMemberUpdate = async (modifiedMember: MemberProps): Promise<MemberProps | null> => {
         try {
-            const updatedMember = await updateMembers(modifiedMember);
-            
-            await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
-            recomputeAggregatedMembers();
+            const updatedMember = await updateMember(modifiedMember);
 
+            await refetchMembers([updatedMember._id]);
+
+            recomputeAggregatedMembers();
+            addNotification({message: "Successfully updated member!", type: "success"});
             return updatedMember;
         } catch (error: any) {
             addNotification({message: error.message, type: "error"});
@@ -118,49 +120,76 @@ const useMembersOperations = (
     const handleMemberDelete = async (selectedMembers: MemberProps[]) => {
         const memberIds = selectedMembers.map((member) => member._id);
         const associatedStaff: StaffProps[] = selectedMembers
-            .map((member) => member.staff_id && retrieveStaffById(member.staff_id))
+            .map((member) => (member.staff_id ? retrieveStaffById(member.staff_id) : null))
             .filter(Boolean) as StaffProps[];
 
-        setMemberRowSelectionModel([]);
-
-        await deleteMembers(memberIds);
-
-        await handleStaffDelete(associatedStaff);
-
-        await Promise.all(
-            memberIds.map(async (id) => {
-                return queryClient.removeQueries({queryKey: ["memberItem", id]});
-            })
-        );
-
-        recomputeAggregatedMembers();
-    };
-
-    const handleMemberAdd = async (newMemberData: NewMemberProps) => {
-        const addedMember = await addMember(newMemberData);
-
-        if (!addedMember) {
-            addNotification({message: "Error adding member. Try again later.", type: "error"});
+        // Check if any members have associated staff
+        if (associatedStaff.length > 0) {
+            addNotification({
+                message:
+                    "Cannot delete members with associated staff. Please update staff records first.",
+                type: "error"
+            });
             return;
         }
 
-        queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
-        await queryClient.prefetchQuery(["memberItem", addedMember._id], {
-            initialData: addedMember,
-            staleTime: Infinity
-        });
+        try {
+            const deletedCount = await deleteMembers(memberIds);
 
-        recomputeAggregatedMembers();
+            if (deletedCount !== memberIds.length) {
+                throw new Error("Some members could not be deleted.");
+            }
+
+            await Promise.all(
+                memberIds.map(async (id) => {
+                    return queryClient.removeQueries({queryKey: ["memberItem", id]});
+                })
+            );
+
+            recomputeAggregatedMembers();
+            addNotification({
+                message: `${deletedCount} members successfully deleted.`,
+                type: "success"
+            });
+            setMemberRowSelectionModel([]);
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error deleting members. Try again later.",
+                type: "error"
+            });
+        }
     };
 
-    const markMembersStale = async (ids: string[]) => {
+    const handleMemberAdd = async (newMemberData: NewMemberProps) => {
+        try {
+            const addedMember = await addMember(newMemberData);
+
+            queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
+            await queryClient.prefetchQuery(["memberItem", addedMember._id], {
+                initialData: addedMember,
+                staleTime: Infinity
+            });
+
+            recomputeAggregatedMembers();
+            addNotification({message: "Member successfully added!", type: "success"});
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error adding member. Try again later.",
+                type: "error"
+            });
+        }
+    };
+
+    const refetchMembers = async (ids: string[]) => {
         await Promise.all(
             ids.map((id) => {
-                console.log("marking", id, "as stale");
-                return queryClient.refetchQueries({queryKey: ["memberItem", id]});
+                console.log("marking member", id, "as stale");
+                return queryClient.refetchQueries(
+                    {queryKey: ["memberItem", id]},
+                    {throwOnError: true}
+                );
             })
         );
-
         recomputeAggregatedMembers();
     };
 
@@ -183,7 +212,7 @@ const useMembersOperations = (
         handleMemberDelete,
         handleMemberAdd,
         validateRowSelection,
-        markMembersStale
+        refetchMembers
     };
 };
 

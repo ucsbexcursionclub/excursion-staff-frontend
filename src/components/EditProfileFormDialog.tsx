@@ -152,10 +152,6 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         setIsLoading(false);
 
         if (updatedMember && updatedStaff) {
-            addNotification({
-                message: `Successfully updated profile!`,
-                type: "success"
-            });
             handleClose();
         }
     };

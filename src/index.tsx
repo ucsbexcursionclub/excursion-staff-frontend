@@ -38,6 +38,7 @@ const queryClient = new QueryClient({
         }
     }
 });
+
 const clientId = "846327511628-l2ro940djl5mk5cc1i1hq3jstuhh9u81.apps.googleusercontent.com";
 
 const container = document.getElementById("root");

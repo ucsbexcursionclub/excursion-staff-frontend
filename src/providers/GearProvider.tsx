@@ -10,14 +10,14 @@ import {useSnackbar} from "./SnackBarProvider";
 interface GearContextProps {
     gearData: GearProps[];
     setGearData: React.Dispatch<React.SetStateAction<GearProps[]>>;
-    handleGearUpdate: (modifiedGear: GearProps) => Promise<void>;
+    handleGearUpdate: (modifiedGear: GearProps) => Promise<GearProps | null>;
     retrieveGearItem: (id: string) => GearProps | undefined;
     retrieveGearItemByRFID: (rfid: string) => GearProps | undefined;
     handleGearDelete: (selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
-    // getMemberOverdueGear: (selectedMemberId: string) => Promise<[GearProps, Date][]>;
+    refetchGears: (ids: string[]) => Promise<void>;
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     gearRowSelectionModel: GridRowSelectionModel;
     validateRowSelection: () => boolean;
@@ -27,9 +27,17 @@ const useGearState = () => {
     const queryClient = useQueryClient();
     const [gearData, setGearData] = useState<GearProps[]>([]);
     const {isStaff} = useLogin();
+    const {addNotification} = useSnackbar();
 
     const {data: fetchGearData} = useQuery("gear", getGear, {
-        enabled: isStaff
+        enabled: isStaff,
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     });
 
     useEffect(() => {
@@ -67,24 +75,18 @@ const useGearOperations = (
         setGearData(aggregatedGear);
     };
 
-    const handleGearUpdate = async (modifiedGear: GearProps) => {
-        const updatedGear = await updateGear(modifiedGear);
+    const handleGearUpdate = async (modifiedGear: GearProps): Promise<GearProps | null> => {
+        try {
+            const updatedGear = await updateGear(modifiedGear);
 
-        if (updatedGear) {
-            const newNotification: NotificationProps = {
-                message: "Successfully updated gear properties.",
-                type: "success"
-            };
-            addNotification(newNotification);
+            await refetchGears([updatedGear._id]);
 
-            await queryClient.refetchQueries({queryKey: ["gearItem", updatedGear._id]});
             recomputeAggregatedGear();
-        } else {
-            const newNotification: NotificationProps = {
-                message: "Server error while updating gear properties.",
-                type: "error"
-            };
-            addNotification(newNotification);
+            addNotification({message: "Successfully updated gear!", type: "success"});
+            return updatedGear;
+        } catch (error: any) {
+            addNotification({message: error.message, type: "error"});
+            return null;
         }
     };
 
@@ -113,26 +115,30 @@ const useGearOperations = (
     };
 
     const handleGearAdd = async (newGearData: NewGearProps) => {
-        const addedGear = await addGear(newGearData);
+        try {
+            const addedGear = await addGear(newGearData);
 
-        queryClient.setQueryData(["gearItem", addedGear._id], addedGear);
-        await queryClient.prefetchQuery(["gearItem", addedGear._id], {
-            initialData: addedGear,
-            staleTime: Infinity
-        });
+            queryClient.setQueryData(["gearItem", addedGear._id], addedGear);
+            await queryClient.prefetchQuery(["gearItem", addedGear._id], {
+                initialData: addedGear,
+                staleTime: Infinity
+            });
 
-        recomputeAggregatedGear();
+            recomputeAggregatedGear();
+            addNotification({message: "Gear successfully added!", type: "success"});
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error adding gear. Try again later.",
+                type: "error"
+            });
+        }
     };
 
     const handleGearCheckout = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
         setGearRowSelectionModel([]);
 
         await handleReservationAdd(selectedMember, selectedGear);
-        await Promise.all(
-            selectedGear.map(async (gear) => {
-                return await queryClient.refetchQueries({queryKey: ["gearItem", gear._id]});
-            })
-        );
+        await refetchGears(selectedGear.map((gear) => gear._id));
 
         recomputeAggregatedGear();
     };
@@ -141,12 +147,7 @@ const useGearOperations = (
         setGearRowSelectionModel([]);
 
         await checkInGear(selectedGear.map((gear) => gear._id));
-
-        await Promise.all(
-            selectedGear.map(async (gear) => {
-                return await queryClient.refetchQueries({queryKey: ["gearItem", gear._id]});
-            })
-        );
+        await refetchGears(selectedGear.map((gear) => gear._id));
 
         const reservationIds = selectedGear
             .map((gear) => gear.current_reservation)
@@ -154,6 +155,19 @@ const useGearOperations = (
 
         await refetchReservations(reservationIds);
 
+        recomputeAggregatedGear();
+    };
+
+    const refetchGears = async (ids: string[]) => {
+        await Promise.all(
+            ids.map((id) => {
+                console.log("marking gear", id, "as stale");
+                return queryClient.refetchQueries(
+                    {queryKey: ["gearItem", id]},
+                    {throwOnError: true}
+                );
+            })
+        );
         recomputeAggregatedGear();
     };
 
@@ -173,6 +187,7 @@ const useGearOperations = (
     return {
         handleGearUpdate,
         retrieveGearItem,
+        refetchGears,
         retrieveGearItemByRFID,
         handleGearDelete,
         handleGearAdd,
