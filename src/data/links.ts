@@ -17,7 +17,7 @@ export const prospectiveMembers: linkGroupType = {
     links: [
         {
             title: "Member Waiver",
-            description: "Click to enlarge the QR code!",
+            description: "Click to go to the waiver",
             href: "https://waiver.smartwaiver.com/w/h5vuzbksltzbwsuetzfowy/web/",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/qr-code-waiver.png"
         },
@@ -43,7 +43,7 @@ export const prospectiveMembers: linkGroupType = {
         {
             title: "Not Getting Emails?",
             description: "Share this form with any members not getting emails",
-            href: "https://docs.google.com/forms/d/e/1FAIpQLSfN207lrIK9FjX_uzn4YB0uwa2YACbsf_AmxjEU0WUWiWOJWQ/viewform",
+            href: "https://forms.gle/9T2TRQmKR69b261F9",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleFormsLogo.PNG"
         },
         {
@@ -142,7 +142,7 @@ export const tripResources: linkGroupType = {
         {
             title: "Calendar",
             description: "Google calendar with overnight trips",
-            href: "https://calendar.google.com/calendar/embed?src=8mshv4d0hf4q9v6h0lmjlk9uq4%40group.calendar.google.com&ctz=America%2FLos_Angeles",
+            href: "https://docs.google.com/document/d/1VlBlU3KzjnMlBuJ1UmcLcJAqf9KbmRjjiluMguhzcwI/edit?usp=sharing",
             imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/icons/GoogleCalendarLogo.PNG"
         },
         {

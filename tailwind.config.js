@@ -10,8 +10,14 @@ export default {
             minWidth: {
                 80: "320px"
             },
+            width: {
+                "6/10": "60%"
+            },
             maxWidth: {
                 "1/4": "25%"
+            },
+            minHeight: {
+                40: "160px"
             },
             maxHeight: {
                 20: "80px"

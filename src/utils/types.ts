@@ -81,7 +81,8 @@ export type NewGearProps = Omit<
 
 export type ReservationProps = {
     _id: string;
-    reserved_gear: string[];
+    checked_out_gear: string[];
+    checked_in_gear: string[];
     reserving_member: string;
     due_date: number;
     last_contacted: number | null;
@@ -90,5 +91,5 @@ export type ReservationProps = {
 
 export type NewReservationProps = Omit<
     ReservationProps,
-    "_id" | "due_date" | "last_contacted" | "memberDetails"
+    "_id" | "due_date" | "last_contacted" | "memberDetails" | "checked_in_gear"
 >;

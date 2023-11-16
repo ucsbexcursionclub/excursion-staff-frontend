@@ -61,7 +61,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
 
         try {
             await handleGearAdd({
-                gear_name: gearName.trim().toLowerCase(),
+                gear_name: gearName.trim(),
                 rfid: rfid === "" ? null : rfid,
                 description,
                 notes

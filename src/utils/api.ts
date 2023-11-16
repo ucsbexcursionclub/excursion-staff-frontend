@@ -106,7 +106,7 @@ export async function getReservationById(id: string): Promise<ReservationProps> 
     return reservation;
 }
 
-export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
+export async function updateGear(updatedGear: GearProps): Promise<GearProps | null> {
     const copiedGear = {...updatedGear};
     delete copiedGear.reservationDetails;
     delete copiedGear.memberDetails;
@@ -122,9 +122,31 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
     });
 
     // Assuming the updated gear data is returned in the response
-    const newGear: GearProps = response.data.data;
+    const newGear: GearProps | null = response.data.data || null;
 
     return newGear;
+}
+
+export async function updateReservation(
+    updatedReservation: ReservationProps
+): Promise<ReservationProps> {
+    const copiedReservation = {...updatedReservation};
+    delete copiedReservation.memberDetails;
+
+    // Use the _id property from the updatedGear object for the endpoint URL
+    const url = `${baseURL}/api/v1/reservations/${copiedReservation._id}`;
+
+    // Send the entire updatedGear object as the request payload
+    const response = await axios.patch(url, copiedReservation, {
+        headers: {
+            Authorization: `Bearer ${cookies.get("jwt")}`
+        }
+    });
+
+    // Assuming the updated gear data is returned in the response
+    const newReservation: ReservationProps = response.data.data;
+
+    return newReservation;
 }
 
 export async function updateMembers(updatedMember: MemberProps): Promise<MemberProps> {
@@ -230,11 +252,11 @@ export async function addReservation(
     return response.data.data;
 }
 
-export async function endReservations(reservationIds: string[]) {
+export async function checkInGear(gearIds: string[]) {
     const response = await axios.put(
-        `${baseURL}/api/v1/reservations/end`,
+        `${baseURL}/api/v1/gear/checkIn`,
         {
-            ids: reservationIds
+            ids: gearIds
         },
         {
             headers: {

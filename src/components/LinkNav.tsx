@@ -1,6 +1,5 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
-import Box from "@mui/material/Box";
 import {linkGroupType} from "../data/links";
 
 interface Props {
@@ -23,26 +22,21 @@ export default function LinkNav({tabs, onNavItemClicked}: Props) {
     return (
         <AppBar position="static" className="bg-lime-100 rounded-xl">
             <Container maxWidth="xl">
-                <Toolbar disableGutters className="flex justify-between">
-                    <Box sx={{display: "flex", minHeight: "32px"}}>
-                        {tabs.map((tab, index) => (
-                            <Button
-                                key={tab.id}
-                                onClick={() => handleChange(index)}
-                                component={Link}
-                                to={`/links/${tab.id}`}
-                                sx={{
-                                    my: 2,
-                                    color: "white",
-                                    display: "block",
-                                    marginLeft: "20px",
-                                    fontSize: {xs: "12px", sm: "16px", md: "20px", lg: "20px"}
-                                }}
-                            >
-                                {tab.title}
-                            </Button>
-                        ))}
-                    </Box>
+                <Toolbar disableGutters className="flex flex-wrap max-[700px]:justify-center">
+                    {tabs.map((tab, index) => (
+                        <Button
+                            key={tab.id}
+                            onClick={() => handleChange(index)}
+                            component={Link}
+                            className="text-white"
+                            to={`/links/${tab.id}`}
+                            sx={{
+                                fontSize: {xs: "16px", sm: "18px", md: "20px", lg: "20px"}
+                            }}
+                        >
+                            {tab.title}
+                        </Button>
+                    ))}
                 </Toolbar>
             </Container>
         </AppBar>
