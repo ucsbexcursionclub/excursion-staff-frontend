@@ -105,7 +105,7 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                             Add/Renew Member
                         </Button>
                         <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                            Remove Member(s)
+                            Remove Member(S)
                         </Button>
                     </div>
                     <div className="flex justify-end pr-3">
@@ -119,20 +119,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Selected Members
+                                Copy Slected Members Emails
                             </ToggleButton>
-                            <ToggleButton
-                                value="copyActive"
-                                className="text-white border-transparent"
-                            >
-                                Copy Active Members
-                            </ToggleButton>
-                            <ToggleButton
-                                value="copyExpired"
-                                className="text-white border-transparent"
-                            >
-                                Copy Expired Members
-                            </ToggleButton>
+
                         </ToggleButtonGroup>
                     </div>
                 </AppBar>
@@ -180,22 +169,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Selected Members
+                                Copy Slected Members Emails
                             </Button>
-                            <Button
-                                onClick={handleOpenCopyEmail}
-                                value="copyActive"
-                                className="text-white border-transparent"
-                            >
-                                Copy Active Members
-                            </Button>
-                            <Button
-                                onClick={handleOpenCopyEmail}
-                                value="copyExpired"
-                                className="text-white border-transparent"
-                            >
-                                Copy Expired Members
-                            </Button>
+
                         </ButtonGroup>
                     </div>
                 </AppBar>
@@ -242,22 +218,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                     value="copySelected"
                                     className="text-white border-transparent"
                                 >
-                                    Copy Selected Members
+                                    Copy Selected Members Emails
                                 </Button>
-                                <Button
-                                    onClick={handleOpenCopyEmail}
-                                    value="copyActive"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Active Members
-                                </Button>
-                                <Button
-                                    onClick={handleOpenCopyEmail}
-                                    value="copyExpired"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Expired Members
-                                </Button>
+
                             </ButtonGroup>
                         </div>
                     </Toolbar>

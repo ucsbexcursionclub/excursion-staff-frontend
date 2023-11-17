@@ -38,22 +38,8 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
                     .map((id) => retrieveMemberById(id.toString())?.email)
                     .filter(Boolean) as string[];
                 break;
-            case "copyActive":
-                emails = membersData
-                    .filter((member) => {
-                        if (!member) return false;
-                        return member.membership_expiration_date > today;
-                    })
-                    .map((member) => member.email);
-                break;
-            case "copyExpired":
-                emails = membersData
-                    .filter((member) => {
-                        if (!member) return false;
-                        return member.membership_expiration_date < today;
-                    })
-                    .map((member) => member.email);
-                break;
+
+
         }
 
         setEmails(emails);
