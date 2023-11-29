@@ -99,19 +99,33 @@ const useGearOperations = (
     };
 
     const handleGearDelete = async (selectedGear: GearProps[]) => {
-        const stringIds = selectedGear.map((gear) => gear._id); //typesafe string ids from row selection model
+        const gearIds = selectedGear.map((gear) => gear._id);
 
-        setGearRowSelectionModel([]);
+        try {
+            const deletedCount = await deleteGearItems(gearIds);
 
-        await deleteGearItems(stringIds);
+            if (deletedCount !== gearIds.length) {
+                throw new Error("Some gear items could not be deleted.");
+            }
 
-        await Promise.all(
-            stringIds.map(async (id) => {
-                return queryClient.removeQueries({queryKey: ["gearItem", id]});
-            })
-        );
+            await Promise.all(
+                gearIds.map(async (id) => {
+                    return queryClient.removeQueries({queryKey: ["gearItem", id]});
+                })
+            );
 
-        recomputeAggregatedGear();
+            recomputeAggregatedGear();
+            addNotification({
+                message: `${deletedCount} gear items successfully deleted.`,
+                type: "success"
+            });
+            setGearRowSelectionModel([]);
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error deleting gear items. Try again later.",
+                type: "error"
+            });
+        }
     };
 
     const handleGearAdd = async (newGearData: NewGearProps) => {
@@ -144,18 +158,25 @@ const useGearOperations = (
     };
 
     const handleGearCheckin = async (selectedGear: GearProps[]) => {
-        setGearRowSelectionModel([]);
+        try {
+            setGearRowSelectionModel([]);
 
-        await checkInGear(selectedGear.map((gear) => gear._id));
-        await refetchGears(selectedGear.map((gear) => gear._id));
+            await checkInGear(selectedGear.map((gear) => gear._id));
+            await refetchGears(selectedGear.map((gear) => gear._id));
 
-        const reservationIds = selectedGear
-            .map((gear) => gear.current_reservation)
-            .filter(Boolean) as string[];
+            const reservationIds = selectedGear
+                .map((gear) => gear.current_reservation)
+                .filter(Boolean) as string[];
 
-        await refetchReservations(reservationIds);
+            await refetchReservations(reservationIds);
 
-        recomputeAggregatedGear();
+            recomputeAggregatedGear();
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error checking in gear. Try again later.",
+                type: "error"
+            });
+        }
     };
 
     const refetchGears = async (ids: string[]) => {

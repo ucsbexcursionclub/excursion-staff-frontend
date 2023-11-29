@@ -17,8 +17,6 @@ import {MembersProvider} from "./providers/MembersProvider";
 import {ReservationsProvider} from "./providers/ReservationProvider";
 import {useLogin} from "./providers/LoginProvider";
 import {StaffProvider} from "./providers/StaffProvider";
-import {SnackbarProvider} from "./providers/SnackBarProvider";
-import Snackbar from "./components/Snackbar";
 
 function updateDocumentMetadata(pathname: string) {
     const root = "Excursion Club - ";
@@ -59,37 +57,32 @@ function App() {
     const isStaffOrAdmin = !!identity && ["staff", "admin"].includes(identity.role);
 
     return (
-        <SnackbarProvider>
-            <ReservationsProvider>
-                <StaffProvider>
-                    <MembersProvider>
-                        <GearProvider>
-                            <Routes>
-                                <Route path="/" element={<Layout />}>
-                                    <Route index element={<HomePage />} />
-                                    <Route path="staff" element={<StaffPage />} />
+        <ReservationsProvider>
+            <StaffProvider>
+                <MembersProvider>
+                    <GearProvider>
+                        <Routes>
+                            <Route path="/" element={<Layout />}>
+                                <Route index element={<HomePage />} />
+                                <Route path="staff" element={<StaffPage />} />
 
-                                    {isStaffOrAdmin && (
-                                        <>
-                                            <Route path="links/*" element={<LinkPage />} />
-                                            <Route path="members" element={<MembersPage />} />
-                                            <Route path="gear" element={<GearPage />} />
-                                        </>
-                                    )}
+                                {isStaffOrAdmin && (
+                                    <>
+                                        <Route path="links/*" element={<LinkPage />} />
+                                        <Route path="members" element={<MembersPage />} />
+                                        <Route path="gear" element={<GearPage />} />
+                                    </>
+                                )}
 
-                                    {isAdmin && (
-                                        <Route path="editstaff" element={<EditStaffPage />} />
-                                    )}
+                                {isAdmin && <Route path="editstaff" element={<EditStaffPage />} />}
 
-                                    <Route path="*" element={<UnauthorizedPage />} />
-                                </Route>
-                            </Routes>
-                        </GearProvider>
-                    </MembersProvider>
-                </StaffProvider>
-            </ReservationsProvider>
-            <Snackbar />
-        </SnackbarProvider>
+                                <Route path="*" element={<UnauthorizedPage />} />
+                            </Route>
+                        </Routes>
+                    </GearProvider>
+                </MembersProvider>
+            </StaffProvider>
+        </ReservationsProvider>
     );
 }
 

@@ -82,17 +82,31 @@ const useStaffOperations = (
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
         const staffIds = selectedStaff.map((staff) => staff._id);
 
-        setStaffRowSelectionModel([]);
+        try {
+            const deletedCount = await deleteStaff(staffIds);
 
-        await deleteStaff(staffIds);
+            if (deletedCount !== staffIds.length) {
+                throw new Error("Some staff members could not be deleted.");
+            }
 
-        await Promise.all(
-            staffIds.map(async (id) => {
-                return queryClient.removeQueries({queryKey: ["staffItem", id]});
-            })
-        );
+            await Promise.all(
+                staffIds.map(async (id) => {
+                    return queryClient.removeQueries({queryKey: ["staffItem", id]});
+                })
+            );
 
-        recomputeAggregatedStaff();
+            recomputeAggregatedStaff();
+            addNotification({
+                message: `${deletedCount} staff members successfully deleted.`,
+                type: "success"
+            });
+            setStaffRowSelectionModel([]);
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error deleting staff members. Try again later.",
+                type: "error"
+            });
+        }
     };
 
     const handleStaffAdd = async (newStaffData: NewStaffProps) => {

@@ -20,7 +20,7 @@ const baseURL = import.meta.env.PROD
     ? "https://excursion-backend.vercel.app"
     : "http://localhost:9000";
 
-function handleApiErrors(item: string, error: any) {
+function handleApiErrors(item: string, error: any): void {
     if (error.response) {
         switch (error.response.status) {
             case 403:
@@ -29,11 +29,17 @@ function handleApiErrors(item: string, error: any) {
                 throw new Error(`No ${item} data found.`);
             case 500:
                 throw new Error("Internal server error. Please try again later.");
+            case 400:
+                throw new Error("Invalid Credentials.");
             default:
                 throw new Error("An unexpected error occurred. Please try again.");
         }
     } else {
-        throw new Error(`Failed to interact with ${item} data.`);
+        if (error.message) {
+            throw error;
+        } else {
+            throw new Error(`Failed to interact with ${item} data.`);
+        }
     }
 }
 
@@ -226,18 +232,26 @@ export async function updateMember(updatedMember: MemberProps): Promise<MemberPr
         throw new Error(error.response?.data?.error || "Failed to update member.");
     }
 }
+
 export async function deleteGearItems(ids: string[]): Promise<number> {
-    const response = await axios.delete(`${baseURL}/api/v1/gear/bulk-delete`, {
-        data: {ids},
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
+    try {
+        const response = await axios.delete(`${baseURL}/api/v1/gear/bulk-delete`, {
+            data: {ids},
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+
+        if (response.data && response.data.data) {
+            const deletedCount: number = response.data.data;
+            return deletedCount;
+        } else {
+            throw new Error("No gear data received from the server.");
         }
-    });
-
-    // Assuming the server returns the count of deleted items
-    const deletedCount: number = response.data.data;
-
-    return deletedCount;
+    } catch (error: any) {
+        handleApiErrors("gear", error);
+        throw new Error("An unexpected error occurred in deleteGearItems.");
+    }
 }
 
 export async function deleteMembers(ids: string[]): Promise<number> {
@@ -307,18 +321,6 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
     }
 }
 
-export async function getReservationsByIds(ids: string[]): Promise<ReservationProps[]> {
-    const response = await axios.get(`${baseURL}/api/v1/reservations/by-ids`, {
-        params: {
-            ids: ids.join(",")
-        },
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
-        }
-    });
-    return response.data.data;
-}
-
 export async function addReservation(
     newReservationData: NewReservationProps
 ): Promise<ReservationProps> {
@@ -340,53 +342,69 @@ export async function addReservation(
     }
 }
 
-export async function checkInGear(gearIds: string[]) {
-    const response = await axios.put(
-        `${baseURL}/api/v1/gear/checkIn`,
-        {
-            ids: gearIds
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
+export async function checkInGear(gearIds: string[]): Promise<boolean> {
+    try {
+        const response = await axios.put(
+            `${baseURL}/api/v1/gear/checkIn`,
+            {
+                ids: gearIds
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${cookies.get("jwt")}`
+                }
             }
+        );
+
+        if (response.data && response.data.data) {
+            return response.data.data;
+        } else {
+            throw new Error("Server error while checking in gear");
         }
-    );
-    return response.data.data;
+    } catch (error: any) {
+        handleApiErrors("gear", error);
+        throw new Error("An unexpected error occurred while checking in gear");
+    }
 }
 
-export const verifyAccessToken = async (accessToken: string): Promise<IdentityProps | null> => {
+export const verifyAccessToken = async (accessToken: string): Promise<IdentityProps> => {
     try {
         const response = await axios.post(`${baseURL}/api/v1/auth/google`, {
-            access_token: accessToken // Send access_token to backend
+            access_token: accessToken
         });
 
         const jwtToken = response.data.data;
 
-        if (!jwtToken) return null;
-
-        const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
-
-        new Cookies().set("jwt", jwtToken, {
-            path: "/",
-            secure: isSecure,
-            sameSite: "strict"
-        });
+        if (!jwtToken) {
+            throw new Error("No Token Returned from Server.");
+        }
 
         const decodedJWT: any = parseJwt(jwtToken);
 
         if (isIdentityProps(decodedJWT)) {
+            if ((decodedJWT as IdentityProps).role === "user") {
+                throw new Error("Invalid Permissions");
+            }
+
+            const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
+
+            new Cookies().set("jwt", jwtToken, {
+                path: "/",
+                secure: isSecure,
+                sameSite: "strict"
+            });
+
             return decodedJWT;
         } else {
-            return null;
+            throw new Error("Invalid Token Response");
         }
     } catch (error: any) {
-        console.error("Error sending token to backend:", error);
-        return null;
+        handleApiErrors("authentication", error);
+        throw new Error("Unexpected error occured while verifying access token");
     }
 };
 
-export const uploadFileToS3 = async (uploadedFile: File): Promise<string | null> => {
+export const uploadFileToS3 = async (uploadedFile: File): Promise<string> => {
     const formData = new FormData();
     formData.append("profilePic", uploadedFile);
 
@@ -396,13 +414,18 @@ export const uploadFileToS3 = async (uploadedFile: File): Promise<string | null>
                 Authorization: `Bearer ${cookies.get("jwt")}`
             }
         });
-        return response.data.data as string | null;
+        if (response.data && response.data.data) {
+            return response.data.data;
+        } else {
+            throw new Error("Server error while uploading file.");
+        }
     } catch (error: any) {
+        handleApiErrors("file_upload", error);
         throw new Error("Failed to upload image to server");
     }
 };
 
-export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null> {
+export async function verifyJWTToken(jwt: string): Promise<IdentityProps> {
     try {
         const response = await axios.post(`${baseURL}/api/v1/auth/verify`, {
             jwtToken: jwt // Send token to backend for verification
@@ -410,7 +433,9 @@ export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null>
 
         const jwtToken = response.data.data;
 
-        if (!jwtToken) return null;
+        if (!jwtToken) {
+            throw new Error("No token response from server.");
+        }
 
         const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
 
@@ -423,13 +448,16 @@ export async function verifyJWTToken(jwt: string): Promise<IdentityProps | null>
         const decodedJWT: any = parseJwt(jwtToken);
 
         if (isIdentityProps(decodedJWT)) {
+            if ((decodedJWT as IdentityProps).role === "user") {
+                throw new Error("Invalid Permissions");
+            }
             return decodedJWT;
         } else {
-            return null;
+            throw new Error("Invalid Token Response");
         }
     } catch (error: any) {
-        console.error("Error verifying token:", error);
-        return null;
+        handleApiErrors("authentication", error);
+        throw new Error("Unexpected error occured while verifying JWT token");
     }
 }
 
@@ -453,11 +481,18 @@ export async function getStaff(): Promise<StaffProps[]> {
 }
 
 export async function getStaffProfiles(): Promise<StaffProfile[]> {
-    const response = await axios.get(`${baseURL}/api/v1/staff_protected`);
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/staff_protected`);
 
-    const staffProfiles: StaffProfile[] = response.data.data;
-
-    return staffProfiles;
+        if (response.data && response.data.data) {
+            return response.data.data;
+        } else {
+            throw new Error("No staff profile data received from the server.");
+        }
+    } catch (error: any) {
+        handleApiErrors("staff_profiles", error);
+        throw new Error("An unexpected error occurred in getting staff profiles."); // never gets triggered, here for type safety
+    }
 }
 
 export async function getStaffById(staffId: string): Promise<StaffProps> {
@@ -504,17 +539,24 @@ export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps>
 }
 
 export async function deleteStaff(ids: string[]): Promise<number> {
-    const response = await axios.delete(`${baseURL}/api/v1/staff/bulk-delete`, {
-        data: {ids},
-        headers: {
-            Authorization: `Bearer ${cookies.get("jwt")}`
+    try {
+        const response = await axios.delete(`${baseURL}/api/v1/staff/bulk-delete`, {
+            data: {ids},
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+
+        if (response.data && response.data.data) {
+            const deletedCount: number = response.data.data;
+            return deletedCount;
+        } else {
+            throw new Error("No staff data received from the server.");
         }
-    });
-
-    // Assuming the server returns the count of deleted staff members
-    const deletedCount: number = response.data.data;
-
-    return deletedCount;
+    } catch (error: any) {
+        handleApiErrors("staff", error);
+        throw new Error("An unexpected error occurred in deleteStaff.");
+    }
 }
 
 export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps> {
@@ -535,20 +577,6 @@ export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps
         throw new Error("An unexpected error occurred while adding staff.");
     }
 }
-
-export async function updateRole(member_id: string, newRole: IdentityProps["role"]): Promise<void> {
-    const response = await axios.patch(
-        `${baseURL}/api/v1/auth`,
-        {member_id, newRole},
-        {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        }
-    );
-    return response.data.data;
-}
-
 interface FeedbackProps {
     name: string;
     email: string;
@@ -561,9 +589,8 @@ export async function sendFeedback(feedbackData: FeedbackProps): Promise<void> {
     console.log(feedbackData);
     try {
         await axios.post(`${baseURL}/api/v1/mail/send-feedback`, feedbackData);
-        console.log("Feedback data sent successfully to the backend!");
     } catch (error: any) {
-        console.error("Error sending feedback data to the backend:", error);
+        throw new Error("Server error while sending feedback.");
     }
 }
 

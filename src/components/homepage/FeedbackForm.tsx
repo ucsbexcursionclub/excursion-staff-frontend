@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import {Button, Typography} from "@mui/material";
 import {sendFeedback} from "../../utils/api";
+import {useSnackbar} from "../../providers/SnackBarProvider";
 
 interface Props {
     fontSize: string;
@@ -15,6 +16,8 @@ export default function FeedbackForm({fontSize}: Props) {
     const [subject, setSubject] = useState<string>("");
     const [feedback, setFeedback] = useState<string>("");
     const [loading, setLoading] = useState(false);
+
+    const {addNotification} = useSnackbar();
 
     const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
         setName(e.target.value);
@@ -52,9 +55,11 @@ export default function FeedbackForm({fontSize}: Props) {
             setFeedback("");
             setLoading(false);
         } catch (error: any) {
-            setLoading(false); // Reset loading state on error
+            addNotification({type: "error", message: error.message});
             console.error("Error submitting feedback:", error);
         }
+
+        setLoading(false); // Reset loading state on error
     };
 
     return (
