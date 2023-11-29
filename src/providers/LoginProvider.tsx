@@ -43,7 +43,7 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
         }
 
         return false;
-    }, []);
+    }, [addNotification]);
 
     useEffect(() => {
         verifyJWT();
