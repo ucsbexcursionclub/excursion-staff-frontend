@@ -101,7 +101,7 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
 
             openReservations.map((reservation) => {
                 if (reservation.due_date < Date.now()) {
-                    reservation.checked_out_gear.map(async (gearId) => {
+                    reservation.checked_out_gear.map((gearId) => {
                         const gearItem = retrieveGearItem(gearId)!;
                         overdueGearItems.push({gear: gearItem, due_date: reservation.due_date});
                     });

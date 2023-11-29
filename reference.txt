@@ -1,0 +1,24 @@
+How to Use ESLint Disable Directives
+Disable for a Single Line:
+
+javascript
+Copy code
+// eslint-disable-next-line [rule-name]
+Use when you need to bypass a specific rule for a single line.
+Replace [rule-name] with the specific ESLint rule you want to disable. If omitted, it disables all rules for that line.
+Disable for a Block of Code:
+
+javascript
+Copy code
+/* eslint-disable [rule-name] */
+// Code that requires the rule to be disabled
+/* eslint-enable [rule-name] */
+Useful for a block of code where multiple lines need to bypass the rule.
+Remember to re-enable the rule after the necessary code block.
+Disable a Rule for the Entire File:
+
+javascript
+Copy code
+/* eslint-disable [rule-name] */
+Place this at the top of your test file if you need to disable a rule for the entire file.
+Be cautious with this approach as it can mask potential issues in your entire test file.
