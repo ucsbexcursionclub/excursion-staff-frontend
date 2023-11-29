@@ -1,6 +1,7 @@
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
 import {verifyAccessToken, verifyJWTToken} from "../utils/api";
 import {IdentityProps} from "../utils/types";
+import {useSnackbar} from "./SnackBarProvider";
 import Cookies from "universal-cookie";
 
 type LoginContextType = {
@@ -20,6 +21,8 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
     const [isFetching, setIsFetching] = useState(false);
     const [identity, setIdentity] = useState<IdentityProps | null>(null);
 
+    const {addNotification} = useSnackbar();
+
     const isStaff = !!identity && ["admin", "staff"].includes(identity.role);
     const isAdmin = identity?.role === "admin";
     identity;
@@ -27,16 +30,18 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
         const jwt = new Cookies().get("jwt");
         if (jwt) {
             setIsFetching(true);
-            const retrievedIdentity = await verifyJWTToken(jwt);
-            setIsFetching(false);
-            if (retrievedIdentity) {
+            try {
+                const retrievedIdentity = await verifyJWTToken(jwt);
                 setIdentity(retrievedIdentity);
                 setIsLoggedIn(true);
                 return true;
-            } else {
+            } catch (error: any) {
+                addNotification({type: "error", message: error.message});
                 new Cookies().remove("jwt");
             }
+            setIsFetching(false);
         }
+
         return false;
     }, []);
 
@@ -44,13 +49,16 @@ export function LoginProvider({children}: {children: React.ReactNode}) {
         verifyJWT();
     }, [verifyJWT]);
 
-    const login = async (accessToken: string) => {
+    const login = async (accessToken: string): Promise<void> => {
         setIsFetching(true);
-        const userIdentity = await verifyAccessToken(accessToken);
+        try {
+            const userIdentity = await verifyAccessToken(accessToken);
+            setIdentity(userIdentity);
+            setIsLoggedIn(true);
+        } catch (error: any) {
+            addNotification({type: "error", message: error.message});
+        }
         setIsFetching(false);
-        if (!userIdentity) return;
-        setIdentity(userIdentity);
-        setIsLoggedIn(true);
     };
 
     return (

@@ -57,7 +57,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         capitalizeFirstLetter(loggedInMember?.name ?? "")
     );
     const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
-    const [profilePic, setProfilePic] = useState<File | null>(null);
+    const [uploadedProfileImage, setUploadedProfileImage] = useState<File | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
         staffDetails?.profileImageUrl || null
     );
@@ -97,7 +97,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
             try {
                 const resizedImageBlob = await readAndCompressImage(file, userConfig);
-                setProfilePic(new File([resizedImageBlob], file.name, {type: file.type}));
+                setUploadedProfileImage(new File([resizedImageBlob], file.name, {type: file.type}));
 
                 const reader = new FileReader();
                 reader.onloadend = () => {
@@ -113,50 +113,69 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         }
     };
 
-    const handleSave = async () => {
+    const handleSave = async (): Promise<void> => {
         const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
         const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
 
-        const newProfileImageUrl = profilePic
-            ? await uploadFileToS3(profilePic)
-            : deleteProfilePic
-            ? null
-            : staffDetails?.profileImageUrl;
+        // Refactored logic for determining newProfileImageUrl
+        let newProfileImageUrl: string | null = staffDetails?.profileImageUrl || null;
+        if (uploadedProfileImage) {
+            try {
+                newProfileImageUrl = await uploadFileToS3(uploadedProfileImage);
+            } catch (error: any) {
+                addNotification({
+                    message: error.message,
+                    type: "error"
+                });
+                return;
+            }
+        } else if (deleteProfilePic) {
+            newProfileImageUrl = null;
+        }
 
-        if (loggedInMember?.name && name !== loggedInMember.name) {
+        // Collecting potential updates for member
+        if (loggedInMember?.name !== name) {
             memberUpdates.name = name;
         }
 
-        if (staffDetails) {
-            if (bio !== staffDetails.bio) {
-                staffUpdates.bio = bio;
-            }
-
-            // If profilePicPreview is empty, set profileImageUrl to null
+        // Collecting potential updates for staff
+        if (staffDetails?.bio !== bio) {
+            staffUpdates.bio = bio;
+        }
+        if (staffDetails?.profileImageUrl !== newProfileImageUrl) {
             staffUpdates.profileImageUrl = newProfileImageUrl;
         }
 
+        setIsLoading(true);
+
+        // Perform updates only if there are changes to apply
         let updatedMember = true;
         let updatedStaff = true;
 
-        setIsLoading(true);
-
-        updatedMember = Boolean(
-            await handleMemberUpdate({...loggedInMember, ...memberUpdates} as MemberProps)
-        );
-
-        updatedStaff = Boolean(
-            await handleStaffUpdate({...staffDetails, ...staffUpdates} as StaffProps)
-        );
+        if (Object.keys(memberUpdates).length > 0) {
+            updatedMember = Boolean(
+                await handleMemberUpdate({...loggedInMember, ...memberUpdates} as MemberProps)
+            );
+        }
+        if (Object.keys(staffUpdates).length > 0) {
+            updatedStaff = Boolean(
+                await handleStaffUpdate({...staffDetails, ...staffUpdates} as StaffProps)
+            );
+        }
 
         setIsLoading(false);
 
         if (updatedMember && updatedStaff) {
             addNotification({
-                message: `Successfully updated profile!`,
+                message: "Successfully updated profile!",
                 type: "success"
             });
             handleClose();
+        } else {
+            addNotification({
+                message: "Error while updating profile",
+                type: "error"
+            });
         }
     };
 
@@ -183,7 +202,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                             style={{padding: "2px"}}
                             onClick={() => {
                                 setDeleteProfilePic(true);
-                                setProfilePic(null);
+                                setUploadedProfileImage(null);
                                 setProfileImageUrl("");
                             }}
                         >

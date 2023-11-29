@@ -75,7 +75,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
             setTimeout(() => {
                 setSubmitSuccessMessage(null);
             }, 5000);
-        } catch (error) {
+        } catch (error: any) {
             // Handle error if gear addition fails
             console.error(error);
             setSubmitErrorMessage("Adding gear failed. Contact tech support.");

@@ -22,7 +22,7 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
     };
 
     const {retrieveStaffById, handleStaffDelete, staffRowSelectionModel} = useStaff();
-    const {markMembersStale} = useMembers();
+    const {refetchMembers} = useMembers();
 
     const staffMembersToDelete: StaffProps[] = staffRowSelectionModel
         .map((id) => retrieveStaffById(id.toString()))
@@ -30,7 +30,9 @@ const StaffRemoveDialog: React.FC<StaffRemoveDialogProps> = ({open, onClose}) =>
 
     async function handleConfirmDelete() {
         await handleStaffDelete(staffMembersToDelete);
-        await markMembersStale(staffMembersToDelete.map((member) => member.member_id));
+        //need to refetch member data from db as now updated members no longer have a staff id attached
+        //would do this inside staff provider, but staff provider is not within the context of member provider
+        await refetchMembers(staffMembersToDelete.map((member) => member.member_id));
         handleClose();
     }
 

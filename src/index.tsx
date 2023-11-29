@@ -11,6 +11,8 @@ import {getGearById, getMemberById, getReservationById, getStaffById} from "./ut
 
 import "./index.css";
 import {LoginProvider} from "./providers/LoginProvider";
+import {SnackbarProvider} from "./providers/SnackBarProvider";
+import Snackbar from "./components/Snackbar";
 
 const defaultQueryFunction = async ({queryKey}: QueryFunctionContext<QueryKey>) => {
     const [type, id] = queryKey as string[];
@@ -38,6 +40,7 @@ const queryClient = new QueryClient({
         }
     }
 });
+
 const clientId = "846327511628-l2ro940djl5mk5cc1i1hq3jstuhh9u81.apps.googleusercontent.com";
 
 const container = document.getElementById("root");
@@ -70,18 +73,21 @@ const theme = createTheme({
 
 root.render(
     <GoogleOAuthProvider clientId={clientId}>
-        <LoginProvider>
-            <QueryClientProvider client={queryClient}>
-                <Router>
-                    <StyledEngineProvider injectFirst>
-                        <ThemeProvider theme={theme}>
-                            <CssBaseline>
-                                <App />
-                            </CssBaseline>
-                        </ThemeProvider>
-                    </StyledEngineProvider>
-                </Router>
-            </QueryClientProvider>
-        </LoginProvider>
+        <SnackbarProvider>
+            <LoginProvider>
+                <QueryClientProvider client={queryClient}>
+                    <Router>
+                        <StyledEngineProvider injectFirst>
+                            <ThemeProvider theme={theme}>
+                                <CssBaseline>
+                                    <App />
+                                </CssBaseline>
+                            </ThemeProvider>
+                        </StyledEngineProvider>
+                    </Router>
+                </QueryClientProvider>
+            </LoginProvider>
+            <Snackbar />
+        </SnackbarProvider>
     </GoogleOAuthProvider>
 );
