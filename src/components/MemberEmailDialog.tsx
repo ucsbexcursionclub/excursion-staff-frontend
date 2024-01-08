@@ -30,18 +30,9 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
 
         const today = Date.now();
 
-        let emails;
-
-        switch (copyEmailOption) {
-            case "copySelected":
-                emails = memberRowSelectionModel
-                    .map((id) => retrieveMemberById(id.toString())?.email)
-                    .filter(Boolean) as string[];
-                break;
-
-
-        }
-
+        const emails=memberRowSelectionModel
+            .map((id) => retrieveMemberById(id.toString())?.email)
+            .filter(Boolean) as string[];
         setEmails(emails);
     }, [open, copyEmailOption, memberRowSelectionModel, retrieveMemberById, membersData]);
 
