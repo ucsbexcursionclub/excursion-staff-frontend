@@ -72,7 +72,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
 
-    const {retrieveReservationsByMemberId} = useReservations();
+    const {retrieveOpenReservationsByMemberId} = useReservations();
 
     const [activeCount, expiredCount, overdueCount, totalCount] = useMemo(() => {
         let localActiveCount = 0;
@@ -92,7 +92,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             }
 
             if (
-                retrieveReservationsByMemberId(member._id).filter(
+                retrieveOpenReservationsByMemberId(member._id).filter(
                     (reservation) => reservation.due_date < Date.now()
                 ).length > 0
             ) {
@@ -101,7 +101,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
         });
 
         return [localActiveCount, localExpiredCount, localOverdueCount, localTotalCount];
-    }, [visibleRows, retrieveReservationsByMemberId]);
+    }, [visibleRows, retrieveOpenReservationsByMemberId]);
 
     const filter = searchParams || "All";
 
