@@ -119,7 +119,7 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Slected Members Emails
+                                Copy Selected Members Emails
                             </ToggleButton>
 
                         </ToggleButtonGroup>
