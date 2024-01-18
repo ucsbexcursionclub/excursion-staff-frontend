@@ -105,7 +105,7 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                             Add/Renew Member
                         </Button>
                         <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                            Remove Member(S)
+                            Remove Member(s)
                         </Button>
                     </div>
                     <div className="flex justify-end pr-3">
@@ -169,7 +169,7 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Slected Members Emails
+                                Copy Selected Members Emails
                             </Button>
 
                         </ButtonGroup>
