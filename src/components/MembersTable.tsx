@@ -80,7 +80,7 @@ const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
 ];
 
 const getIdOperators = (
-    retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
+    retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[] | null
 ): GridFilterOperator<MemberProps, any, any>[] | undefined => {
     const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
         {
@@ -95,7 +95,7 @@ const getIdOperators = (
                     const memberId = params;
 
                     return (
-                        (retrieveReservationsByMemberId(memberId) ?? []).filter(
+                        (retrieveOpenReservationsByMemberId(memberId) ?? []).filter(
                             (reservation) => reservation.due_date < Date.now()
                         ).length > 0
                     );
