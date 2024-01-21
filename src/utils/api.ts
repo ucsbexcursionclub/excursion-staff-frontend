@@ -17,7 +17,7 @@ import {isIdentityProps, parseJwt} from "./utils";
 const cookies = new Cookies();
 
 const baseURL = import.meta.env.PROD
-    ? "https://excursion-backend.vercel.app"
+    ? "https://excursion-backend-three.vercel.app"
     : "http://localhost:9000";
 
 function handleApiErrors(item: string, error: any): void {
