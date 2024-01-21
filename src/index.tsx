@@ -41,7 +41,7 @@ const queryClient = new QueryClient({
     }
 });
 
-const clientId = "846327511628-l2ro940djl5mk5cc1i1hq3jstuhh9u81.apps.googleusercontent.com";
+const clientId = "385419886805-3c721tq7o5j7bb6c9t4bgdk23udhp9r6.apps.googleusercontent.com";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
