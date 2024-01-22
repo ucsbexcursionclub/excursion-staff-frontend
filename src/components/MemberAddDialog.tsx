@@ -19,6 +19,7 @@ import {BlurBackDrop} from "./HelperComponents";
 import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
 import {MILLISECONDS_IN_DAY} from "../utils/constants";
+import {generateResourceUrl} from "../utils/utils";
 
 interface MemberAddDialog {
     open: boolean;
@@ -424,7 +425,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 <DialogContentText>Have you filled out the waiver?</DialogContentText>
                 <img
                     alt="QR Code"
-                    src="http://d36olvmp8krees.cloudfront.net/resources/icons/qr-code-waiver.png"
+                    src={generateResourceUrl("/resources/icons/qr-code-waiver.png")}
                     style={{width: "100px", height: "100px"}}
                 />
                 <RadioGroup row name="isMember" value={hasWaiver} onChange={handleHasWaiver}>

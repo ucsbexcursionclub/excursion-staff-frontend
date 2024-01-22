@@ -33,7 +33,7 @@ const StaffPage = () => {
     return (
         <div className="flex flex-col items-center justify-start min-h-screen">
             <ImageContainer
-                imgurl="https://d36olvmp8krees.cloudfront.net/resources/MountainHammock.png"
+                imgurl={`${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/MountainHammock.png`}
                 bigFontSize={bigFontSize}
                 textInput="Our Staff"
             />

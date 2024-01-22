@@ -10,14 +10,15 @@ import ImageContainer from "../components/homepage/ImageContainer";
 import PricingColumns from "../components/homepage/PricingColumns";
 import ResponsiveImageRow from "../components/homepage/ResponsiveImageRow";
 import {InstagramEmbed} from "react-social-media-embed";
+import {generateResourceUrl} from "../utils/utils";
 
 const merchImageUrls = [
-    "http://d36olvmp8krees.cloudfront.net/resources/shortsleevefront.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/shortsleeveback.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/hat.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/longsleevefront.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/longsleeveback.jpg",
-    "http://d36olvmp8krees.cloudfront.net/resources/headlamp.jpg"
+    generateResourceUrl("/resources/shortsleevefront.jpg"),
+    generateResourceUrl("/resources/shortsleeveback.jpg"),
+    generateResourceUrl("/resources/hat.jpg"),
+    generateResourceUrl("/resources/longsleevefront.jpg"),
+    generateResourceUrl("/resources/longsleeveback.jpg"),
+    generateResourceUrl("/resources/headlamp.jpg")
 ];
 
 export default function HomePage() {
@@ -112,8 +113,8 @@ export default function HomePage() {
 
     return (
         <div style={pageContainerStyle}>
-            <ImageContainer // https://d36olvmp8krees.cloudfront.net/resources/homePageTop1.png
-                imgurl="https://d36olvmp8krees.cloudfront.net/resources/rockJump.png"
+            <ImageContainer
+                imgurl={`${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/rockJump.png`}
                 bigFontSize={bigFontSize}
                 textInput="We Do it Outdoors"
             />
