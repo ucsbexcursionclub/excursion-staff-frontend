@@ -1,3 +1,5 @@
+import { generateResourceUrl } from "../utils/utils";
+
 type sampleGearProps = {
     imageUrl: string;
     title: string;
@@ -5,51 +7,51 @@ type sampleGearProps = {
 
 export const sampleGearItems: sampleGearProps[] = [
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/SleepingBag.jpg`,
+        imageUrl: generateResourceUrl('/resources/SleepingBag.jpg'),
         title: "Sleeping Bags"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/SleepingPad.jpg`,
+        imageUrl: generateResourceUrl('/resources/SleepingPad.jpg'),
         title: "Sleeping Pads"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Tent.jpg`,
+        imageUrl: generateResourceUrl('/resources/Tent.jpg'),
         title: "Tents"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Backpack.jpg`,
+        imageUrl: generateResourceUrl('/resources/Backpack.jpg'),
         title: "Backpacks"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/ColemanStove.jpg`,
+        imageUrl: generateResourceUrl('/resources/ColemanStove.jpg'),
         title: "Camping Stoves"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/BackpackingStove.jpg`,
+        imageUrl: generateResourceUrl('/resources/BackpackingStove.jpg'),
         title: "Backpacking Stoves"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Waterfilter.jpg`,
+        imageUrl: generateResourceUrl('/resources/Waterfilter.jpg'),
         title: "Water Filters"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Surfboards.jpg`,
+        imageUrl: generateResourceUrl('/resources/Surfboards.jpg'),
         title: "Surfboards"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Kayak.jpg`,
+        imageUrl: generateResourceUrl('/resources/Kayak.jpg'),
         title: "Ocean Kayaks"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Wetsuits.jpg`,
+        imageUrl: generateResourceUrl('/resources/Wetsuits.jpg'),
         title: "Wetsuits"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/YogaMat.jpg`,
+        imageUrl: generateResourceUrl('/resources/YogaMat.jpg'),
         title: "Yoga Mats"
     },
     {
-        imageUrl: `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/Hammock.jpg`,
+        imageUrl: generateResourceUrl('/resources/Hammock.jpg'),
         title: "Hammocks"
     }
 ];

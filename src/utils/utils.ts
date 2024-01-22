@@ -39,3 +39,6 @@ export function convertToMUIDate(datetime: number): string {
 
     return `${year}-${month}-${formattedDay}`;
 }
+
+export const generateResourceUrl = (resourcePath: string): string =>
+    `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}${resourcePath}`;

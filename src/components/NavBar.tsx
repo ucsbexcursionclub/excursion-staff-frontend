@@ -14,6 +14,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import LoginButton from "./LoginButton";
 import {useLogin} from "../providers/LoginProvider";
+import {generateResourceUrl} from "../utils/utils";
 
 const baseTabs = [
     {label: "Home", href: "/"},
@@ -113,7 +114,7 @@ function NavBar() {
                         <NavMenu tabs={tabs} />
                     </Box>
                     <img
-                        src="https://d36olvmp8krees.cloudfront.net/resources/excursionclublogo_invert.png"
+                        src={generateResourceUrl("/resources/excursionclublogo_invert.png")}
                         className="w-20"
                     />
                     <Box sx={{flexGrow: 0}}>
