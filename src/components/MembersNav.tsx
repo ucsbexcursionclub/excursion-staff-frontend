@@ -119,20 +119,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Selected Members
+                                Copy Selected Members Emails
                             </ToggleButton>
-                            <ToggleButton
-                                value="copyActive"
-                                className="text-white border-transparent"
-                            >
-                                Copy Active Members
-                            </ToggleButton>
-                            <ToggleButton
-                                value="copyExpired"
-                                className="text-white border-transparent"
-                            >
-                                Copy Expired Members
-                            </ToggleButton>
+
                         </ToggleButtonGroup>
                     </div>
                 </AppBar>
@@ -180,22 +169,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 value="copySelected"
                                 className="text-white border-transparent"
                             >
-                                Copy Selected Members
+                                Copy Selected Members Emails
                             </Button>
-                            <Button
-                                onClick={handleOpenCopyEmail}
-                                value="copyActive"
-                                className="text-white border-transparent"
-                            >
-                                Copy Active Members
-                            </Button>
-                            <Button
-                                onClick={handleOpenCopyEmail}
-                                value="copyExpired"
-                                className="text-white border-transparent"
-                            >
-                                Copy Expired Members
-                            </Button>
+
                         </ButtonGroup>
                     </div>
                 </AppBar>
@@ -242,22 +218,9 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                     value="copySelected"
                                     className="text-white border-transparent"
                                 >
-                                    Copy Selected Members
+                                    Copy Selected Members Emails
                                 </Button>
-                                <Button
-                                    onClick={handleOpenCopyEmail}
-                                    value="copyActive"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Active Members
-                                </Button>
-                                <Button
-                                    onClick={handleOpenCopyEmail}
-                                    value="copyExpired"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Expired Members
-                                </Button>
+
                             </ButtonGroup>
                         </div>
                     </Toolbar>
