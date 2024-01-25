@@ -120,8 +120,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         const newProfileImageUrl = profilePic
             ? await uploadFileToS3(profilePic)
             : deleteProfilePic
-              ? null
-              : staffDetails?.profileImageUrl;
+            ? null
+            : staffDetails?.profileImageUrl;
 
         if (loggedInMember?.name && name !== loggedInMember.name) {
             memberUpdates.name = name;

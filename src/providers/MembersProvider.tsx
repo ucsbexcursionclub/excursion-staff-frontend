@@ -81,7 +81,7 @@ const useMembersOperations = (
     const handleMemberUpdate = async (modifiedMember: MemberProps): Promise<MemberProps | null> => {
         try {
             const updatedMember = await updateMembers(modifiedMember);
-
+            
             await queryClient.refetchQueries({queryKey: ["memberItem", updatedMember._id]});
             recomputeAggregatedMembers();
 
