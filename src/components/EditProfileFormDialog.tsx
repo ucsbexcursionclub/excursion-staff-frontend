@@ -15,7 +15,7 @@ import {BlurBackDrop} from "./HelperComponents";
 import {uploadFileToS3} from "../utils/api";
 import {MAX_FILE_SIZE, MAX_FILE_SIZE_MB} from "../utils/constants";
 import {useSnackbar} from "../providers/SnackBarProvider";
-import {capitalizeFirstLetter} from "../utils/utils";
+import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils";
 import {readAndCompressImage} from "browser-image-resizer";
 
 const userConfig = {
@@ -39,6 +39,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     const [staffDetails, setStaffDetails] = useState<StaffProps | null>();
 
     const handleClose = () => {
+        setUploadedProfileImage(null);
         onClose();
     };
 
@@ -48,7 +49,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         setName(loggedInMember.name);
         const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
         setBio(retrievedStaff?.bio);
-        setProfileImageUrl(retrievedStaff?.profileImageUrl || null);
+        setProfileImagePath(retrievedStaff?.profileImagePath || null);
         setDeleteProfilePic(false);
         setStaffDetails(retrievedStaff);
     }, [loggedInMember, retrieveStaffById]);
@@ -58,8 +59,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
     );
     const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
     const [uploadedProfileImage, setUploadedProfileImage] = useState<File | null>(null);
-    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
-        staffDetails?.profileImageUrl || null
+    const [profileImagePath, setProfileImagePath] = useState<string | null>(
+        staffDetails?.profileImagePath || null
     );
     const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -101,7 +102,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
 
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    setProfileImageUrl(reader.result as string);
+                    setProfileImagePath(reader.result as string);
                 };
                 reader.readAsDataURL(resizedImageBlob);
             } catch (err) {
@@ -117,11 +118,11 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
         const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
 
-        // Refactored logic for determining newProfileImageUrl
-        let newProfileImageUrl: string | null = staffDetails?.profileImageUrl || null;
+        // Refactored logic for determining newProfileImagePath
+        let newProfileImagePath: string | null = staffDetails?.profileImagePath || null;
         if (uploadedProfileImage) {
             try {
-                newProfileImageUrl = await uploadFileToS3(uploadedProfileImage);
+                newProfileImagePath = await uploadFileToS3(uploadedProfileImage);
             } catch (error: any) {
                 addNotification({
                     message: error.message,
@@ -130,7 +131,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                 return;
             }
         } else if (deleteProfilePic) {
-            newProfileImageUrl = null;
+            newProfileImagePath = null;
         }
 
         // Collecting potential updates for member
@@ -142,8 +143,8 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         if (staffDetails?.bio !== bio) {
             staffUpdates.bio = bio;
         }
-        if (staffDetails?.profileImageUrl !== newProfileImageUrl) {
-            staffUpdates.profileImageUrl = newProfileImageUrl;
+        if (staffDetails?.profileImagePath !== newProfileImagePath) {
+            staffUpdates.profileImagePath = newProfileImagePath;
         }
 
         setIsLoading(true);
@@ -196,21 +197,25 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
             <DialogTitle className="text-center">Edit Profile</DialogTitle>
             <DialogContent className="flex flex-col items-center">
                 <div>
-                    {profileImageUrl && (
+                    {profileImagePath && (
                         <IconButton
                             className="absolute z-10 m-0 rounded-2xl text-white bg-black"
                             style={{padding: "2px"}}
                             onClick={() => {
                                 setDeleteProfilePic(true);
                                 setUploadedProfileImage(null);
-                                setProfileImageUrl("");
+                                setProfileImagePath("");
                             }}
                         >
                             <CloseIcon color="inherit" />
                         </IconButton>
                     )}
                     <Avatar
-                        src={profileImageUrl || ""}
+                        src={
+                            uploadedProfileImage
+                                ? profileImagePath || generateResourceUrl("/resources/avatar.png")
+                                : generateResourceUrl(profileImagePath || "/resources/avatar.png")
+                        }
                         className="mb-4 mt-2 border-solid border-gray-400"
                         style={{width: 100, height: 100}}
                     ></Avatar>
