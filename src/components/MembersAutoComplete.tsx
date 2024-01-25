@@ -59,61 +59,60 @@ interface ListboxProps extends React.HTMLAttributes<HTMLElement> {
     children?: Array<React.ReactNode & {children?: React.ReactNode[]}>;
 }
 
-const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(function ListboxComponent(
-    props,
-    ref
-) {
-    const {children, ...other} = props;
-    const itemData: React.ReactNode[] = [];
-    children?.forEach((item) => {
-        itemData.push(item);
-        itemData.push(...(item.children || []));
-    });
+const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(
+    function ListboxComponent(props, ref) {
+        const {children, ...other} = props;
+        const itemData: React.ReactNode[] = [];
+        children?.forEach((item) => {
+            itemData.push(item);
+            itemData.push(...(item.children || []));
+        });
 
-    const theme = useTheme();
-    const smUp = useMediaQuery(theme.breakpoints.up("sm"), {
-        noSsr: true
-    });
-    const itemCount = itemData.length;
-    const itemSize = smUp ? 36 : 48;
+        const theme = useTheme();
+        const smUp = useMediaQuery(theme.breakpoints.up("sm"), {
+            noSsr: true
+        });
+        const itemCount = itemData.length;
+        const itemSize = smUp ? 36 : 48;
 
-    const getChildSize = (child: React.ReactNode) => {
-        if (Object.prototype.hasOwnProperty.call(child, "group")) {
-            return 48;
-        }
+        const getChildSize = (child: React.ReactNode) => {
+            if (Object.prototype.hasOwnProperty.call(child, "group")) {
+                return 48;
+            }
 
-        return itemSize;
-    };
+            return itemSize;
+        };
 
-    const getHeight = () => {
-        if (itemCount > 8) {
-            return 8 * itemSize;
-        }
-        return itemData.map(getChildSize).reduce((a, b) => a + b, 0);
-    };
+        const getHeight = () => {
+            if (itemCount > 8) {
+                return 8 * itemSize;
+            }
+            return itemData.map(getChildSize).reduce((a, b) => a + b, 0);
+        };
 
-    const gridRef = useResetCache(itemCount);
+        const gridRef = useResetCache(itemCount);
 
-    return (
-        <div ref={ref}>
-            <OuterElementContext.Provider value={other}>
-                <VariableSizeList
-                    itemData={itemData}
-                    height={getHeight() + 2 * LISTBOX_PADDING}
-                    width="100%"
-                    ref={gridRef}
-                    outerElementType={OuterElementType}
-                    innerElementType="ul"
-                    itemSize={(index) => getChildSize(itemData[index])}
-                    overscanCount={5}
-                    itemCount={itemCount}
-                >
-                    {renderRow}
-                </VariableSizeList>
-            </OuterElementContext.Provider>
-        </div>
-    );
-});
+        return (
+            <div ref={ref}>
+                <OuterElementContext.Provider value={other}>
+                    <VariableSizeList
+                        itemData={itemData}
+                        height={getHeight() + 2 * LISTBOX_PADDING}
+                        width="100%"
+                        ref={gridRef}
+                        outerElementType={OuterElementType}
+                        innerElementType="ul"
+                        itemSize={(index) => getChildSize(itemData[index])}
+                        overscanCount={5}
+                        itemCount={itemCount}
+                    >
+                        {renderRow}
+                    </VariableSizeList>
+                </OuterElementContext.Provider>
+            </div>
+        );
+    }
+);
 
 ListboxComponent.displayName = "ListboxComponent";
 
