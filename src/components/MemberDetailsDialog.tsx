@@ -15,7 +15,6 @@ import {MemberProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
 import {capitalizeFirstLetter} from "../utils/utils";
-import {useSnackbar} from "../providers/SnackBarProvider";
 
 type MemberDetailsDialogProps = {
     open: boolean;
@@ -30,7 +29,6 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
     const [notes, setNotes] = useState(member?.notes || "");
     const [initialNotes, setInitialNotes] = useState(member?.notes || "");
     const {handleMemberUpdate, retrieveMemberById} = useMembers();
-    const {addNotification} = useSnackbar();
 
     const handleClose = () => {
         onClose();

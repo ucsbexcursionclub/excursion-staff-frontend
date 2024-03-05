@@ -1,3 +1,5 @@
+import { generateResourceUrl } from "../utils/utils";
+
 type sampleGearProps = {
     imageUrl: string;
     title: string;
@@ -5,51 +7,51 @@ type sampleGearProps = {
 
 export const sampleGearItems: sampleGearProps[] = [
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/SleepingBag.jpg",
+        imageUrl: generateResourceUrl('/resources/SleepingBag.jpg'),
         title: "Sleeping Bags"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/SleepingPad.jpg",
+        imageUrl: generateResourceUrl('/resources/SleepingPad.jpg'),
         title: "Sleeping Pads"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Tent.jpg",
+        imageUrl: generateResourceUrl('/resources/Tent.jpg'),
         title: "Tents"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Backpack.jpg",
+        imageUrl: generateResourceUrl('/resources/Backpack.jpg'),
         title: "Backpacks"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/ColemanStove.jpg",
+        imageUrl: generateResourceUrl('/resources/ColemanStove.jpg'),
         title: "Camping Stoves"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/BackpackingStove.jpg",
+        imageUrl: generateResourceUrl('/resources/BackpackingStove.jpg'),
         title: "Backpacking Stoves"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Waterfilter.jpg",
+        imageUrl: generateResourceUrl('/resources/Waterfilter.jpg'),
         title: "Water Filters"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Surfboards.jpg",
+        imageUrl: generateResourceUrl('/resources/Surfboards.jpg'),
         title: "Surfboards"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Kayak.jpg",
+        imageUrl: generateResourceUrl('/resources/Kayak.jpg'),
         title: "Ocean Kayaks"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Wetsuits.jpg",
+        imageUrl: generateResourceUrl('/resources/Wetsuits.jpg'),
         title: "Wetsuits"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/YogaMat.jpg",
+        imageUrl: generateResourceUrl('/resources/YogaMat.jpg'),
         title: "Yoga Mats"
     },
     {
-        imageUrl: "http://d36olvmp8krees.cloudfront.net/resources/Hammock.JPG",
+        imageUrl: generateResourceUrl('/resources/Hammock.jpg'),
         title: "Hammocks"
     }
 ];

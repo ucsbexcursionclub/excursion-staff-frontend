@@ -15,6 +15,7 @@ interface StaffContextProps {
     retrieveStaffByMemberID: (memberID: string) => StaffProps | null;
     handleStaffDelete: (selectedStaff: StaffProps[]) => Promise<void>;
     handleStaffAdd: (newStaffData: NewStaffProps) => Promise<void>;
+    refetchStaff: (ids: string[]) => Promise<void>;
     handleStaffUpdate: (modifiedStaff: StaffProps) => Promise<StaffProps | null>;
     validateRowSelection: () => boolean;
 }
@@ -23,9 +24,17 @@ const useStaffState = () => {
     const queryClient = useQueryClient();
     const [staffData, setStaffData] = useState<StaffProps[]>([]);
     const {identity} = useLogin();
+    const {addNotification} = useSnackbar();
 
     const {data: fetchStaffData} = useQuery("staff", getStaff, {
-        enabled: !!identity && ["admin", "staff"].includes(identity.role)
+        enabled: !!identity && ["admin", "staff"].includes(identity.role),
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     });
 
     useEffect(() => {
@@ -70,42 +79,64 @@ const useStaffOperations = (
         return staffData.filter((staff) => staff.member_id === member_id)[0];
     };
 
-    //TODO NEED TO INVALIDATE AND REFETCH MEMBER DATA WHENEVER STAFF DATA IS REMOVED OR ADDED
-
     const handleStaffDelete = async (selectedStaff: StaffProps[]) => {
         const staffIds = selectedStaff.map((staff) => staff._id);
 
-        setStaffRowSelectionModel([]);
+        try {
+            const deletedCount = await deleteStaff(staffIds);
 
-        await deleteStaff(staffIds);
+            if (deletedCount !== staffIds.length) {
+                throw new Error("Some staff members could not be deleted.");
+            }
 
-        await Promise.all(
-            staffIds.map(async (id) => {
-                return queryClient.removeQueries({queryKey: ["staffItem", id]});
-            })
-        );
+            await Promise.all(
+                staffIds.map(async (id) => {
+                    return queryClient.removeQueries({queryKey: ["staffItem", id]});
+                })
+            );
 
-        recomputeAggregatedStaff();
+            recomputeAggregatedStaff();
+            addNotification({
+                message: `${deletedCount} staff members successfully deleted.`,
+                type: "success"
+            });
+            setStaffRowSelectionModel([]);
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error deleting staff members. Try again later.",
+                type: "error"
+            });
+        }
     };
 
     const handleStaffAdd = async (newStaffData: NewStaffProps) => {
-        const addedStaff = await addStaff(newStaffData);
+        try {
+            const addedStaff = await addStaff(newStaffData);
 
-        queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
-        await queryClient.prefetchQuery(["staffItem", addedStaff._id], {
-            initialData: addedStaff,
-            staleTime: Infinity
-        });
+            queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
+            await queryClient.prefetchQuery(["staffItem", addedStaff._id], {
+                initialData: addedStaff,
+                staleTime: Infinity
+            });
 
-        recomputeAggregatedStaff();
+            recomputeAggregatedStaff();
+            addNotification({message: "Staff member successfully added!", type: "success"});
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error adding staff member. Try again later.",
+                type: "error"
+            });
+        }
     };
-    const handleStaffUpdate = async (modifiedStaff: StaffProps) => {
+
+    const handleStaffUpdate = async (modifiedStaff: StaffProps): Promise<StaffProps | null> => {
         try {
             const updatedStaff = await updateStaff(modifiedStaff);
 
-            await queryClient.refetchQueries({queryKey: ["staffItem", updatedStaff._id]});
+            await refetchStaff([updatedStaff._id]);
             recomputeAggregatedStaff();
 
+            addNotification({message: "Successfully updated staff!", type: "success"});
             return updatedStaff;
         } catch (error: any) {
             addNotification({message: error.message, type: "error"});
@@ -126,13 +157,28 @@ const useStaffOperations = (
         }
     };
 
+    const refetchStaff = async (ids: string[]) => {
+        await Promise.all(
+            ids.map(async (id) => {
+                return await queryClient.refetchQueries(
+                    {
+                        queryKey: ["staffItem", id]
+                    },
+                    {throwOnError: true}
+                );
+            })
+        );
+        recomputeAggregatedStaff();
+    };
+
     return {
         handleStaffUpdate,
         retrieveStaffById,
         retrieveStaffByMemberID,
         handleStaffDelete,
         handleStaffAdd,
-        validateRowSelection
+        validateRowSelection,
+        refetchStaff
     };
 };
 

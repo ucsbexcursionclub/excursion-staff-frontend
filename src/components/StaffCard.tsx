@@ -1,7 +1,7 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
 import {StaffProfile} from "../utils/types";
-import {capitalizeFirstLetter} from "../utils/utils"; // Import the function
+import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils"; // Import the function
 import {Avatar} from "@mui/material";
 
 interface StaffCardProps {
@@ -13,10 +13,7 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
         <div className="w-full h-full p-8">
             <div className="flex flex-col items-center min-w-full bg-gray-100 rounded-2xl shadow-sm p-4 min-h-full">
                 <Avatar
-                    src={
-                        staff.profileImageUrl ||
-                        "https://d36olvmp8krees.cloudfront.net/resources/avatar.png"
-                    }
+                    src={generateResourceUrl(staff.profileImagePath || "/resources/avatar.png")}
                     alt={staff.name}
                     className="w-52 h-52 object-cover rounded-md my-4"
                 />

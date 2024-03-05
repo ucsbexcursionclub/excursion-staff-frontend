@@ -83,7 +83,7 @@ const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
 ];
 
 const getIdOperators = (
-    retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
+    retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[] | null
 ): GridFilterOperator<MemberProps, any, any>[] | undefined => {
     const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
         {
@@ -98,7 +98,7 @@ const getIdOperators = (
                     const memberId = params;
 
                     return (
-                        (retrieveReservationsByMemberId(memberId) ?? []).filter(
+                        (retrieveOpenReservationsByMemberId(memberId) ?? []).filter(
                             (reservation) => reservation.due_date < Date.now()
                         ).length > 0
                     );
@@ -128,7 +128,7 @@ const getIdOperators = (
 const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - (v2 || Infinity);
 
 const getColumns = (
-    getMemberById: (memberId: string) => MemberProps | null,
+    retrieveMemberById: (memberId: string) => MemberProps | null,
     retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
 ) => {
     const columns: GridColDef[] = [
@@ -191,7 +191,7 @@ const getColumns = (
             getApplyQuickFilterFn: undefined,
             width: 140,
             valueFormatter: (params) => {
-                const name = getMemberById(params.value)?.name;
+                const name = retrieveMemberById(params.value)?.name;
                 if (name) {
                     return capitalizeFirstLetter(name);
                 }

@@ -2,14 +2,23 @@ import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "react-query";
 import {addReservation, getReservations, updateReservation} from "../utils/api";
-import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
+import {
+    GearProps,
+    MemberProps,
+    NewReservationProps,
+    NotificationProps,
+    ReservationProps
+} from "../utils/types";
 import {useLogin} from "./LoginProvider";
+import {useSnackbar} from "./SnackBarProvider";
 
 interface ReservationsContextProps {
     reservationsData: ReservationProps[];
     setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>;
     handleReservationAdd: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
-    handleReservationUpdate: (modifiedReservation: ReservationProps) => Promise<void>;
+    handleReservationUpdate: (
+        modifiedReservation: ReservationProps
+    ) => Promise<ReservationProps | null>;
     refetchReservations: (reservationIds: string[]) => Promise<void>;
     reservationRowSelectionModel: GridRowSelectionModel;
     retrieveReservation: (id: string) => ReservationProps;
@@ -25,9 +34,17 @@ const useReservationsState = () => {
     const queryClient = useQueryClient();
     const [reservationsData, setReservationsData] = useState<ReservationProps[]>([]);
     const {isStaff} = useLogin();
+    const {addNotification} = useSnackbar();
 
     const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
-        enabled: isStaff
+        enabled: isStaff,
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     });
 
     useEffect(() => {
@@ -51,6 +68,8 @@ const useReservationsOperations = (
     setReservationsData: React.Dispatch<React.SetStateAction<ReservationProps[]>>
 ) => {
     const queryClient = useQueryClient();
+
+    const {addNotification} = useSnackbar();
 
     const recomputeAggregatedReservations = () => {
         const aggregatedReservations = queryClient
@@ -93,42 +112,62 @@ const useReservationsOperations = (
     };
 
     const handleReservationAdd = async (selectedMember: MemberProps, selectedGear: GearProps[]) => {
-        const newReservationData: NewReservationProps = {
-            checked_out_gear: selectedGear.map((gear) => gear._id),
-            reserving_member: selectedMember._id
-        };
+        try {
+            const newReservationData: NewReservationProps = {
+                checked_out_gear: selectedGear.map((gear) => gear._id),
+                reserving_member: selectedMember._id
+            };
 
-        const addedReservation = await addReservation(newReservationData);
+            const addedReservation = await addReservation(newReservationData);
 
-        queryClient.setQueryData(["reservationItem", addedReservation._id], addedReservation);
-        await queryClient.prefetchQuery(["reservationItem", addedReservation._id], {
-            initialData: addedReservation,
-            staleTime: Infinity
-        });
+            queryClient.setQueryData(["reservationItem", addedReservation._id], addedReservation);
+            await queryClient.prefetchQuery(["reservationItem", addedReservation._id], {
+                initialData: addedReservation,
+                staleTime: Infinity
+            });
 
-        await refetchReservations(
-            selectedGear.map((gear) => gear.current_reservation).filter(Boolean) as string[]
-        );
+            await refetchReservations(
+                selectedGear.map((gear) => gear.current_reservation).filter(Boolean) as string[]
+            );
 
-        recomputeAggregatedReservations();
+            recomputeAggregatedReservations();
+            addNotification({message: "Reservation successfully added!", type: "success"});
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error adding reservation. Try again later.",
+                type: "error"
+            });
+        }
     };
 
-    const handleReservationUpdate = async (modifiedReservation: ReservationProps) => {
-        const updatedReservation = await updateReservation(modifiedReservation);
+    const handleReservationUpdate = async (
+        modifiedReservation: ReservationProps
+    ): Promise<ReservationProps | null> => {
+        try {
+            const updatedReservation = await updateReservation(modifiedReservation);
 
-        await queryClient.refetchQueries({queryKey: ["reservationItem", updatedReservation._id]});
-        recomputeAggregatedReservations();
+            await refetchReservations([updatedReservation._id]);
+
+            recomputeAggregatedReservations();
+            addNotification({message: "Successfully updated reservation!", type: "success"});
+            return updatedReservation;
+        } catch (error: any) {
+            addNotification({message: error.message, type: "error"});
+            return null;
+        }
     };
 
-    const refetchReservations = async (reservationIds: string[]) => {
+    const refetchReservations = async (ids: string[]) => {
         await Promise.all(
-            reservationIds.map(async (reservationId) => {
-                return await queryClient.refetchQueries({
-                    queryKey: ["reservationItem", reservationId]
-                });
+            ids.map(async (id) => {
+                return await queryClient.refetchQueries(
+                    {
+                        queryKey: ["reservationItem", id]
+                    },
+                    {throwOnError: true}
+                );
             })
         );
-
         recomputeAggregatedReservations();
     };
 

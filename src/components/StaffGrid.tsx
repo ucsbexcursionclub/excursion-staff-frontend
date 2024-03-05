@@ -3,15 +3,23 @@ import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import StaffCard from "./StaffCard"; // Import your StaffCard component
 import {useQuery} from "react-query";
+import {useSnackbar} from "../providers/SnackBarProvider";
 import {getStaffProfiles} from "../utils/api";
+import {NotificationProps} from "../utils/types";
 
 const StaffGrid: React.FC = () => {
-    //TODO: extract this to some safe function where we just pull staff information like name, email, bio
+    const {addNotification} = useSnackbar();
     const {data: staffProfiles} = useQuery({
         queryKey: ["staffProfiles"],
-        queryFn: getStaffProfiles
+        queryFn: getStaffProfiles,
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
     });
-    // console.log(staffData);
 
     if (!staffProfiles) return;
 

@@ -14,6 +14,7 @@ import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your Edit
 import {Edit} from "@mui/icons-material";
 import {useMembers} from "../providers/MembersProvider";
 import {useStaff} from "../providers/StaffProvider";
+import {generateResourceUrl} from "../utils/utils";
 
 const cookies = new Cookies();
 
@@ -22,7 +23,7 @@ type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "e
 function LoginButton() {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [isEditProfileOpen, setIsEditProfileOpen] = useState<boolean>(false); // State for controlling the EditProfileFormDialog
-    const [profileImageLink, setProfileImageLink] = useState<string | null>();
+    const [profileImagePath, setProfileImagePath] = useState<string | null>();
     const [isLoaded, setIsLoaded] = useState<boolean>(false);
     const open = Boolean(anchorEl);
 
@@ -33,7 +34,7 @@ function LoginButton() {
 
     useEffect(() => {
         if (!loggedInMember) return;
-        setProfileImageLink(retrieveStaffByMemberID(loggedInMember._id)?.profileImageUrl || null);
+        setProfileImagePath(retrieveStaffByMemberID(loggedInMember._id)?.profileImagePath || null);
         setIsLoaded(true);
     }, [loggedInMember, retrieveStaffByMemberID]);
 
@@ -75,7 +76,10 @@ function LoginButton() {
             {isLoggedIn && isLoaded ? (
                 <>
                     <IconButton onClick={handleClick} aria-label="profile">
-                        <Avatar sx={{width: 40, height: 40}} src={profileImageLink || ""} />
+                        <Avatar
+                            sx={{width: 40, height: 40}}
+                            src={generateResourceUrl(profileImagePath || "/resources/avatar.png")}
+                        />
                     </IconButton>
                     <Menu
                         id="login-positioned-menu"
@@ -96,7 +100,9 @@ function LoginButton() {
                             <Avatar
                                 sx={{width: 40, height: 40}}
                                 className="mr-2"
-                                src={profileImageLink || ""}
+                                src={generateResourceUrl(
+                                    profileImagePath || "/resources/avatar.png"
+                                )}
                             />
                             <span>{loggedInMember?.email || ""}</span>
                         </MenuItem>
