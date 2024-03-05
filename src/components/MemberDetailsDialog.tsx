@@ -24,6 +24,9 @@ type MemberDetailsDialogProps = {
 };
 
 const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose, member}) => {
+    const [name, setName] = useState<string>(member?.name || "");
+    const [phoneNumber, setPhone] = useState<string>(member?.phone_number || "");
+    const [email, setEmail] = useState<string>(member?.email || "");
     const [notes, setNotes] = useState(member?.notes || "");
     const [initialNotes, setInitialNotes] = useState(member?.notes || "");
     const {handleMemberUpdate, retrieveMemberById} = useMembers();
@@ -34,6 +37,9 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
     };
 
     useEffect(() => {
+        setName(member?.name || "");
+        setEmail(member?.email || "");
+        setPhone(member?.phone_number || "");
         setNotes(member?.notes || "");
         setInitialNotes(member?.notes || "");
     }, [member]);
@@ -50,14 +56,26 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
 
     if (!member) return null;
 
-    const handleNotesBlur = async () => {
-        if (notes !== initialNotes) {
-            const updatedMember = await handleMemberUpdate({...member, notes});
-
-            if (updatedMember) {
-                addNotification({message: "Successfully updated member notes!", type: "success"});
-            }
+    const handleFormSubmit = async () => {
+        if (!member) {
+            handleClose();
+            return;
         }
+        // !TODO Finish
+        const modifiedMember: MemberProps = {
+            ...member,
+            name,
+            email,
+            phone_number: phoneNumber,
+            notes
+        };
+        const updatedMember= await handleMemberUpdate(modifiedMember);
+
+        handleClose();
+        if (updatedMember) {
+            addNotification({message: "Successfully updated member!", type: "success"});
+        }
+
     };
 
     return (
@@ -80,14 +98,31 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
             <DialogContent dividers={true}>
                 <List sx={{pt: 0, px: 2}}>
                     <ListItem>
-                        <Typography>
-                            <strong>Email: </strong> {member.email}
-                        </Typography>
+                        <TextField
+                            label="Name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            variant="outlined"
+                            className="w-full mb-4"
+                        />
                     </ListItem>
                     <ListItem>
-                        <Typography>
-                            <strong>Phone: </strong> {member.phone_number}
-                        </Typography>
+                        <TextField
+                            label="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            variant="outlined"
+                            className="w-full mb-4"
+                        />
+                    </ListItem>
+                    <ListItem>
+                        <TextField
+                            label="Phone"
+                            value={phoneNumber}
+                            onChange={(e) => setPhone(e.target.value)}
+                            variant="outlined"
+                            className="w-full mb-4"
+                        />
                     </ListItem>
                     <ListItem>
                         <Typography>
@@ -131,14 +166,16 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                             fullWidth
                             value={notes}
                             onChange={handleNotesChange}
-                            onBlur={handleNotesBlur}
                         />
                     </ListItem>
                 </List>
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleClose} color="primary">
+                <Button onClick={handleClose} color="primary" variant="outlined">
                     Close
+                </Button>
+                <Button onClick={handleFormSubmit} color="primary" variant="contained">
+                    Update
                 </Button>
             </DialogActions>
         </Dialog>

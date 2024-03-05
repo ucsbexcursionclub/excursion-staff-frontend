@@ -20,6 +20,9 @@ import {TablePaginationProps} from "@mui/material";
 import MuiPagination from "@mui/material/Pagination";
 import {MemberFilterOptions} from "../utils/constants";
 import {useReservations} from "../providers/ReservationProvider";
+import IconButton from "@mui/material/IconButton";
+import EditIcon from "@mui/icons-material/Edit";
+
 
 function Pagination({
     page,
@@ -135,6 +138,7 @@ const getColumns = (
             width: 90,
             filterOperators: getIdOperators(retrieveReservationsByMemberId)
         },
+
         {
             field: "name",
             headerName: "Name",
@@ -145,6 +149,20 @@ const getColumns = (
                 }
                 return "N/A";
             }
+        },
+        {
+            field: "edit",
+            width: 51,
+            sortable: false,
+            align: "center",
+            headerName: "Edit",
+            renderCell: () => (
+                <div className="opacity-25">
+                    <IconButton color="inherit">
+                        <EditIcon />
+                    </IconButton>
+                </div>
+            )
         },
         {field: "email", headerName: "Email", width: 200},
         {field: "phone_number", headerName: "Phone Number", width: 140},
@@ -289,7 +307,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     const filterItems = calculateFilterItems();
 
     const handleCellClick = (params: any) => {
-        if (params.field === "name") {
+        if (params.field === "edit") {
             setSelectedMember(params.row);
             setDialogOpen(true);
         }
