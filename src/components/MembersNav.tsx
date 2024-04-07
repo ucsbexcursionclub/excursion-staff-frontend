@@ -121,7 +121,6 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                             >
                                 Copy Selected Members Emails
                             </ToggleButton>
-
                         </ToggleButtonGroup>
                     </div>
                 </AppBar>
@@ -171,7 +170,6 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                             >
                                 Copy Selected Members Emails
                             </Button>
-
                         </ButtonGroup>
                     </div>
                 </AppBar>
@@ -220,7 +218,6 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 >
                                     Copy Selected Members Emails
                                 </Button>
-
                             </ButtonGroup>
                         </div>
                     </Toolbar>
