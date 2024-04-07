@@ -118,6 +118,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
         const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
         const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
 
+
         // Refactored logic for determining newProfileImagePath
         let newProfileImagePath: string | null = staffDetails?.profileImagePath || null;
         if (uploadedProfileImage) {
