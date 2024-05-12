@@ -31,153 +31,132 @@ interface EditProfileFormDialogProps {
 
 const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, onClose}) => {
     const {handleMemberUpdate, loggedInMember} = useMembers();
-
-    //EDIT: only allow staff update if they are updating their own profile.
     const {retrieveStaffById, handleStaffUpdate} = useStaff();
     const {addNotification} = useSnackbar();
-
-    const [staffDetails, setStaffDetails] = useState<StaffProps | null>();
-
-    const handleClose = () => {
-        setUploadedProfileImage(null);
-        onClose();
-    };
+    const [name, setName] = useState<string | undefined>("");
+    const [bio, setBio] = useState<string | undefined>(""); 
+    const [profileImage, setProfileImage] = useState<File | null>(null);
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+    const [profileBlobPath, setProfileBlobPath] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
-        if (!loggedInMember?.staff_id) return;
+        const staffId = loggedInMember?.staff_id;
+        if (!staffId) return;
 
-        setName(loggedInMember.name);
-        const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
-        setBio(retrievedStaff?.bio);
-        setProfileImagePath(retrievedStaff?.profileImagePath || null);
-        setDeleteProfilePic(false);
-        setStaffDetails(retrievedStaff);
+        setName(capitalizeFirstLetter(loggedInMember.name ?? ""));
+
+        const fetchStaffDetails = async () => {
+            const retrievedStaff = retrieveStaffById(staffId);
+            setBio(retrievedStaff?.bio); // Set initial bio
+            setProfileImageUrl(retrievedStaff?.profileImagePath || null);
+        };
+
+        fetchStaffDetails();
     }, [loggedInMember, retrieveStaffById]);
 
-    const [name, setName] = useState<string | undefined>(
-        capitalizeFirstLetter(loggedInMember?.name ?? "")
-    );
-    const [bio, setBio] = useState<string | undefined>(staffDetails?.bio);
-    const [uploadedProfileImage, setUploadedProfileImage] = useState<File | null>(null);
-    const [profileImagePath, setProfileImagePath] = useState<string | null>(
-        staffDetails?.profileImagePath || null
-    );
-    const [deleteProfilePic, setDeleteProfilePic] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const handleClose = () => {
+        setProfileImage(null);
+        setProfileImageUrl(null);
+        onClose();
+    };
 
     const handleNameChange = (event: ChangeEvent<HTMLInputElement>) => {
         setName(event.target.value);
     };
 
     const handleBioChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setBio(event.target.value);
+        setBio(event.target.value); 
     };
 
-    const handleProfilePicChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const handleProfileImageChange = async (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
+        if (!file) return;
 
-        if (file) {
-            // Check for file size
-            if (file.size > MAX_FILE_SIZE) {
-                addNotification({
-                    message: `Please upload an image smaller than ${MAX_FILE_SIZE_MB} MB.`,
-                    type: "error"
-                });
-                return;
-            }
+        // Check for file size
+        if (file.size > MAX_FILE_SIZE) {
+            addNotification({
+                message: `Please upload an image smaller than ${MAX_FILE_SIZE_MB} MB.`,
+                type: "error"
+            });
+            return;
+        }
 
-            // Check for file type
-            const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/bmp"];
-            if (!validImageTypes.includes(file.type)) {
-                addNotification({
-                    message: "Please upload a valid image type (JPEG, PNG, GIF, or BMP).",
-                    type: "error"
-                });
-                return;
-            }
+        // Check for file type
+        const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/bmp"];
+        if (!validImageTypes.includes(file.type)) {
+            addNotification({
+                message: "Please upload a valid image type (JPEG, PNG, GIF, or BMP).",
+                type: "error"
+            });
+            return;
+        }
 
-            try {
-                const resizedImageBlob = await readAndCompressImage(file, userConfig);
-                setUploadedProfileImage(new File([resizedImageBlob], file.name, {type: file.type}));
+        try {
+            const resizedImageBlob = await readAndCompressImage(file, userConfig);
+            const resizedImageFile = new File([resizedImageBlob], file.name, {type: file.type});
+            setProfileImage(resizedImageFile);
 
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setProfileImagePath(reader.result as string);
-                };
-                reader.readAsDataURL(resizedImageBlob);
-            } catch (err) {
-                addNotification({
-                    message: "Error resizing the image. Please try again.",
-                    type: "error"
-                });
-            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setProfileBlobPath(reader.result as string);
+            };
+            reader.readAsDataURL(resizedImageBlob);
+        } catch (err) {
+            addNotification({
+                message: "Error resizing the image. Please try again.",
+                type: "error"
+            });
         }
     };
 
     const handleSave = async (): Promise<void> => {
-        const memberUpdates: Partial<Omit<MemberProps, "_id">> = {};
-        const staffUpdates: Partial<Omit<StaffProps, "_id">> = {};
-
-
-        // Refactored logic for determining newProfileImagePath
-        let newProfileImagePath: string | null = staffDetails?.profileImagePath || null;
-        if (uploadedProfileImage) {
-            try {
-                newProfileImagePath = await uploadFileToS3(uploadedProfileImage);
-            } catch (error: any) {
-                addNotification({
-                    message: error.message,
-                    type: "error"
-                });
-                return;
-            }
-        } else if (deleteProfilePic) {
-            newProfileImagePath = null;
-        }
-
-        // Collecting potential updates for member
-        if (loggedInMember?.name !== name) {
-            memberUpdates.name = name;
-        }
-
-        // Collecting potential updates for staff
-        if (staffDetails?.bio !== bio) {
-            staffUpdates.bio = bio;
-        }
-        if (staffDetails?.profileImagePath !== newProfileImagePath) {
-            staffUpdates.profileImagePath = newProfileImagePath;
-        }
-
         setIsLoading(true);
 
-        // Perform updates only if there are changes to apply
-        let updatedMember = true;
-        let updatedStaff = true;
+        try {
+            let newImageUrl = profileImageUrl;
+            if (profileImage) {
+                newImageUrl = await uploadFileToS3(profileImage);
+            }
 
-        if (Object.keys(memberUpdates).length > 0) {
-            updatedMember = Boolean(
-                await handleMemberUpdate({...loggedInMember, ...memberUpdates} as MemberProps)
-            );
-        }
-        if (Object.keys(staffUpdates).length > 0) {
-            updatedStaff = Boolean(
-                await handleStaffUpdate({...staffDetails, ...staffUpdates} as StaffProps)
-            );
-        }
+            // Update Member data if changed
+            if (loggedInMember?.name !== name) {
+                await handleMemberUpdate({...loggedInMember, name} as MemberProps);
+            }
 
-        setIsLoading(false);
+            // Update Staff data if changed
+            if (loggedInMember?.staff_id) {
+                const retrievedStaff = retrieveStaffById(loggedInMember.staff_id);
+                const staffUpdates: Partial<Omit<StaffProps, "_id" | "member_id">> = {};
 
-        if (updatedMember && updatedStaff) {
+                // Only update if bio has been modified
+                if (bio !== retrievedStaff?.bio) { 
+                    staffUpdates.bio = bio;
+                }
+
+                if (newImageUrl !== retrievedStaff?.profileImagePath) {
+                    staffUpdates.profileImagePath = newImageUrl;
+                }
+
+                if (Object.keys(staffUpdates).length > 0) {
+                    await handleStaffUpdate({...retrievedStaff, ...staffUpdates} as StaffProps);
+                }
+            }
+
             addNotification({
                 message: "Successfully updated profile!",
                 type: "success"
             });
             handleClose();
-        } else {
+
+        } catch (error: any) {
             addNotification({
-                message: "Error while updating profile",
+                message: error.message,
                 type: "error"
             });
+
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -198,30 +177,24 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
             <DialogTitle className="text-center">Edit Profile</DialogTitle>
             <DialogContent className="flex flex-col items-center">
                 <div>
-                    {profileImagePath && (
+                    {profileImageUrl && (
                         <IconButton
                             className="absolute z-10 m-0 rounded-2xl text-white bg-black"
                             style={{padding: "2px"}}
                             onClick={() => {
-                                setDeleteProfilePic(true);
-                                setUploadedProfileImage(null);
-                                setProfileImagePath("");
+                                setProfileImage(null);
+                                setProfileImageUrl(null);
                             }}
                         >
                             <CloseIcon color="inherit" />
                         </IconButton>
                     )}
                     <Avatar
-                        src={
-                            uploadedProfileImage
-                                ? profileImagePath || generateResourceUrl("/resources/avatar.png")
-                                : generateResourceUrl(profileImagePath || "/resources/avatar.png")
-                        }
+                        src={profileBlobPath || generateResourceUrl(profileImageUrl || "/resources/avatar.png")}
                         className="mb-4 mt-2 border-solid border-gray-400"
                         style={{width: 100, height: 100}}
-                    ></Avatar>
+                    />
                 </div>
-
                 <label htmlFor="raised-button-file" className="mb-2">
                     <Button
                         variant="contained"
@@ -258,7 +231,7 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                     style={{display: "none"}}
                     id="raised-button-file"
                     type="file"
-                    onChange={handleProfilePicChange}
+                    onChange={handleProfileImageChange}
                 />
             </DialogContent>
             <DialogActions>

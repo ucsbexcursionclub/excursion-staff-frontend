@@ -73,143 +73,42 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     };
 
     const renderAppBar = () => {
-        if (screenWidth < 530) {
-            // Render AppBar with buttons in the same row on wider screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4" className="pr-3">
-                            Members
+        return (
+            <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
+                <Toolbar className="flex justify-between items-center py-1 flex-row max-[800px]:flex-col">
+                    <Typography variant="h4" className="pr-3">
+                        Members
+                    </Typography>
+                    <div className="flex flex-col items-center w-full max-[800px]:my-4">
+                        {/* Placeholder Typography for spacing (remove if not needed) */}
+                        <Typography
+                            style={{ userSelect: "none" }}
+                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
+                        >
+                            s
                         </Typography>
-                        <div className="flex flex-col items-center w-full">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                    Search
-                                </Button>
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Name, Email, or Phone Number
-                            </Typography>
+                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full ">
+                            <SearchIcon className="absolute left-2" color="inherit" />
+                            <InputBase onChange={updateSearch} className="pl-10 w-full" />
+                            <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
+                                Search
+                            </Button>
                         </div>
-                    </Toolbar>
-                    <div className="flex justify-end pr-3">
+                        <Typography className="text-xs text-gray-200 italic">
+                            Name, Email, or Phone Number
+                        </Typography>
+                    </div>
+                    <div className="flex flex-col mx-4 md:flex-row items-center w-full md:w-auto">
                         <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
                             Add/Renew Member
                         </Button>
                         <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
                             Remove Member(s)
                         </Button>
-                    </div>
-                    <div className="flex justify-end pr-3">
-                        <ToggleButtonGroup
-                            exclusive
-                            value={copyEmailOption}
-                            className="text-white" // Add text-white class to make text white
-                            style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
-                        >
-                            <ToggleButton
-                                value="copySelected"
-                                className="text-white border-transparent"
-                            >
-                                Copy Selected Members Emails
-                            </ToggleButton>
-                        </ToggleButtonGroup>
-                    </div>
-                </AppBar>
-            );
-        } else if (screenWidth < 1000) {
-            // Render AppBar with buttons in the same row on wider screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4" className="pr-3">
-                            Members
-                        </Typography>
-                        <div className="flex flex-col items-center w-full">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                    Search
-                                </Button>
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Name, Email, or Phone Number
-                            </Typography>
-                        </div>
-                    </Toolbar>
-                    <div className="flex justify-end pr-3">
-                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
-                            Add/Renew Member
-                        </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                            Remove Member(s)
-                        </Button>
-                        <ButtonGroup
-                            className="text-white" // Add text-white class to make text white
-                            style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
-                        >
-                            <Button
-                                onClick={handleOpenCopyEmail}
-                                value="copySelected"
-                                className="text-white border-transparent"
-                            >
-                                Copy Selected Members Emails
-                            </Button>
-                        </ButtonGroup>
-                    </div>
-                </AppBar>
-            );
-        } else {
-            // Render AppBar with buttons in the same row on wider screens
-            return (
-                <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                    <Toolbar className="flex justify-between items-center py-1">
-                        <Typography variant="h4" className="pr-3">
-                            Members
-                        </Typography>
-                        <div className="flex flex-col items-center w-full">
-                            <Typography
-                                style={{userSelect: "none"}}
-                                className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                            >
-                                s
-                            </Typography>
-                            <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full">
-                                <SearchIcon className="absolute left-2" color="inherit" />
-                                <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                                <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
-                                    Search
-                                </Button>
-                            </div>
-                            <Typography className="text-xs text-gray-200 italic">
-                                Name, Email, or Phone Number
-                            </Typography>
-                        </div>
-                        <div className="flex justify-end pr-3">
-                            <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
-                                Add/Renew Member
-                            </Button>
-                            <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                                Remove Member(s)
-                            </Button>
+                        <div className="hidden md:block"> {/* Show on medium screens and above */}
                             <ButtonGroup
-                                className="text-white" // Add text-white class to make text white
-                                style={{boxShadow: "none"}} // Remove the box-shadow to remove the outline
+                                className="text-white"
+                                style={{ boxShadow: "none" }}
                             >
                                 <Button
                                     onClick={handleOpenCopyEmail}
@@ -220,10 +119,25 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                                 </Button>
                             </ButtonGroup>
                         </div>
-                    </Toolbar>
-                </AppBar>
-            );
-        }
+                        <div className="md:hidden"> {/* Show only on smaller screens */}
+                            <ToggleButtonGroup
+                                exclusive
+                                value={copyEmailOption}
+                                className="text-white"
+                                style={{ boxShadow: "none" }}
+                            >
+                                <ToggleButton
+                                    value="copySelected"
+                                    className="text-white border-transparent"
+                                >
+                                    Copy Selected Members Emails
+                                </ToggleButton>
+                            </ToggleButtonGroup>
+                        </div>
+                    </div>
+                </Toolbar>
+            </AppBar>
+        );
     };
 
     return (

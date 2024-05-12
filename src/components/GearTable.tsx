@@ -18,7 +18,7 @@ import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "../providers/GearProvider";
 import GearToolBar from "./GearToolbar";
-import RemoveRedEyeOutlinedIcon from "@mui/icons-material/RemoveRedEyeOutlined";
+import EditIcon from "@mui/icons-material/Edit";
 import {GearFilterOptions} from "../utils/constants";
 const dateOperators: GridFilterOperator<GearProps, any, any>[] | undefined = [
     {
@@ -78,11 +78,11 @@ const columns: GridColDef<GearProps, any, any>[] = [
         width: 51,
         sortable: false,
         align: "center",
-        headerName: "View",
+        headerName: "Edit",
         renderCell: () => (
             <div className="opacity-25">
                 <IconButton color="inherit">
-                    <RemoveRedEyeOutlinedIcon />
+                    <EditIcon />
                 </IconButton>
             </div>
         )

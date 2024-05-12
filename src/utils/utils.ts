@@ -36,8 +36,10 @@ export function convertToMUIDate(datetime: number): string {
     const [month, day, year] = new Date(datetime).toLocaleDateString().split("/");
 
     const formattedDay = day.length === 1 ? "0" + day : day;
+    const formattedMonth = month.length === 1 ? "0" + month : month;
 
-    return `${year}-${month}-${formattedDay}`;
+
+    return `${year}-${formattedMonth}-${formattedDay}`;
 }
 
 export const generateResourceUrl = (resourcePath: string): string =>
