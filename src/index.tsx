@@ -2,7 +2,7 @@ import {createRoot} from "react-dom/client";
 import {CssBaseline, ThemeProvider, createTheme} from "@mui/material";
 import {BrowserRouter as Router} from "react-router-dom";
 import {StyledEngineProvider} from "@mui/material/styles";
-import {QueryClient, QueryClientProvider, QueryFunctionContext, QueryKey} from "react-query";
+import {QueryCache, QueryClient, QueryClientProvider, QueryFunctionContext, QueryKey} from "@tanstack/react-query";
 import {GoogleOAuthProvider} from "@react-oauth/google";
 
 import React from "react";
@@ -33,6 +33,11 @@ const defaultQueryFunction = async ({queryKey}: QueryFunctionContext<QueryKey>) 
 };
 
 const queryClient = new QueryClient({
+    queryCache: new QueryCache({
+        onError: (error: any) => {
+            console.error(error);
+        }
+    }),
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: true, // default: true
