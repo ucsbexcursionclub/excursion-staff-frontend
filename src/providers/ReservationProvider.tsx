@@ -1,12 +1,11 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {useQuery, useQueryClient} from "react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {addReservation, getReservations, updateReservation} from "../utils/api";
 import {
     GearProps,
     MemberProps,
     NewReservationProps,
-    NotificationProps,
     ReservationProps
 } from "../utils/types";
 import {useLogin} from "./LoginProvider";
@@ -34,17 +33,11 @@ const useReservationsState = () => {
     const queryClient = useQueryClient();
     const [reservationsData, setReservationsData] = useState<ReservationProps[]>([]);
     const {isStaff} = useLogin();
-    const {addNotification} = useSnackbar();
 
-    const {data: fetchReservationsData} = useQuery("reservations", getReservations, {
-        enabled: isStaff,
-        onError: (err: Error) => {
-            const newNotification: NotificationProps = {
-                message: err.message,
-                type: "error"
-            };
-            addNotification(newNotification);
-        }
+    const {data: fetchReservationsData} = useQuery({
+        queryKey: ["reservations"],
+        queryFn: getReservations,
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -52,7 +45,8 @@ const useReservationsState = () => {
             setReservationsData(fetchReservationsData);
             fetchReservationsData.forEach(async (reservationItem) => {
                 queryClient.setQueryData(["reservationItem", reservationItem._id], reservationItem);
-                await queryClient.prefetchQuery(["reservationItem", reservationItem._id], {
+                await queryClient.prefetchQuery({
+                    queryKey: ["reservationItem", reservationItem._id],
                     initialData: reservationItem,
                     staleTime: Infinity
                 });
@@ -77,7 +71,8 @@ const useReservationsOperations = (
                 queryKey: ["reservationItem"],
                 exact: false
             })
-            .map((query) => query[1]);
+            .map((query) => query[1])
+            .filter(Boolean) as ReservationProps[];
 
         setReservationsData(aggregatedReservations);
     };
@@ -121,7 +116,8 @@ const useReservationsOperations = (
             const addedReservation = await addReservation(newReservationData);
 
             queryClient.setQueryData(["reservationItem", addedReservation._id], addedReservation);
-            await queryClient.prefetchQuery(["reservationItem", addedReservation._id], {
+            await queryClient.prefetchQuery({
+                queryKey: ["reservationItem", addedReservation._id],
                 initialData: addedReservation,
                 staleTime: Infinity
             });
