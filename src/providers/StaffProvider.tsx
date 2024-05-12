@@ -1,5 +1,5 @@
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {useQuery, useQueryClient} from "react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {addStaff, deleteStaff, getStaff, updateStaff} from "../utils/api"; // Adjust the API functions as needed
 import {NewStaffProps, NotificationProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
@@ -24,17 +24,11 @@ const useStaffState = () => {
     const queryClient = useQueryClient();
     const [staffData, setStaffData] = useState<StaffProps[]>([]);
     const {identity} = useLogin();
-    const {addNotification} = useSnackbar();
 
-    const {data: fetchStaffData} = useQuery("staff", getStaff, {
-        enabled: !!identity && ["admin", "staff"].includes(identity.role),
-        onError: (err: Error) => {
-            const newNotification: NotificationProps = {
-                message: err.message,
-                type: "error"
-            };
-            addNotification(newNotification);
-        }
+    const {data: fetchStaffData} = useQuery({
+        queryKey: ["staff"],
+        queryFn: getStaff,
+        enabled: !!identity && ["admin", "staff"].includes(identity.role)
     });
 
     useEffect(() => {
@@ -42,7 +36,8 @@ const useStaffState = () => {
             setStaffData(fetchStaffData);
             fetchStaffData.forEach(async (staff) => {
                 queryClient.setQueryData(["staffItem", staff._id], staff);
-                await queryClient.prefetchQuery(["staffItem", staff._id], {
+                await queryClient.prefetchQuery({
+                    queryKey: ["staffItem", staff._id],
                     initialData: staff,
                     staleTime: Infinity
                 });
@@ -62,7 +57,8 @@ const useStaffOperations = (
     const recomputeAggregatedStaff = () => {
         const aggregatedStaff = queryClient
             .getQueriesData<StaffProps>({queryKey: ["staffItem"], exact: false})
-            .map((query) => query[1]);
+            .map((query) => query[1])
+            .filter(Boolean) as StaffProps[];
 
         setStaffData(aggregatedStaff);
     };
@@ -114,7 +110,8 @@ const useStaffOperations = (
             const addedStaff = await addStaff(newStaffData);
 
             queryClient.setQueryData(["staffItem", addedStaff._id], addedStaff);
-            await queryClient.prefetchQuery(["staffItem", addedStaff._id], {
+            await queryClient.prefetchQuery({
+                queryKey: ["staffItem", addedStaff._id],
                 initialData: addedStaff,
                 staleTime: Infinity
             });

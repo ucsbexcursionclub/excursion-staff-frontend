@@ -1,6 +1,6 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
-import {useQuery, useQueryClient} from "react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {addGear, checkInGear, deleteGearItems, getGear, updateGear} from "../utils/api";
 import {GearProps, MemberProps, NewGearProps, NotificationProps} from "../utils/types";
 import {useReservations} from "./ReservationProvider";
@@ -27,17 +27,11 @@ const useGearState = () => {
     const queryClient = useQueryClient();
     const [gearData, setGearData] = useState<GearProps[]>([]);
     const {isStaff} = useLogin();
-    const {addNotification} = useSnackbar();
 
-    const {data: fetchGearData} = useQuery("gear", getGear, {
-        enabled: isStaff,
-        onError: (err: Error) => {
-            const newNotification: NotificationProps = {
-                message: err.message,
-                type: "error"
-            };
-            addNotification(newNotification);
-        }
+    const {data: fetchGearData} = useQuery({
+        queryKey: ["gear"],
+        queryFn: getGear,
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -45,7 +39,8 @@ const useGearState = () => {
             setGearData(fetchGearData);
             fetchGearData.forEach(async (gearItem) => {
                 queryClient.setQueryData(["gearItem", gearItem._id], gearItem);
-                await queryClient.prefetchQuery(["gearItem", gearItem._id], {
+                await queryClient.prefetchQuery({
+                    queryKey: ["gearItem", gearItem._id],
                     initialData: gearItem,
                     staleTime: Infinity
                 });
@@ -68,9 +63,11 @@ const useGearOperations = (
     const {addNotification} = useSnackbar();
 
     const recomputeAggregatedGear = () => {
+
         const aggregatedGear = queryClient
             .getQueriesData<GearProps>({queryKey: ["gearItem"], exact: false})
-            .map((query) => query[1]);
+            .map((query) => query[1])
+            .filter(Boolean) as GearProps[];
 
         setGearData(aggregatedGear);
     };
@@ -108,11 +105,9 @@ const useGearOperations = (
                 throw new Error("Some gear items could not be deleted.");
             }
 
-            await Promise.all(
-                gearIds.map(async (id) => {
-                    return queryClient.removeQueries({queryKey: ["gearItem", id]});
-                })
-            );
+            gearIds.map((id) => {
+                queryClient.removeQueries({queryKey: ["gearItem", id], exact: true});
+            });
 
             recomputeAggregatedGear();
             addNotification({
@@ -133,7 +128,8 @@ const useGearOperations = (
             const addedGear = await addGear(newGearData);
 
             queryClient.setQueryData(["gearItem", addedGear._id], addedGear);
-            await queryClient.prefetchQuery(["gearItem", addedGear._id], {
+            await queryClient.prefetchQuery({
+                queryKey: ["gearItem", addedGear._id],
                 initialData: addedGear,
                 staleTime: Infinity
             });
@@ -184,7 +180,7 @@ const useGearOperations = (
             ids.map((id) => {
                 console.log("marking gear", id, "as stale");
                 return queryClient.refetchQueries(
-                    {queryKey: ["gearItem", id]},
+                    {queryKey: ["gearItem", id], exact: true},
                     {throwOnError: true}
                 );
             })

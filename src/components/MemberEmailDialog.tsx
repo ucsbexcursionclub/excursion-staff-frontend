@@ -28,8 +28,6 @@ const MemberEmailDialog: React.FC<MemberEmailDialogProps> = ({
     useEffect(() => {
         if (!open) return;
 
-        const today = Date.now();
-
         const emails = memberRowSelectionModel
             .map((id) => retrieveMemberById(id.toString())?.email)
             .filter(Boolean) as string[];

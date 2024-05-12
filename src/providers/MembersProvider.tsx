@@ -1,6 +1,6 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useCallback, useContext, useEffect, useState} from "react";
-import {useQuery, useQueryClient} from "react-query";
+import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {getMembers, addMember, deleteMembers, updateMember} from "../utils/api";
 import {MemberProps, NewMemberProps, NotificationProps, StaffProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
@@ -26,17 +26,11 @@ const useMembersState = () => {
     const [membersData, setMembersData] = useState<MemberProps[]>([]);
     const [loggedInMember, setLoggedInMember] = useState<MemberProps | null>(null);
     const {isStaff} = useLogin();
-    const {addNotification} = useSnackbar();
 
-    const {data: fetchMembersData} = useQuery("members", getMembers, {
-        enabled: isStaff,
-        onError: (err: Error) => {
-            const newNotification: NotificationProps = {
-                message: err.message,
-                type: "error"
-            };
-            addNotification(newNotification);
-        }
+    const {data: fetchMembersData} = useQuery({
+        queryKey: ["members"],
+        queryFn: getMembers,
+        enabled: isStaff
     });
 
     useEffect(() => {
@@ -44,7 +38,8 @@ const useMembersState = () => {
             setMembersData(fetchMembersData);
             fetchMembersData.forEach(async (memberItem) => {
                 queryClient.setQueryData(["memberItem", memberItem._id], memberItem);
-                await queryClient.prefetchQuery(["memberItem", memberItem._id], {
+                await queryClient.prefetchQuery({
+                    queryKey: ["memberItem", memberItem._id],
                     initialData: memberItem,
                     staleTime: Infinity
                 });
@@ -74,7 +69,8 @@ const useMembersOperations = (
     const recomputeAggregatedMembers = () => {
         const aggregatedMembers = queryClient
             .getQueriesData<MemberProps>({queryKey: ["memberItem"], exact: false})
-            .map((query) => query[1]);
+            .map((query) => query[1])
+            .filter(Boolean) as MemberProps[];
 
         setMembersData(aggregatedMembers);
     };
@@ -142,7 +138,7 @@ const useMembersOperations = (
 
             await Promise.all(
                 memberIds.map(async (id) => {
-                    return queryClient.removeQueries({queryKey: ["memberItem", id]});
+                    return queryClient.removeQueries({queryKey: ["memberItem", id], exact: true});
                 })
             );
 
@@ -165,7 +161,8 @@ const useMembersOperations = (
             const addedMember = await addMember(newMemberData);
 
             queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
-            await queryClient.prefetchQuery(["memberItem", addedMember._id], {
+            await queryClient.prefetchQuery({
+                queryKey: ["memberItem", addedMember._id],
                 initialData: addedMember,
                 staleTime: Infinity
             });
@@ -185,7 +182,7 @@ const useMembersOperations = (
             ids.map((id) => {
                 console.log("marking member", id, "as stale");
                 return queryClient.refetchQueries(
-                    {queryKey: ["memberItem", id]},
+                    {queryKey: ["memberItem", id], exact: true},
                     {throwOnError: true}
                 );
             })
