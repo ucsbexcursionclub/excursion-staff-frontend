@@ -15,11 +15,11 @@ import {useMembers} from "../providers/MembersProvider";
 const LISTBOX_PADDING = 8; // px
 
 function renderRow(props: ListChildComponentProps) {
-    const {data, index, style} = props;
+    const { data, index, style } = props;
     const dataSet = data[index];
     const inlineStyle = {
         ...style,
-        top: (style.top as number) + LISTBOX_PADDING
+        top: (style.top as number) + LISTBOX_PADDING,
     };
 
     if (Object.prototype.hasOwnProperty.call(dataSet, "group")) {
@@ -31,11 +31,18 @@ function renderRow(props: ListChildComponentProps) {
     }
 
     return (
-        <Typography component="li" {...dataSet[0]} noWrap style={inlineStyle}>
-            {dataSet[1]}
+        <Typography
+            component="li"
+            {...dataSet[0]} // Spread other props
+            key={dataSet[0].key} // Assuming dataSet[0] contains the key
+            noWrap
+            style={inlineStyle}
+        >
+            {dataSet[1]} 
         </Typography>
     );
 }
+
 const OuterElementContext = React.createContext({});
 
 const OuterElementType = React.forwardRef<HTMLDivElement>((props, ref) => {

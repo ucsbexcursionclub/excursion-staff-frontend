@@ -41,6 +41,7 @@ const StaffGrid: React.FC = () => {
             "Prospective Staff": 1
         };
 
+
         const positionA = a.positions[0].toLowerCase();
         const positionB = b.positions[0].toLowerCase();
 

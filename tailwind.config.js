@@ -31,6 +31,11 @@ export default {
                 peel: {
                     100: "#F5EDF0"
                 }
+            },
+            borderColor: {
+                lime: {
+                    200: "#4c574a",
+                }
             }
         }
     },

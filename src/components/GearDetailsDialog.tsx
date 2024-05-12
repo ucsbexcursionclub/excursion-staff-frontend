@@ -150,7 +150,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                                     disabled={Boolean(!gear.reservationDetails)}
                                     type={"date"}
                                     onChange={
-                                        (e) => setLastContacted(new Date(e.target.value).getTime()) //might be wrong
+                                        (e) => setLastContacted(new Date(e.target.value).getTime())
                                     }
                                     value={convertToMUIDate(lastContacted)}
                                     variant="outlined"

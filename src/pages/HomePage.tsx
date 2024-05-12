@@ -238,7 +238,7 @@ export default function HomePage() {
                     <div className="mt-10 w-full flex justify-center">
                         <div className="min-w-80 w-6/10">
                             <InstagramEmbed
-                                url="https://www.instagram.com/p/CpiXzH3JcCQ/?utm_source=ig_embed&amp;utm_campaign=loading"
+                                url="https://www.instagram.com/excursionclubucsb/"
                                 width="100%"
                             />
                         </div>

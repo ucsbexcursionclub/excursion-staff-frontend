@@ -2,18 +2,39 @@ import LinkGrid from "../components/LinkGrid";
 import LinkNav from "../components/LinkNav";
 import {useParams} from "react-router-dom";
 import React, {useState} from "react";
-import {prospectiveMembers, staffHeads, tripResources} from "../data/links";
+import { useQuery } from "react-query";
+import { getLinkResources } from "../utils/api";
+import { NotificationProps } from "../utils/types";
+import { useSnackbar } from "../providers/SnackBarProvider";
+import { useLogin } from "../providers/LoginProvider";
 
 export default function LinkPage() {
     const {tabId} = useParams<{tabId: string}>();
     const initialTab = tabId || "prospectiveMembers"; // Get from the URL or default
     const [selectedTab, setSelectedTab] = useState(initialTab);
-    const tabs = [prospectiveMembers, tripResources, staffHeads];
-    const currentData = tabs.find((tab) => tab.id === selectedTab);
+    const {isStaff} = useLogin();
+    const {addNotification} = useSnackbar();
+
+    const {data: linkResources} = useQuery({
+        queryKey: ["linkResources"],
+        enabled: isStaff,
+        queryFn: getLinkResources,
+        onError: (err: Error) => {
+            const newNotification: NotificationProps = {
+                message: err.message,
+                type: "error"
+            };
+            addNotification(newNotification);
+        }
+    });
+
+    if (!linkResources) return;
+
+    const currentData = linkResources.find((linkResourceGroup) => linkResourceGroup.id === selectedTab);
 
     return (
         <div>
-            <LinkNav tabs={tabs} onNavItemClicked={(index) => setSelectedTab(tabs[index].id)} />
+            <LinkNav tabs={linkResources} onNavItemClicked={(index) => setSelectedTab(linkResources[index].id)} />
             {currentData && <LinkGrid data={currentData} />}
         </div>
     );

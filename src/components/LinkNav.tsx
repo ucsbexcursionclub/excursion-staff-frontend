@@ -1,9 +1,9 @@
 import * as React from "react";
 import {Link} from "react-router-dom";
-import {linkGroupType} from "../data/links";
+import {LinkGroupType} from "../data/links";
 
 interface Props {
-    tabs: linkGroupType[];
+    tabs: LinkGroupType[];
     onNavItemClicked: (index: number) => void;
 }
 
@@ -25,10 +25,10 @@ export default function LinkNav({tabs, onNavItemClicked}: Props) {
                 <Toolbar disableGutters className="flex flex-wrap max-[700px]:justify-center">
                     {tabs.map((tab, index) => (
                         <Button
-                            key={tab.id}
+                            key={index}
                             onClick={() => handleChange(index)}
                             component={Link}
-                            className="text-white"
+                            className="text-white shadow-lg rounded-xl my-2 mx-4 border-2 border-solid border-lime-200"
                             to={`/links/${tab.id}`}
                             sx={{
                                 fontSize: {xs: "16px", sm: "18px", md: "20px", lg: "20px"}

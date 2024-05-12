@@ -14,6 +14,7 @@ import axios from "axios";
 
 import Cookies from "universal-cookie";
 import {isIdentityProps, parseJwt} from "./utils";
+import {LinkGroupType} from "src/data/links";
 const cookies = new Cookies();
 
 const baseURL = import.meta.env.PROD
@@ -603,5 +604,24 @@ async function sendWelcomeEmail(email: string): Promise<void> {
         console.log(`Welcome email sent successfully to ${email}!`);
     } catch (error: any) {
         console.error(`Error sending welcome email to ${email}:`, error);
+    }
+}
+
+export async function getLinkResources(): Promise<LinkGroupType[]> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/resources/links`, {
+            headers: {
+                Authorization: `Bearer ${cookies.get("jwt")}`
+            }
+        });
+        if (response.data && response.data.data) {
+            return response.data.data as LinkGroupType[];
+        } else {
+            throw new Error("No resource data received from the server.");
+        }
+    } catch (error: any) {
+        // Implement your error handling logic (e.g., handleApiErrors)
+        console.error("Error fetching resources:", error);
+        throw new Error("An unexpected error occurred while fetching resources.");
     }
 }
