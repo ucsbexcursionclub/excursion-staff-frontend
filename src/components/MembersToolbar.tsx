@@ -83,7 +83,6 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
         visibleRows.map((row) => {
             const member: MemberProps = row.model as MemberProps;
-            const gear: GearProps = row.model as GearProps;
             localTotalCount++;
 
             if ((member.membership_expiration_date || Infinity) > Date.now()) {
@@ -91,9 +90,12 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             } else {
                 localExpiredCount++;
             }
+        });
+        visibleRows.map((row) => {
+            const gear: GearProps = row.model as GearProps;
 
             if (gear.reservationDetails){
-                if(gear.reservationDetails.due_date < Date.now()) {
+                if(!((gear.reservationDetails.due_date||Infinity) > Date.now())){
                     localOverdueCount++;
                 }
             }
