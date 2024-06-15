@@ -5,7 +5,7 @@ import {
     useGridApiContext
 } from "@mui/x-data-grid";
 import Typography from "@mui/material/Typography";
-import {MemberProps} from "../utils/types";
+import {GearProps, MemberProps} from "../utils/types";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -68,6 +68,7 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
 }
 
 function AvailibilityView({searchParams}: AvailibilityViewProps) {
+
     const apiRef = useGridApiContext();
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
@@ -82,7 +83,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
         visibleRows.map((row) => {
             const member: MemberProps = row.model as MemberProps;
-
+            const gear: GearProps = row.model as GearProps;
             localTotalCount++;
 
             if ((member.membership_expiration_date || Infinity) > Date.now()) {
@@ -91,15 +92,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
                 localExpiredCount++;
             }
 
-            if (
-                retrieveOpenReservationsByMemberId(member._id).filter(
-                    (reservation) => reservation.due_date < Date.now()
-                ).length > 0 &&
-                retrieveOpenReservationsByMemberId(member._id).filter(
-                    (reservation) => reservation.checked_out_gear.length == reservation.checked_in_gear.length
-                ).length > 0
-                && (member.membership_expiration_date || Infinity) > Date.now()
-            ) {
+            if (gear.reservationDetails&&gear.reservationDetails.due_date < Date.now()) {
                 localOverdueCount++;
             }
         });
