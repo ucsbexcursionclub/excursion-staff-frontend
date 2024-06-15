@@ -92,7 +92,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
                 localExpiredCount++;
             }
 
-            if (gear.reservationDetails&&gear.reservationDetails.due_date < Date.now()) {
+            if (gear.reservationDetails&&gear.reservationDetails.due_date < Date.now()&&gear.memberDetails?.name==member.name) {
                 localOverdueCount++;
             }
         });
