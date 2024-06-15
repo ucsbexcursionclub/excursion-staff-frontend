@@ -96,7 +96,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
                     (reservation) => reservation.due_date < Date.now()
                 ).length > 0 &&
                 retrieveOpenReservationsByMemberId(member._id).filter(
-                    (reservation) => reservation.checked_out_gear == reservation.checked_in_gear
+                    (reservation) => reservation.checked_out_gear.length == reservation.checked_in_gear.length
                 ).length > 0
                 && (member.membership_expiration_date || Infinity) > Date.now()
             ) {
