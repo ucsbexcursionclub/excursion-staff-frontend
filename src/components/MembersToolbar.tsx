@@ -94,7 +94,11 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             if (
                 retrieveOpenReservationsByMemberId(member._id).filter(
                     (reservation) => reservation.due_date < Date.now()
+                ).length > 0 &&
+                retrieveOpenReservationsByMemberId(member._id).filter(
+                    (reservation) => reservation.checked_out_gear == reservation.checked_out_gear
                 ).length > 0
+                && (member.membership_expiration_date || Infinity) > Date.now()
             ) {
                 localOverdueCount++;
             }

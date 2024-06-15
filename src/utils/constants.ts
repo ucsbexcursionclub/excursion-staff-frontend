@@ -10,7 +10,9 @@ export const positionOptions = [
     "Social Media Head",
     "Gear Fairy",
     "Full Staff",
-    "Prospective Staff"
+    "Prospective Staff",
+    "Wizard of Computer",
+    "西海岸仁波齐"
 ];
 
 export enum GearFilterOptions {
