@@ -15,7 +15,7 @@ import {MemberProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
 import {capitalizeFirstLetter} from "../utils/utils";
-import { useSnackbar } from "../providers/SnackBarProvider";
+import {useSnackbar} from "../providers/SnackBarProvider";
 
 type MemberDetailsDialogProps = {
     open: boolean;
@@ -68,13 +68,12 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
             phone_number: phoneNumber,
             notes
         };
-        const updatedMember= await handleMemberUpdate(modifiedMember);
+        const updatedMember = await handleMemberUpdate(modifiedMember);
 
         handleClose();
         if (updatedMember) {
             addNotification({message: "Successfully updated member!", type: "success"});
         }
-
     };
 
     return (
