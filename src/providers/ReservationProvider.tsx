@@ -22,7 +22,6 @@ interface ReservationsContextProps {
     retrieveOpenReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
     retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[];
-    retrieveOverdueMemberIds: () => string[];
     doesMemberIdHaveOverdueReservation: (id: string) => boolean;
 }
 
@@ -109,15 +108,6 @@ const useReservationsOperations = (
         );
     };
 
-    const retrieveOverdueMemberIds = () => {
-        return reservationsData
-            .filter(
-                (reservation) =>
-                    reservation.checked_out_gear.length !== 0 && reservation.due_date < Date.now()
-            )
-            .map((reservation) => reservation.reserving_member); // Extract the member ID
-    };
-
     const retrieveOpenReservationsByGearId = (id: string) => {
         return reservationsData.filter((reservation) => reservation.checked_out_gear.includes(id));
     };
@@ -193,7 +183,6 @@ const useReservationsOperations = (
         retrieveReservationsByMemberId,
         retrieveOpenReservationsByGearId,
         retrieveOpenReservationsByMemberId,
-        retrieveOverdueMemberIds,
         doesMemberIdHaveOverdueReservation
     };
 };
