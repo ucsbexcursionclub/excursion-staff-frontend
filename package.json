@@ -36,7 +36,7 @@
         "@mui/material": "^5.15.17",
         "@mui/x-data-grid": "^6.19.11",
         "@react-oauth/google": "^0.11.1",
-        "@tanstack/react-query": "^5.35.5",
+        "@tanstack/react-query": "^5.45.0",
         "axios": "^1.6.8",
         "browser-image-resizer": "^2.4.1",
         "csv-parser": "^3.0.0",

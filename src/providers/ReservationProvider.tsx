@@ -2,12 +2,7 @@ import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import {addReservation, getReservations, updateReservation} from "../utils/api";
-import {
-    GearProps,
-    MemberProps,
-    NewReservationProps,
-    ReservationProps
-} from "../utils/types";
+import {GearProps, MemberProps, NewReservationProps, ReservationProps} from "../utils/types";
 import {useLogin} from "./LoginProvider";
 import {useSnackbar} from "./SnackBarProvider";
 
@@ -27,6 +22,8 @@ interface ReservationsContextProps {
     retrieveOpenReservationsByGearId: (id: string) => ReservationProps[];
     retrieveReservationsByMemberId: (id: string) => ReservationProps[];
     retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[];
+    retrieveOverdueMemberIds: () => string[];
+    doesMemberIdHaveOverdueReservation: (id: string) => boolean;
 }
 
 const useReservationsState = () => {
@@ -100,6 +97,25 @@ const useReservationsOperations = (
             (reservation) =>
                 reservation.reserving_member === id && reservation.checked_out_gear.length > 0
         );
+    };
+
+    const doesMemberIdHaveOverdueReservation = (id: string) => {
+        // Check if the member has any overdue reservations, should return true or false
+        return reservationsData.some(
+            (reservation) =>
+                reservation.reserving_member === id &&
+                reservation.checked_out_gear.length !== 0 &&
+                reservation.due_date < Date.now()
+        );
+    };
+
+    const retrieveOverdueMemberIds = () => {
+        return reservationsData
+            .filter(
+                (reservation) =>
+                    reservation.checked_out_gear.length !== 0 && reservation.due_date < Date.now()
+            )
+            .map((reservation) => reservation.reserving_member); // Extract the member ID
     };
 
     const retrieveOpenReservationsByGearId = (id: string) => {
@@ -176,7 +192,9 @@ const useReservationsOperations = (
         retrieveReservationsByGearId,
         retrieveReservationsByMemberId,
         retrieveOpenReservationsByGearId,
-        retrieveOpenReservationsByMemberId
+        retrieveOpenReservationsByMemberId,
+        retrieveOverdueMemberIds,
+        doesMemberIdHaveOverdueReservation
     };
 };
 

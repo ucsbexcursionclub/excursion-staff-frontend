@@ -68,12 +68,12 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
 }
 
 function AvailibilityView({searchParams}: AvailibilityViewProps) {
-
     const apiRef = useGridApiContext();
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
 
-    const {retrieveOpenReservationsByMemberId} = useReservations();
+    const {retrieveOpenReservationsByMemberId, doesMemberIdHaveOverdueReservation} =
+        useReservations();
 
     const [activeCount, expiredCount, overdueCount, totalCount] = useMemo(() => {
         let localActiveCount = 0;
@@ -92,12 +92,10 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
             }
         });
         visibleRows.map((row) => {
-            const gear: GearProps = row.model as GearProps;
-
-            if (gear.reservationDetails){
-                if(!((gear.reservationDetails.due_date||Infinity) > Date.now())){
-                    localOverdueCount++;
-                }
+            const member: MemberProps = row.model as MemberProps;
+            // use member id and doesMemberIdHaveOverdueReservation to check if member has overdue gear, and if that's the case then increase localOverdueCount
+            if (doesMemberIdHaveOverdueReservation(member._id)) {
+                localOverdueCount++;
             }
         });
 
