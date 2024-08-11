@@ -23,7 +23,6 @@ import {useReservations} from "../providers/ReservationProvider";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 
-
 function Pagination({
     page,
     onPageChange,
@@ -83,7 +82,7 @@ const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
 ];
 
 const getIdOperators = (
-    retrieveOpenReservationsByMemberId: (id: string) => ReservationProps[] | null
+    doesMemberIdHaveOverdueReservation: (id: string) => boolean
 ): GridFilterOperator<MemberProps, any, any>[] | undefined => {
     const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
         {
@@ -95,13 +94,9 @@ const getIdOperators = (
                         return false;
                     }
 
-                    const memberId = params;
-
-                    return (
-                        (retrieveOpenReservationsByMemberId(memberId) ?? []).filter(
-                            (reservation) => reservation.due_date < Date.now()
-                        ).length > 0
-                    );
+                    // check if the member has any overdue reservations, doesMemberIdHaveOverdueReservation returns a boolean
+                    const hasOverdueGear = doesMemberIdHaveOverdueReservation(params);
+                    return hasOverdueGear;
                 };
             },
             InputComponent: GridFilterInputValue,
@@ -129,14 +124,14 @@ const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - 
 
 const getColumns = (
     retrieveMemberById: (memberId: string) => MemberProps | null,
-    retrieveReservationsByMemberId: (id: string) => ReservationProps[] | null
+    doesMemberIdHaveOverdueReservation: (id: string) => boolean
 ) => {
     const columns: GridColDef[] = [
         {
             field: "_id",
             headerName: "ID",
             width: 90,
-            filterOperators: getIdOperators(retrieveReservationsByMemberId)
+            filterOperators: getIdOperators(doesMemberIdHaveOverdueReservation)
         },
 
         {
@@ -258,7 +253,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
     const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberById} =
         useMembers();
-    const {retrieveReservationsByMemberId} = useReservations();
+    const {doesMemberIdHaveOverdueReservation} = useReservations();
     const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
         MemberFilterOptions.SHOW_ALL
     );
@@ -319,8 +314,8 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     };
 
     const columns = useMemo(
-        () => getColumns(retrieveMemberById, retrieveReservationsByMemberId),
-        [retrieveMemberById, retrieveReservationsByMemberId]
+        () => getColumns(retrieveMemberById, doesMemberIdHaveOverdueReservation),
+        [retrieveMemberById, doesMemberIdHaveOverdueReservation]
     );
 
     return (
