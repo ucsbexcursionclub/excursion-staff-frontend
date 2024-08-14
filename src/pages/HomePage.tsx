@@ -199,10 +199,9 @@ export default function HomePage() {
                         In addition to weekly trips, we have gear and equipment rentals available to
                         our members for free. All gear and equipment has limited availability, and
                         members are allowed to check them out for a limited time on a first-come,
-                        first-serve basis. Members can come check out gear every Wednesday and
-                        Thursday from 4-6pm at 1026 Camino Lindo during the academic year or during
-                        the summer quarter on Mondays from 7-8pm. Below is all the gear we offer for
-                        rental:
+                        first-serve basis. Members can come check out gear using a form in our
+                        weekly email and pick up gear on Thursday evenings. Below is all the gear we
+                        offer for rental:
                     </div>
                 </CardContent>
             </Card>
@@ -222,11 +221,9 @@ export default function HomePage() {
                     <div style={paragraphStyle}>
                         During the academic year, come to one of our general meetings, which are
                         held most Tuesdays at 8:00 pm in Embarcadero Hall (check our instagram
-                        @excursionclubucsb day of), or come out to office hours every Wednesday and
-                        Thursday from 4-6 pm at 1026 Camino Lindo, and bring cash or check (made out
-                        to The Excursion Club using black or blue ink) to the meeting for the
-                        membership payment. During the summer quarter our hours are every Monday
-                        from 7-8pm at 1026 Camino Lindo.
+                        @excursionclubucsb day of), or come out to office hours, and bring cash or
+                        check (made out to The Excursion Club using black or blue ink) to the
+                        meeting for the membership payment.
                     </div>
                     <div style={asteriskNoteStyle}>
                         *We do not hold meetings or office hours during breaks, school holidays, and
@@ -263,10 +260,10 @@ export default function HomePage() {
                         to buy some and rep it with them!
                     </div>
                     <ul style={liStyle}>
-                        <li>Long sleeves - $15</li>
-                        <li>Short sleeves - $15</li>
+                        <li>Long sleeves - sold out</li>
+                        <li>XL Short sleeves - $15</li>
                         <li>Hats - $15</li>
-                        <li>Headlamps - $5</li>
+                        <li>Headlamps - sold out</li>
                     </ul>
                     <div style={paragraphStyle}>
                         If your question is not answered on this page, send it to us using the form
