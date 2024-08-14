@@ -1,4 +1,4 @@
-import { generateResourceUrl } from "../utils/utils";
+import {generateResourceUrl} from "../utils/utils";
 
 type sampleGearProps = {
     imageUrl: string;
@@ -7,51 +7,51 @@ type sampleGearProps = {
 
 export const sampleGearItems: sampleGearProps[] = [
     {
-        imageUrl: generateResourceUrl('/resources/SleepingBag.jpg'),
+        imageUrl: generateResourceUrl("/resources/SleepingBag.jpg"),
         title: "Sleeping Bags"
     },
     {
-        imageUrl: generateResourceUrl('/resources/SleepingPad.jpg'),
+        imageUrl: generateResourceUrl("/resources/SleepingPad.jpg"),
         title: "Sleeping Pads"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Tent.jpg'),
+        imageUrl: generateResourceUrl("/resources/Tent.jpg"),
         title: "Tents"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Backpack.jpg'),
+        imageUrl: generateResourceUrl("/resources/Backpack.jpg"),
         title: "Backpacks"
     },
     {
-        imageUrl: generateResourceUrl('/resources/ColemanStove.jpg'),
-        title: "Camping Stoves"
-    },
-    {
-        imageUrl: generateResourceUrl('/resources/BackpackingStove.jpg'),
+        imageUrl: generateResourceUrl("/resources/BackpackingStove.jpg"),
         title: "Backpacking Stoves"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Waterfilter.jpg'),
+        imageUrl: generateResourceUrl("/resources/Waterfilter.jpg"),
         title: "Water Filters"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Surfboards.jpg'),
+        imageUrl: generateResourceUrl("/resources/Paddleboards.jpg"),
+        title: "Stand up Paddleboards"
+    },
+    {
+        imageUrl: generateResourceUrl("/resources/Surfboards.jpg"),
         title: "Surfboards"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Kayak.jpg'),
+        imageUrl: generateResourceUrl("/resources/Kayak.jpg"),
         title: "Ocean Kayaks"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Wetsuits.jpg'),
+        imageUrl: generateResourceUrl("/resources/Wetsuits.jpg"),
         title: "Wetsuits"
     },
     {
-        imageUrl: generateResourceUrl('/resources/YogaMat.jpg'),
+        imageUrl: generateResourceUrl("/resources/YogaMat.jpg"),
         title: "Yoga Mats"
     },
     {
-        imageUrl: generateResourceUrl('/resources/Hammock.jpg'),
+        imageUrl: generateResourceUrl("/resources/Hammock.jpg"),
         title: "Hammocks"
     }
 ];
