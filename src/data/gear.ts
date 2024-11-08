@@ -15,7 +15,7 @@ export const sampleGearItems: sampleGearProps[] = [
         title: "Sleeping Pads"
     },
     {
-        imageUrl: generateResourceUrl("/resources/Tent.jpg"),
+        imageUrl: generateResourceUrl("/resources/Tent_square_image.jpg"),
         title: "Tents"
     },
     {
@@ -43,7 +43,7 @@ export const sampleGearItems: sampleGearProps[] = [
         title: "Ocean Kayaks"
     },
     {
-        imageUrl: generateResourceUrl("/resources/Wetsuits.jpg"),
+        imageUrl: generateResourceUrl("/resources/Wetsuits_square_image.jpg"),
         title: "Wetsuits"
     },
     {
