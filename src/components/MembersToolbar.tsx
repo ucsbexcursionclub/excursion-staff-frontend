@@ -5,7 +5,7 @@ import {
     useGridApiContext
 } from "@mui/x-data-grid";
 import Typography from "@mui/material/Typography";
-import {GearProps, MemberProps} from "../utils/types";
+import {MemberProps} from "../utils/types";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -72,8 +72,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
 
-    const {retrieveOpenReservationsByMemberId, doesMemberIdHaveOverdueReservation} =
-        useReservations();
+    const {doesMemberIdHaveOverdueReservation} = useReservations();
 
     const [activeCount, expiredCount, overdueCount, totalCount] = useMemo(() => {
         let localActiveCount = 0;
@@ -100,7 +99,7 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
         });
 
         return [localActiveCount, localExpiredCount, localOverdueCount, localTotalCount];
-    }, [visibleRows, retrieveOpenReservationsByMemberId]);
+    }, [visibleRows, doesMemberIdHaveOverdueReservation]);
 
     const filter = searchParams || "All";
 

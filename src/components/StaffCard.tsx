@@ -1,7 +1,6 @@
 import React from "react";
-import Typography from "@mui/material/Typography";
 import {StaffProfile} from "../utils/types";
-import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils"; // Import the function
+import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils";
 import {Avatar} from "@mui/material";
 
 interface StaffCardProps {
@@ -10,29 +9,26 @@ interface StaffCardProps {
 
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
     return (
-        <div className="w-full h-full p-8">
-            <div className="flex flex-col items-center min-w-full bg-gray-100 rounded-2xl shadow-sm p-4 min-h-full">
+        <div className="w-full h-full p-2">
+            <div className="flex flex-col items-center w-full bg-gray-100 rounded-2xl shadow-sm p-4">
                 <Avatar
                     src={generateResourceUrl(staff.profileImagePath || "/resources/avatar.png")}
                     alt={staff.name}
-                    className="w-52 h-52 object-cover rounded-md my-4"
+                    className="w-full h-full sm:mx-1 sm:mx-2 md:mx-3 lg:mx-6 object-cover rounded-md my-2"
                 />
-                <div className="w-full">
-                    <Typography variant="h6" className="font-bold">
+                <div className="w-full text-center">
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
                         {capitalizeFirstLetter(staff.name)}
-                    </Typography>
-                    <Typography variant="body2" className="email mb-1">
+                    </h3>
+                    <p className="text-sm sm:text-base md:text-lg text-gray-700 mb-1">
                         {staff.email}
-                    </Typography>
-                    <div className="positions">
-                        <Typography variant="body2" className="position font-bold mb-3">
-                            {staff.positions.join(", ")}
-                        </Typography>
-                    </div>
-
-                    <Typography variant="body2" className="bio break-words">
+                    </p>
+                    <p className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-3">
+                        {staff.positions.join(", ")}
+                    </p>
+                    <p className="text-sm sm:text-base md:text-lg text-gray-600 break-words">
                         {staff.bio}
-                    </Typography>
+                    </p>
                 </div>
             </div>
         </div>
