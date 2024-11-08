@@ -10,10 +10,19 @@ import {InstagramEmbed} from "react-social-media-embed";
 import {generateResourceUrl} from "../utils/utils";
 import {sampleGearItems} from "../data/gear";
 import ArrowForwardIosSharpIcon from "@mui/icons-material/ArrowForwardIosSharp";
-import MuiAccordion, {AccordionProps} from "@mui/material/Accordion";
-import MuiAccordionSummary, {AccordionSummaryProps} from "@mui/material/AccordionSummary";
-import MuiAccordionDetails from "@mui/material/AccordionDetails";
-import {faqItems} from "../data/faq"; // Assuming faqItems data is imported
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
+import {faqItems} from "../data/faq";
+
+type FaqItem = {
+    question: string;
+    answer: string;
+};
+
+type FAQSectionProps = {
+    faqItems: FaqItem[];
+};
 
 const merchImageUrls = [
     generateResourceUrl("/resources/shortsleevefront.jpg"),
@@ -24,101 +33,81 @@ const merchImageUrls = [
     generateResourceUrl("/resources/headlamp.jpg")
 ];
 
+const cardStyles = (isGreen = false) =>
+    `flex flex-col items-center justify-end min-w-[275px] w-full ${
+        isGreen ? "bg-[#3C4239] text-white" : ""
+    }`;
+
+const FAQSection: React.FC<FAQSectionProps> = ({faqItems}) => (
+    <div className="space-y-2">
+        {faqItems.map((item: FaqItem, index: number) => (
+            <Accordion key={index}>
+                <AccordionSummary
+                    expandIcon={<ArrowForwardIosSharpIcon sx={{fontSize: "0.9rem"}} />}
+                    aria-controls={`panel${index + 1}d-content`}
+                    id={`panel${index + 1}d-header`}
+                    className="bg-gray-100 rounded-lg"
+                >
+                    <Typography className="m-1 text-sm sm:text-base md:text-lg">
+                        {item.question}
+                    </Typography>
+                </AccordionSummary>
+                <AccordionDetails className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <Typography className="m-1 text-sm sm:text-base md:text-lg dark:text-gray-700 text-gray-800">
+                        {item.answer}
+                    </Typography>
+                </AccordionDetails>
+            </Accordion>
+        ))}
+    </div>
+);
+
 export default function HomePage() {
-    const cardStyle = "flex flex-col items-center justify-end min-w-[275px] w-full";
-    const greenCardStyle =
-        "flex flex-row items-start justify-end min-w-[275px] bg-[#3C4239] text-white";
-
-    const Accordion = (props: AccordionProps) => (
-        <MuiAccordion disableGutters elevation={0} square {...props} />
-    );
-
-    const AccordionSummary = (props: AccordionSummaryProps) => (
-        <MuiAccordionSummary
-            expandIcon={<ArrowForwardIosSharpIcon sx={{fontSize: "0.9rem"}} />}
-            {...props}
-        />
-    );
-
-    const AccordionDetails = MuiAccordionDetails;
-
-    const [name, setName] = useState<string>("");
-    const [email, setEmail] = useState<string>("");
-    const [phone, setPhone] = useState<string>("");
-    const [subject, setSubject] = useState<string>("");
-    const [feedback, setFeedback] = useState<string>("");
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        subject: "",
+        feedback: ""
+    });
     const [loading, setLoading] = useState(false);
 
     const {addNotification} = useSnackbar();
 
-    const handleNameChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setName(e.target.value);
-    };
-
-    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setEmail(e.target.value);
-    };
-
-    const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setPhone(e.target.value);
-    };
-
-    const handleSubjectChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setSubject(e.target.value);
-    };
-
-    const handleFeedbackChange = (e: ChangeEvent<HTMLInputElement>) => {
-        setFeedback(e.target.value);
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = e.target;
+        setFormData((prevState) => ({...prevState, [name]: value}));
     };
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setLoading(true); // Set loading state while sending
-
+        setLoading(true);
         try {
-            // Send feedback data to the API
-            await sendFeedback({name, email, phone, subject, feedback});
-
-            // Reset form and loading state after successful submission
-            setName("");
-            setEmail("");
-            setPhone("");
-            setSubject("");
-            setFeedback("");
-            setLoading(false);
+            await sendFeedback(formData);
+            setFormData({name: "", email: "", phone: "", subject: "", feedback: ""});
         } catch (error: any) {
             addNotification({type: "error", message: error.message});
             console.error("Error submitting feedback:", error);
         }
-
-        setLoading(false); // Reset loading state on error
+        setLoading(false);
     };
 
     return (
-        <div
-            className={
-                "max-w-7xl mx-auto flex flex-col items-center justify-start min-h-screen bg-[#3C4239]"
-            }
-        >
+        <div className="max-w-7xl mx-auto flex flex-col items-center justify-start min-h-screen bg-[#3C4239]">
             <div className="relative">
-                {/* Main image at the top of the page */}
                 <img
                     src={`${import.meta.env.EXC_CLOUDFRONT_BASE_URL}/resources/rockJump.png`}
                     alt="Homepage"
                     className="w-full"
                 />
-
-                {/* Slogan text on main image */}
                 <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center py-2">
-                    <div className="font-bold text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl">
+                    <div className="font-bold text-center text-4xl sm:text-6xl md:text-7xl lg:text-8xl text-white">
                         {"We Do it Outdoors"}
                     </div>
                 </div>
             </div>
 
-            {/* "Stoked" Definition Section */}
             <div className="flex flex-row items-start justify-end min-w-[275px] border bg-white p-4 sm:px-4 md:px-8 lg:px-12">
-                {/* Left Column */}
                 <div className="flex-1 pr-2 text-right">
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold">stoked</h2>
                     <p className="text-sm sm:text-base md:text-lg text-gray-500 italic">
@@ -126,11 +115,7 @@ export default function HomePage() {
                         adjective
                     </p>
                 </div>
-
-                {/* Divider */}
                 <div className="w-[2px] bg-black mx-4 h-full"></div>
-
-                {/* Right Column */}
                 <div className="flex-2 pr-10">
                     <p className="text-sm sm:text-base md:text-lg">
                         To be stoked is to be completely and intensely enthusiastic, exhilarated, or
@@ -142,7 +127,7 @@ export default function HomePage() {
             </div>
 
             {/* 'What is Excursion Club?' text section */}
-            <Card className={cardStyle} square>
+            <Card className={cardStyles()} square>
                 <CardContent className="flex flex-col text-left sm:px-4 md:px-6 lg:px-8 ">
                     <Typography
                         variant="body2"
@@ -173,7 +158,7 @@ export default function HomePage() {
             </Card>
 
             {/* 'What Do We Offer?' text section */}
-            <Card className={greenCardStyle} square>
+            <Card className={cardStyles(true)} square>
                 <CardContent className="flex flex-col text-left sm:px-4 md:px-6 lg:px-8">
                     <Typography
                         variant="body2"
@@ -230,7 +215,7 @@ export default function HomePage() {
                 </div>
             )}
 
-            <Card className={cardStyle} square>
+            <Card className={cardStyles()} square>
                 <CardContent className="flex flex-col text-left sm:px-4 md:px-6 lg:px-8">
                     {/* Joining Info */}
                     <Typography
@@ -303,7 +288,7 @@ export default function HomePage() {
                 ))}
             </div>
 
-            <Card className={greenCardStyle} square>
+            <Card className={cardStyles(true)} square>
                 <CardContent className="flex flex-col text-left sm:px-4 md:px-6 lg:px-8">
                     <Typography
                         variant="body2"
@@ -330,39 +315,20 @@ export default function HomePage() {
             </Card>
 
             {/* FAQ Accordion */}
-            <Card className={cardStyle} square>
+            <Card className={cardStyles()} square>
                 <CardContent className="flex flex-col text-left sm:px-4 md:px-6 lg:px-8">
                     <Typography
                         variant="body2"
-                        className="my-2 text-lg sm:text-xl md:text-2xl font-bold text-black"
+                        className="my-2 text-lg sm:text-xl md:text-2xl font-bold"
                     >
                         FAQ
                     </Typography>
-                    <div className="space-y-2">
-                        {faqItems.map((item, index) => (
-                            <Accordion key={index}>
-                                <AccordionSummary
-                                    aria-controls={`panel${index + 1}d-content`}
-                                    id={`panel${index + 1}d-header`}
-                                    className="bg-gray-100 rounded-lg"
-                                >
-                                    <Typography className="m-1 text-sm sm:text-base md:text-lg ">
-                                        {item.question}
-                                    </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails className="p-4 border-t border-gray-200 dark:border-gray-700">
-                                    <Typography className="m-1 text-sm sm:text-base md:text-lg dark:text-gray-700 text-gray-800">
-                                        {item.answer}
-                                    </Typography>
-                                </AccordionDetails>
-                            </Accordion>
-                        ))}
-                    </div>
+                    <FAQSection faqItems={faqItems} />
                 </CardContent>
             </Card>
 
             {/* Feedback Form */}
-            <Card className={cardStyle} square>
+            <Card className={cardStyles()} square>
                 <CardContent>
                     <div className="p-4">
                         <form onSubmit={handleSubmit}>
@@ -376,50 +342,55 @@ export default function HomePage() {
                                 <TextField
                                     id="name"
                                     label="Name"
+                                    name="name"
                                     variant="outlined"
                                     className="pb-2"
-                                    value={name}
-                                    onChange={handleNameChange}
+                                    value={formData.name}
+                                    onChange={handleInputChange}
                                     fullWidth
                                 />
                                 <TextField
                                     id="email"
                                     label="Email"
+                                    name="email"
                                     variant="outlined"
                                     className="pb-2"
-                                    value={email}
-                                    onChange={handleEmailChange}
+                                    value={formData.email}
+                                    onChange={handleInputChange}
                                     fullWidth
                                 />
                                 <TextField
                                     id="phone"
                                     label="Phone"
+                                    name="phone"
                                     variant="outlined"
                                     className="pb-2"
-                                    value={phone}
-                                    onChange={handlePhoneChange}
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
                                     fullWidth
                                 />
                                 <TextField
                                     id="subject"
                                     label="Subject"
+                                    name="subject"
                                     variant="outlined"
                                     className="pb-2"
                                     required
-                                    value={subject}
-                                    onChange={handleSubjectChange}
+                                    value={formData.subject}
+                                    onChange={handleInputChange}
                                     fullWidth
                                 />
                                 <TextField
                                     id="feedback"
                                     label="Feedback or Message"
+                                    name="feedback"
                                     variant="outlined"
                                     className="pb-2"
                                     multiline
                                     required
                                     rows={4}
-                                    value={feedback}
-                                    onChange={handleFeedbackChange}
+                                    value={formData.feedback}
+                                    onChange={handleInputChange}
                                     fullWidth
                                 />
                                 <Button
