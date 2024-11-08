@@ -96,7 +96,7 @@ const StaffGrid: React.FC = () => {
                 >
                     Board
                 </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     {boardStaff.map((staffProfile, index) => (
                         <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
@@ -113,7 +113,7 @@ const StaffGrid: React.FC = () => {
                 >
                     Staff
                 </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     {generalStaff.map((staffProfile, index) => (
                         <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
@@ -130,7 +130,7 @@ const StaffGrid: React.FC = () => {
                 >
                     Prospective Staff
                 </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                     {prospectiveStaff.map((staffProfile, index) => (
                         <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
