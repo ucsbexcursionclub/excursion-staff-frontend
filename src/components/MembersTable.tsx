@@ -11,7 +11,7 @@ import {
     useGridApiContext,
     useGridSelector
 } from "@mui/x-data-grid";
-import {MemberProps, ReservationProps} from "../utils/types";
+import {MemberProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import MemberDetailsDialog from "./MemberDetailsDialog";
 import {capitalizeFirstLetter} from "../utils/utils";

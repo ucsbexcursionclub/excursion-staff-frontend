@@ -1,12 +1,11 @@
 import React from "react";
-import Grid from "@mui/material/Grid";
 import Typography from "@mui/material/Typography";
 import StaffCard from "./StaffCard"; // Import your StaffCard component
 import {useQuery} from "@tanstack/react-query";
 import {getStaffProfiles} from "../utils/api";
 
 const StaffGrid: React.FC = () => {
-    const {data: staffProfiles, isError} = useQuery({
+    const {data: staffProfiles} = useQuery({
         queryKey: ["staffProfiles"],
         queryFn: getStaffProfiles
     });
@@ -31,7 +30,6 @@ const StaffGrid: React.FC = () => {
             "Prospective Staff": 1
         };
 
-
         const positionA = a.positions[0].toLowerCase();
         const positionB = b.positions[0].toLowerCase();
 
@@ -39,106 +37,106 @@ const StaffGrid: React.FC = () => {
     });
 
     // Separate staff into "Board" and "General Staff" sections
-    const boardStaff = sortedStaff.filter(
-        (staffMember) =>
-            staffMember.positions[0].toLowerCase() === "director" ||
-            staffMember.positions[0].toLowerCase() === "treasurer" ||
-            staffMember.positions[0].toLowerCase() === "general board"
-    );
+    const boardStaff = sortedStaff
+        .filter(
+            (staffMember) =>
+                staffMember.positions[0].toLowerCase() === "director" ||
+                staffMember.positions[0].toLowerCase() === "treasurer" ||
+                staffMember.positions[0].toLowerCase() === "general board"
+        )
+        .sort((a, b) => {
+            // Define the specific order for board positions
+            const boardPositionOrder: {[position: string]: number} = {
+                director: 1,
+                treasurer: 2,
+                "general board": 3
+            };
 
-    const generalStaff = sortedStaff.filter(
-        (staffMember) =>
-            staffMember.positions[0].toLowerCase() !== "director" &&
-            staffMember.positions[0].toLowerCase() !== "treasurer" &&
-            staffMember.positions[0].toLowerCase() !== "general board" &&
-            staffMember.positions[0].toLowerCase() !== "prospective staff"
-    );
+            // Get the order for each staff member's primary position
+            const positionA = boardPositionOrder[a.positions[0].toLowerCase()] || 4;
+            const positionB = boardPositionOrder[b.positions[0].toLowerCase()] || 4;
 
-    const prospectiveStaff = sortedStaff.filter(
-        (staffMember) => staffMember.positions[0].toLowerCase() === "prospective staff"
-    );
+            // Sort based on the defined order
+            return positionA - positionB;
+        });
+
+    const generalStaff = sortedStaff
+        .filter(
+            (staffMember) =>
+                staffMember.positions[0].toLowerCase() !== "director" &&
+                staffMember.positions[0].toLowerCase() !== "treasurer" &&
+                staffMember.positions[0].toLowerCase() !== "general board" &&
+                staffMember.positions[0].toLowerCase() !== "prospective staff"
+        )
+        .sort((a, b) => {
+            // Sort by bio presence, then by bio length
+            const hasBioA = a.bio ? 1 : 0;
+            const hasBioB = b.bio ? 1 : 0;
+            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
+            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
+        });
+
+    const prospectiveStaff = sortedStaff
+        .filter((staffMember) => staffMember.positions[0].toLowerCase() === "prospective staff")
+        .sort((a, b) => {
+            // Sort by bio presence, then by bio length
+            const hasBioA = a.bio ? 1 : 0;
+            const hasBioB = b.bio ? 1 : 0;
+            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
+            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
+        });
 
     return (
         <div className="flex flex-col items-center">
             {/* Section for "Board" */}
-            <div className="mb-8 text-center">
+            <div className="text-center">
                 <Typography
-                    variant="h4"
-                    color="text-green-900"
-                    sx={{fontSize: {xs: "24px", md: "32px"}}}
-                    className="mb-4"
+                    variant="body2"
+                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
                 >
                     Board
                 </Typography>
-                <Grid container className="ml-0 w-full justify-start" spacing={4}>
+                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {boardStaff.map((staffProfile, index) => (
-                        <Grid
-                            className="flex p-0 py-8 justify-center"
-                            item
-                            xs={12}
-                            sm={6}
-                            md={4}
-                            lg={3}
-                            key={index}
-                        >
+                        <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
-                        </Grid>
+                        </div>
                     ))}
-                </Grid>
+                </div>
             </div>
 
             {/* Section for "General Staff" */}
-            <div className="mb-8 text-center">
+            <div className="text-center">
                 <Typography
-                    variant="h4"
-                    color="text-green-900"
-                    className="mb-4"
-                    sx={{fontSize: {xs: "24px", md: "32px"}}}
+                    variant="body2"
+                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
                 >
                     Staff
                 </Typography>
-                <Grid container className="ml-0 w-full justify-start" spacing={4}>
+                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {generalStaff.map((staffProfile, index) => (
-                        <Grid
-                            className="flex p-0 py-8 justify-center"
-                            item
-                            xs={12}
-                            sm={6}
-                            md={4}
-                            lg={3}
-                            key={index}
-                        >
+                        <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
-                        </Grid>
+                        </div>
                     ))}
-                </Grid>
+                </div>
             </div>
 
             {/* Section for "Prospective Staff" */}
-            <div className="mb-8 text-center">
+            <div className="text-center">
                 <Typography
-                    variant="h4"
-                    color="text-green-900"
-                    sx={{fontSize: {xs: "24px", md: "32px"}}}
-                    className="mb-4"
+                    variant="body2"
+                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
                 >
                     Prospective Staff
                 </Typography>
-                <Grid container className="ml-0 w-full justify-start" spacing={4}>
+                <div className="grid ml-0 w-full justify-start grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
                     {prospectiveStaff.map((staffProfile, index) => (
-                        <Grid
-                            className="flex p-0 py-8 justify-center"
-                            item
-                            xs={12}
-                            sm={6}
-                            md={4}
-                            lg={3}
-                            key={index}
-                        >
+                        <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
-                        </Grid>
+                        </div>
                     ))}
-                </Grid>
+                </div>
             </div>
 
             {/* Add a section for "Emeriti" if needed */}

@@ -6,7 +6,7 @@ type FAQItemProps = {
 export const faqItems: FAQItemProps[] = [
     {
         question: "What is included with my membership?",
-        answer: "As a member, you get access to sign up for all Excursion Club trips and have access to almost all of our gear. Trips vary in price, but all costs pay for the trip itself, not staff or overhead."
+        answer: "As a member, you gain access to sign up for all Excursion Club trips and have access to almost all of our gear. Trip costs vary; most day trips are free aside for maybe splitting gas, while for overnight trips, we split the costs of travel, food, and campsite or lodging bookings. Trips have limited availability, so sign up fast!"
     },
     {
         question:
@@ -18,8 +18,12 @@ export const faqItems: FAQItemProps[] = [
         answer: "Being on staff for the club is a great opportunity to use and gain leadership, organizational, safety, and other skills that will make you awesome! Scroll to the bottom of our staff page for info on how to send an application!"
     },
     {
+        question: "I have a friend who is not in the club, can I check out gear for them?",
+        answer: "Being a member of the club offers YOU access to the club’s gear. Without membership dues, we would not be able to afford to purchase and maintain the gear we provide. Checking out gear to non-members undermines how our club works and is not allowed under any circumstances. Our club offers its gear for very low prices to begin with, please abide by this simple rule to avoid disciplinary action."
+    },
+    {
         question: "What do I do if I broke gear?",
-        answer: "Don’t worry!! We’re not mad! This happens, we know. If you could just let us know how and when it happened so that we can replace the item and hopefully avoid it happening again. Use the contact form below, email info@excursionclubucsb.org or DM us on instagram @excursionclubucsb"
+        answer: "Don’t worry!! We’re not mad! This happens, we know. Please bring back the broken item and let us know how and when it happened so that we can replace it and hopefully prevent it from happening again. Use the contact form below, email info@excursionclubucsb.org, or DM us on Instagram @excursionclubucsb."
     },
     {
         question:
@@ -28,7 +32,7 @@ export const faqItems: FAQItemProps[] = [
     },
     {
         question: "I’m not receiving the weekly emails…What do I do?",
-        answer: "First thing, please check your spam folder. If you don't find it there, fill out the form below and we'll try to figure out what's going on."
+        answer: "First thing, please check your spam folder. If you don't find it there, email us at info@excursionclubucsb.org and we'll try to figure out what's going on."
     },
     {
         question:
@@ -46,10 +50,6 @@ export const faqItems: FAQItemProps[] = [
     },
     {
         question: "Is this Adventure Programs?",
-        answer: "No, while both The Excursion Club and Adventure Programs seek to bring people into the great outdoors, the Excursion Club is entirely volunteer-based. That means you only pay for the cost (if any) of the trips you go on, with no overhead, which makes our trips far cheaper. We also have a much greater variety and number of trips, ranging from just going out to surf to week-long sends in the Grand Canyon, going out each and every week!"
-    },
-    {
-        question: "I have a friend who is not in the club, can I check out gear for them?",
-        answer: "Being a member of the club offers YOU access to the club’s gear. Without membership dues, we would not be able to afford to purchase and maintain the gear we provide. Checking out gear to non-members undermines how our club works and is not allowed under any circumstances. Our club offers its gear for very low prices to begin with, please abide by this simple rule to avoid disciplinary action."
+        answer: "No, while both The Excursion Club and Adventure Programs seek to bring people into the great outdoors, the Excursion Club is entirely volunteer-based, making our trips far cheaper. We also have a much greater variety and number of trips, ranging from just going out to surf to week-long sends in the Grand Canyon, going out each and every week! We love our pals at Adventure Programs though, so go and check out what they have to offer too!"
     }
 ];
