@@ -12,6 +12,7 @@ export const positionOptions = [
     "Full Staff",
     "Prospective Staff",
     "Wizard of Computer",
+    "Emeritus",
     "西海岸仁波齐"
 ];
 
