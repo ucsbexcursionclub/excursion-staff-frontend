@@ -27,8 +27,7 @@ const StaffGrid: React.FC = () => {
             "Social Media Head": 3,
             "Gear Fairy": 3,
             "Full Staff": 2,
-            "Prospective Staff": 1,
-            "Emeritus Staff": 0
+            "Prospective Staff": 1
         };
 
         const positionA = a.positions[0].toLowerCase();
@@ -79,16 +78,6 @@ const StaffGrid: React.FC = () => {
 
     const prospectiveStaff = sortedStaff
         .filter((staffMember) => staffMember.positions[0].toLowerCase() === "prospective staff")
-        .sort((a, b) => {
-            // Sort by bio presence, then by bio length
-            const hasBioA = a.bio ? 1 : 0;
-            const hasBioB = b.bio ? 1 : 0;
-            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
-            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
-        });
-
-    const emeritusStaff = sortedStaff
-        .filter((staffMember) => staffMember.positions[0].toLowerCase() === "emeritus")
         .sort((a, b) => {
             // Sort by bio presence, then by bio length
             const hasBioA = a.bio ? 1 : 0;
@@ -151,21 +140,6 @@ const StaffGrid: React.FC = () => {
             </div>
 
             {/* Add a section for "Emeriti" if needed */}
-            <div className="text-center">
-                <Typography
-                    variant="body2"
-                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
-                >
-                    Emeritus Staff
-                </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {emeritusStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={index}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                </div>
-            </div>
         </div>
     );
 };
