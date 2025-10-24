@@ -12,6 +12,7 @@ export type MemberProps = {
     membership_expiration_date: number;
     join_datetime: number;
     notes: string | null;
+    flagged?: boolean;
     staff_id?: string;
 };
 

@@ -5,6 +5,7 @@ import {
     useGridApiContext
 } from "@mui/x-data-grid";
 import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 import {MemberProps} from "../utils/types";
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
@@ -140,16 +141,26 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 type GearToolBarProps = {
     searchParams: string;
     onFilterChange: React.Dispatch<React.SetStateAction<MemberFilterOptions>>;
+    flaggedOnly: boolean;
+    setFlaggedOnly: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function MembersToolBar({searchParams, onFilterChange}: GearToolBarProps) {
+export default function MembersToolBar({searchParams, onFilterChange, flaggedOnly, setFlaggedOnly}: GearToolBarProps) {
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
             className="bg-gray-200 rounded-2xl rounded-b-none"
         >
-            <div className="flex grow space-x-4 justify-evenly">
+            <div className="flex grow space-x-4 justify-evenly items-center flex-wrap">
                 <FilterSelect onFilterChange={onFilterChange} />
+                <Button
+                    variant={flaggedOnly ? "contained" : "outlined"}
+                    color="warning"
+                    size="small"
+                    onClick={() => setFlaggedOnly((v) => !v)}
+                >
+                    {flaggedOnly ? "Flagged Only: ON" : "Flagged Only: OFF"}
+                </Button>
                 <SelectedCount />
             </div>
             <div className="flex grow justify-center">
