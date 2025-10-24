@@ -1,9 +1,5 @@
-import React, {useState, ChangeEvent, FormEvent} from "react";
-import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import {Button, Typography} from "@mui/material";
-import {sendFeedback} from "../utils/api";
-import {useSnackbar} from "../providers/SnackBarProvider";
+import React from "react";
+import {Typography} from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import {InstagramEmbed} from "react-social-media-embed";
@@ -63,34 +59,7 @@ const FAQSection: React.FC<FAQSectionProps> = ({faqItems}) => (
 );
 
 export default function HomePage() {
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        feedback: ""
-    });
-    const [loading, setLoading] = useState(false);
-
-    const {addNotification} = useSnackbar();
-
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target;
-        setFormData((prevState) => ({...prevState, [name]: value}));
-    };
-
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await sendFeedback(formData);
-            setFormData({name: "", email: "", phone: "", subject: "", feedback: ""});
-        } catch (error: any) {
-            addNotification({type: "error", message: error.message});
-            console.error("Error submitting feedback:", error);
-        }
-        setLoading(false);
-    };
+    // Page no longer contains the feedback form — contact message is shown at the bottom.
 
     return (
         <div className="max-w-7xl mx-auto flex flex-col items-center justify-start min-h-screen bg-[#3C4239]">
@@ -327,87 +296,16 @@ export default function HomePage() {
                 </CardContent>
             </Card>
 
-            {/* Feedback Form */}
+            {/* Contact message placed at the bottom of the page */}
             <Card className={cardStyles()} square>
                 <CardContent>
                     <div className="p-4">
-                        <form onSubmit={handleSubmit}>
-                            <Box className="flex flex-col space-y-4 max-w-lg mx-auto">
-                                <Typography
-                                    variant="body2"
-                                    className="text-lg sm:text-xl md:text-2xl font-bold text-black"
-                                >
-                                    Contact Us
-                                </Typography>
-                                <TextField
-                                    id="name"
-                                    label="Name"
-                                    name="name"
-                                    variant="outlined"
-                                    className="pb-2"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="email"
-                                    label="Email"
-                                    name="email"
-                                    variant="outlined"
-                                    className="pb-2"
-                                    value={formData.email}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="phone"
-                                    label="Phone"
-                                    name="phone"
-                                    variant="outlined"
-                                    className="pb-2"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="subject"
-                                    label="Subject"
-                                    name="subject"
-                                    variant="outlined"
-                                    className="pb-2"
-                                    required
-                                    value={formData.subject}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                />
-                                <TextField
-                                    id="feedback"
-                                    label="Feedback or Message"
-                                    name="feedback"
-                                    variant="outlined"
-                                    className="pb-2"
-                                    multiline
-                                    required
-                                    rows={4}
-                                    value={formData.feedback}
-                                    onChange={handleInputChange}
-                                    fullWidth
-                                />
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    sx={{width: "min-content", whiteSpace: "nowrap"}}
-                                    disabled={loading} // Disable the button while loading
-                                    className="self-start"
-                                >
-                                    {loading ? "Submitting..." : "Submit Feedback"}{" "}
-                                    {/* Show loading state */}
-                                </Button>
-                            </Box>
-                        </form>
-                        <p className="text-sm text-gray-600 mt-4">
-                            * Send an anonymous message without filling out Name, Email, or Phone.
-                        </p>
+                        <Typography
+                            variant="body2"
+                            className="text-lg sm:text-xl md:text-2xl font-bold text-black text-center"
+                        >
+                            Have any questions, comments, concerns? Please send an email to: info@excursionclubucsb.org
+                        </Typography>
                     </div>
                 </CardContent>
             </Card>

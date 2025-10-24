@@ -13,7 +13,11 @@ export const positionOptions = [
     "Prospective Staff",
     "Wizard of Computer",
     "Emeritus",
-    "西海岸仁波齐"
+    "西海岸仁波齐",
+    "Animal Whisperer",
+    "Chef of Succulent Chinese Meals",
+    "Corelord",
+    "Jill of All Trades"
 ];
 
 export enum GearFilterOptions {
@@ -27,6 +31,7 @@ export enum MemberFilterOptions {
     SHOW_EXPIRED = "SHOW_EXPIRED",
     SHOW_ACTIVE = "SHOW_ACTIVE",
     SHOW_HAS_OVERDUE_GEAR = "SHOW_HAS_OVERDUE_GEAR",
+    SHOW_FLAGGED = "SHOW_FLAGGED",
     SHOW_ALL = "SHOW_ALL"
 }
 
