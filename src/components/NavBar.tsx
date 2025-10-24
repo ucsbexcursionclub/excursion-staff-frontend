@@ -24,7 +24,8 @@ const baseTabs = [
 const loggedInTabs = [
     {label: "Links", href: "/links"},
     {label: "Members", href: "/members"},
-    {label: "Gear", href: "/gear"}
+    {label: "Gear", href: "/gear"},
+    {label: "Income", href: "/income"}
 ];
 
 const adminTabs = [{label: "Admin", href: "/editstaff"}];
@@ -74,7 +75,7 @@ function NavBar() {
     };
 
     return (
-        <AppBar position="static" className="bg-lime-200">
+        <AppBar position="static" className="bg-gray-900">
             <Container maxWidth="xl">
                 <Toolbar disableGutters className="flex justify-between py-2">
                     <Box sx={{display: {xs: "flex", md: "none"}}}>

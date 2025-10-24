@@ -22,6 +22,7 @@ import {MemberFilterOptions} from "../utils/constants";
 import {useReservations} from "../providers/ReservationProvider";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
+import FlagIcon from "@mui/icons-material/Flag";
 
 function Pagination({
     page,
@@ -82,6 +83,7 @@ const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
 ];
 
 const getIdOperators = (
+    retrieveMemberById: (memberId: string) => MemberProps | null,
     doesMemberIdHaveOverdueReservation: (id: string) => boolean
 ): GridFilterOperator<MemberProps, any, any>[] | undefined => {
     const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
@@ -94,13 +96,27 @@ const getIdOperators = (
                         return false;
                     }
 
-                    // check if the member has any overdue reservations, doesMemberIdHaveOverdueReservation returns a boolean
+                    // check if the member has any overdue reservations
                     const hasOverdueGear = doesMemberIdHaveOverdueReservation(params);
                     return hasOverdueGear;
                 };
             },
             InputComponent: GridFilterInputValue,
             InputComponentProps: {type: "date"}
+        },
+        {
+            value: MemberFilterOptions.SHOW_FLAGGED,
+            getApplyFilterFn: () => null,
+            getApplyFilterFnV7: () => {
+                return (params: string | null) => {
+                    if (!params) return false;
+                    const member = retrieveMemberById(params);
+                    if (!member) return false;
+                    return !!member.flagged;
+                };
+            },
+            InputComponent: GridFilterInputValue,
+            InputComponentProps: {type: "text"}
         },
         {
             value: ">=",
@@ -124,14 +140,15 @@ const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - 
 
 const getColumns = (
     retrieveMemberById: (memberId: string) => MemberProps | null,
-    doesMemberIdHaveOverdueReservation: (id: string) => boolean
+    doesMemberIdHaveOverdueReservation: (id: string) => boolean,
+    onToggleFlag: (member: MemberProps) => void
 ) => {
     const columns: GridColDef[] = [
         {
             field: "_id",
             headerName: "ID",
             width: 90,
-            filterOperators: getIdOperators(doesMemberIdHaveOverdueReservation)
+            filterOperators: getIdOperators(retrieveMemberById, doesMemberIdHaveOverdueReservation)
         },
 
         {
@@ -143,6 +160,29 @@ const getColumns = (
                     return capitalizeFirstLetter(params.value);
                 }
                 return "N/A";
+            }
+        },
+        {
+            field: "flagged",
+            width: 80,
+            sortable: false,
+            align: "center",
+            headerName: "Flag",
+            renderCell: (params) => {
+                const member = params.row as MemberProps;
+                const isFlagged = !!member.flagged;
+                return (
+                    <IconButton
+                        color={isFlagged ? "error" : "default"}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleFlag(member);
+                        }}
+                        title={isFlagged ? "Unflag member" : "Flag member"}
+                    >
+                        <FlagIcon />
+                    </IconButton>
+                );
             }
         },
         {
@@ -251,12 +291,18 @@ type MembersTableProps = {
 export default function MembersTable({searchParams}: MembersTableProps) {
     const [dialogOpen, setDialogOpen] = React.useState(false);
     const [selectedMember, setSelectedMember] = React.useState<MemberProps | null>(null);
-    const {membersData, memberRowSelectionModel, setMemberRowSelectionModel, retrieveMemberById} =
-        useMembers();
+    const {
+        membersData,
+        memberRowSelectionModel,
+        setMemberRowSelectionModel,
+        retrieveMemberById,
+        handleMemberUpdate
+    } = useMembers();
     const {doesMemberIdHaveOverdueReservation} = useReservations();
     const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
         MemberFilterOptions.SHOW_ALL
     );
+    const [flaggedOnly, setFlaggedOnly] = useState<boolean>(false);
 
     const getRowId = (row: MemberProps) => row._id;
     const calculateFilterItems = () => {
@@ -293,13 +339,38 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                     }
                 ];
 
+            // Flagged-only combination is handled via the 'flaggedOnly' toggle, not as a standalone select option
+
+            case MemberFilterOptions.SHOW_FLAGGED:
+                return [
+                    {
+                        id: 1,
+                        field: "_id",
+                        operator: MemberFilterOptions.SHOW_FLAGGED,
+                        value: today
+                    }
+                ];
+
             case MemberFilterOptions.SHOW_ALL:
             default:
                 return []; // No filters
         }
     };
 
-    const filterItems = calculateFilterItems();
+    const baseFilterItems = calculateFilterItems();
+    const filterItems = useMemo(() => {
+        if (!flaggedOnly) return baseFilterItems;
+        // add flagged operator on _id to existing filter set
+        return [
+            {
+                id: 0,
+                field: "_id",
+                operator: MemberFilterOptions.SHOW_FLAGGED,
+                value: Date.now()
+            },
+            ...baseFilterItems
+        ];
+    }, [baseFilterItems, flaggedOnly]);
 
     const handleCellClick = (params: any) => {
         if (params.field === "edit") {
@@ -313,9 +384,16 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         setSelectedMember(null);
     };
 
+    const onToggleFlag = useMemo(
+        () => (member: MemberProps) => {
+            void handleMemberUpdate({...member, flagged: !member.flagged});
+        },
+        [handleMemberUpdate]
+    );
+
     const columns = useMemo(
-        () => getColumns(retrieveMemberById, doesMemberIdHaveOverdueReservation),
-        [retrieveMemberById, doesMemberIdHaveOverdueReservation]
+        () => getColumns(retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag),
+        [retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag]
     );
 
     return (
@@ -358,7 +436,9 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 slotProps={{
                     toolbar: {
                         searchParams: searchParams,
-                        onFilterChange: setSelectedFilter
+                        onFilterChange: setSelectedFilter,
+                        flaggedOnly,
+                        setFlaggedOnly
                     }
                 }}
             />

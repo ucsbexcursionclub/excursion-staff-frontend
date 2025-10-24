@@ -10,6 +10,7 @@ import Layout from "./components/Layout";
 import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
+import IncomePage from "./pages/IncomePage";
 
 // Providers
 import {GearProvider} from "./providers/GearProvider";
@@ -28,6 +29,7 @@ function updateDocumentMetadata(pathname: string) {
         "/links": root + "Links",
         "/members": root + "Members",
         "/gear": root + "Gear",
+        "/income": root + "Income",
         "/admin": root + "Admin"
     };
 
@@ -71,6 +73,7 @@ function App() {
                                         <Route path="links/*" element={<LinkPage />} />
                                         <Route path="members" element={<MembersPage />} />
                                         <Route path="gear" element={<GearPage />} />
+                                        <Route path="income" element={<IncomePage />} />
                                     </>
                                 )}
 

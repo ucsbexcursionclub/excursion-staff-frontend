@@ -78,6 +78,14 @@ const StaffGrid: React.FC = () => {
             return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
         });
 
+    // Ensure Web Developer(s) appear at the front of the Staff section.
+    // Extract Web Developer entries (case-insensitive) from the general staff list
+    // and render them first. This keeps the original sorting for the remainder.
+    const webDevStaff = sortedStaff.filter((staffMember) =>
+        staffMember.positions?.find((pos) => pos.toLowerCase() === "web developer") || staffMember.positions[0].length === 0
+    );
+
+
     const prospectiveStaff = sortedStaff
         .filter(
             (staffMember) => 
@@ -130,6 +138,12 @@ const StaffGrid: React.FC = () => {
                     Staff
                 </Typography>
                 <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                    {/* Render Web Developers first, then the rest of the general staff */}
+                    {webDevStaff.map((staffProfile, index) => (
+                        <div className="flex p-0 py-2 justify-center" key={`webdev-${index}`}>
+                            <StaffCard staff={staffProfile} />
+                        </div>
+                    ))}
                     {generalStaff.map((staffProfile, index) => (
                         <div className="flex p-0 py-2 justify-center" key={index}>
                             <StaffCard staff={staffProfile} />
