@@ -67,7 +67,8 @@ const StaffGrid: React.FC = () => {
                 staffMember.positions[0].toLowerCase() !== "director" &&
                 staffMember.positions[0].toLowerCase() !== "treasurer" &&
                 staffMember.positions[0].toLowerCase() !== "general board" &&
-                staffMember.positions[0].toLowerCase() !== "prospective staff"
+                staffMember.positions[0].toLowerCase() !== "prospective staff" &&
+                staffMember.positions[0].toLowerCase() !== "emeritus"
         )
         .sort((a, b) => {
             // Sort by bio presence, then by bio length
@@ -78,7 +79,11 @@ const StaffGrid: React.FC = () => {
         });
 
     const prospectiveStaff = sortedStaff
-        .filter((staffMember) => staffMember.positions[0].toLowerCase() === "prospective staff")
+        .filter(
+            (staffMember) => 
+                staffMember.positions[0].toLowerCase() === "prospective staff" &&
+                staffMember.positions[0].toLowerCase() !== "emeritus"
+        )
         .sort((a, b) => {
             // Sort by bio presence, then by bio length
             const hasBioA = a.bio ? 1 : 0;
