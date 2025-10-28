@@ -92,28 +92,16 @@ export default function IncomePage() {
     };
   }, [filtered]);
 
-  // Non-admins (staff) see an audit-only notice
-  if (!isAdmin) {
-    return (
-      <div className="max-w-5xl mx-auto w-full p-4">
-        <Typography variant="h4" className="text-gray-900 font-bold mb-2">
-          Income
-        </Typography>
-        <Typography variant="h6" className="text-gray-800 font-semibold">
-          For Board Member Audit Only
-        </Typography>
-        <Typography variant="body2" className="text-gray-600 mt-2">
-          Please contact a board member if you need access to these details.
-        </Typography>
-      </div>
-    );
-  }
-
   return (
     <div className="max-w-5xl mx-auto w-full p-4">
       <Typography variant="h4" className="text-gray-900 font-bold mb-2">
         Income
       </Typography>
+      {!isAdmin && (
+        <Typography variant="h6" className="text-gray-800 font-semibold mb-2">
+          Access for Board only. Contact Board for Audit
+        </Typography>
+      )}
       <Typography variant="body1" className="text-gray-700 mb-4">
         Estimated membership income collected in the selected period.
         Reference only for audit purposes.
@@ -143,27 +131,27 @@ export default function IncomePage() {
               <Typography variant="subtitle1" className="font-semibold">
                 New Members
               </Typography>
-              <Typography variant="body2">Count: {totals.new.count}</Typography>
+              <Typography variant="body2">Count: {isAdmin ? totals.new.count : "—"}</Typography>
               <Typography variant="body1" className="font-bold">
-                {fmtCurrency(totals.new.sum)}
+                {isAdmin ? fmtCurrency(totals.new.sum) : "—"}
               </Typography>
             </div>
             <div className="bg-amber-50 rounded-lg p-3">
               <Typography variant="subtitle1" className="font-semibold">
                 Renewals
               </Typography>
-              <Typography variant="body2">Count: {totals.renew.count}</Typography>
+              <Typography variant="body2">Count: {isAdmin ? totals.renew.count : "—"}</Typography>
               <Typography variant="body1" className="font-bold">
-                {fmtCurrency(totals.renew.sum)}
+                {isAdmin ? fmtCurrency(totals.renew.sum) : "—"}
               </Typography>
             </div>
             <div className="bg-blue-50 rounded-lg p-3">
               <Typography variant="subtitle1" className="font-semibold">
                 Total
               </Typography>
-              <Typography variant="body2">Count: {totals.new.count + totals.renew.count}</Typography>
+              <Typography variant="body2">Count: {isAdmin ? totals.new.count + totals.renew.count : "—"}</Typography>
               <Typography variant="h6" className="font-bold">
-                {fmtCurrency(totals.total)}
+                {isAdmin ? fmtCurrency(totals.total) : "—"}
               </Typography>
             </div>
           </div>
