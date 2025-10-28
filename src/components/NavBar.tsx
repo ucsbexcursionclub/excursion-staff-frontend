@@ -28,7 +28,9 @@ const loggedInTabs = [
     {label: "Income", href: "/income"}
 ];
 
-const adminTabs = [{label: "Admin", href: "/editstaff"}];
+const adminTabs = [
+    {label: "Admin", href: "/editstaff"}
+];
 
 function determineTabs(identityRole: string | undefined) {
     let tabs = [...baseTabs];
