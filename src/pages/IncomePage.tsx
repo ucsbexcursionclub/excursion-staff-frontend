@@ -5,6 +5,7 @@ import Typography from "@mui/material/Typography";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import { useMembers } from "../providers/MembersProvider";
+import { useLogin } from "../providers/LoginProvider";
 import { MemberProps } from "../utils/types";
 
 // Pricing logic mirrors the UI copy in HomePage and MemberAddDialog
@@ -50,6 +51,7 @@ const startOfMonth = () => {
 const fmtCurrency = (n: number) => `$${n.toFixed(2)}`;
 
 export default function IncomePage() {
+  const { isAdmin } = useLogin();
   const { membersData } = useMembers();
   const [range, setRange] = useState<"day" | "week" | "month">("day");
 
@@ -89,6 +91,23 @@ export default function IncomePage() {
       renew: { count: renewCount, sum: renewSum },
     };
   }, [filtered]);
+
+  // Non-admins (staff) see an audit-only notice
+  if (!isAdmin) {
+    return (
+      <div className="max-w-5xl mx-auto w-full p-4">
+        <Typography variant="h4" className="text-gray-900 font-bold mb-2">
+          Income
+        </Typography>
+        <Typography variant="h6" className="text-gray-800 font-semibold">
+          For Board Member Audit Only
+        </Typography>
+        <Typography variant="body2" className="text-gray-600 mt-2">
+          Please contact a board member if you need access to these details.
+        </Typography>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto w-full p-4">
