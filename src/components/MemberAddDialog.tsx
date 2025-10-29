@@ -425,7 +425,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 <DialogContentText>Have you filled out the waiver?</DialogContentText>
                 <img
                     alt="QR Code"
-                    src={generateResourceUrl("/resources/icons/qr-code-waiver.png")}
+                    src={generateResourceUrl("/resources/icons/waiver.png")}
                     style={{width: "300px", height: "300px"}}
                 />
                 <RadioGroup row name="isMember" value={hasWaiver} onChange={handleHasWaiver}>
