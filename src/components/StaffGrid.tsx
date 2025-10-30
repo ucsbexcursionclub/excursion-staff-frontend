@@ -7,7 +7,10 @@ import {getStaffProfiles} from "../utils/api";
 const StaffGrid: React.FC = () => {
     const {data: staffProfiles} = useQuery({
         queryKey: ["staffProfiles"],
-        queryFn: getStaffProfiles
+        queryFn: getStaffProfiles,
+        // Periodic refetch keeps signed CloudFront cookies alive so avatars don't expire mid-session.
+        refetchInterval: 1000 * 60 * 45,
+        refetchIntervalInBackground: true
     });
 
     if (!staffProfiles) return;

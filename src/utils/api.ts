@@ -483,7 +483,9 @@ export async function getStaff(): Promise<StaffProps[]> {
 
 export async function getStaffProfiles(): Promise<StaffProfile[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/staff_protected`);
+        const response = await axios.get(`${baseURL}/api/v1/staff_protected`, {
+            withCredentials: true
+        });
 
         if (response.data && response.data.data) {
             return response.data.data;
