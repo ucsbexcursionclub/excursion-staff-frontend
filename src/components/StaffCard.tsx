@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import {StaffProfile} from "../utils/types";
 import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils";
 import {Avatar} from "@mui/material";
@@ -8,11 +8,23 @@ interface StaffCardProps {
 }
 
 const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
+    const [imgSrc, setImgSrc] = useState(
+        generateResourceUrl(staff.profileImagePath || "/resources/avatar.png")
+    );
+
+    useEffect(() => {
+        setImgSrc(generateResourceUrl(staff.profileImagePath || "/resources/avatar.png"));
+    }, [staff.profileImagePath]);
+
     return (
         <div className="w-full h-full p-2">
             <div className="flex flex-col items-center w-full bg-gray-100 rounded-2xl shadow-sm p-4">
                 <Avatar
-                    src={generateResourceUrl(staff.profileImagePath || "/resources/avatar.png")}
+                    src={imgSrc}
+                    imgProps={{
+                        onError: () =>
+                            setImgSrc(generateResourceUrl("/resources/avatar.png"))
+                    }}
                     alt={staff.name}
                     className="w-full h-full sm:mx-1 sm:mx-2 md:mx-3 lg:mx-6 object-cover rounded-md my-2"
                 />
