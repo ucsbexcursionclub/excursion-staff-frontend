@@ -42,5 +42,12 @@ export function convertToMUIDate(datetime: number): string {
     return `${year}-${formattedMonth}-${formattedDay}`;
 }
 
-export const generateResourceUrl = (resourcePath: string): string =>
-    `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}${resourcePath}`;
+export const generateResourceUrl = (resourcePath: string): string => {
+    // If backend already returns a full URL (CloudFront or S3), use it as-is.
+    if (resourcePath?.startsWith("http://") || resourcePath?.startsWith("https://")) {
+        return resourcePath;
+    }
+
+    // Otherwise, prepend our CloudFront base to the path.
+    return `${import.meta.env.EXC_CLOUDFRONT_BASE_URL}${resourcePath}`;
+};

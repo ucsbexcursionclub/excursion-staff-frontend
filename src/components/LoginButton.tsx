@@ -71,6 +71,14 @@ function LoginButton() {
         setIsEditProfileOpen(false);
     };
 
+    const [menuImgSrc, setMenuImgSrc] = useState<string | undefined>();
+    const [buttonImgSrc, setButtonImgSrc] = useState<string | undefined>();
+
+    useEffect(() => {
+        setMenuImgSrc(generateResourceUrl(profileImagePath || "/resources/avatar.png"));
+        setButtonImgSrc(generateResourceUrl(profileImagePath || "/resources/avatar.png"));
+    }, [profileImagePath]);
+
     return (
         <>
             {isLoggedIn && isLoaded ? (
@@ -78,7 +86,13 @@ function LoginButton() {
                     <IconButton onClick={handleClick} aria-label="profile">
                         <Avatar
                             sx={{width: 40, height: 40}}
-                            src={generateResourceUrl(profileImagePath || "/resources/avatar.png")}
+                            src={buttonImgSrc}
+                            imgProps={{
+                                onError: () =>
+                                    setButtonImgSrc(
+                                        generateResourceUrl("/resources/avatar.png")
+                                    )
+                            }}
                         />
                     </IconButton>
                     <Menu
@@ -100,9 +114,13 @@ function LoginButton() {
                             <Avatar
                                 sx={{width: 40, height: 40}}
                                 className="mr-2"
-                                src={generateResourceUrl(
-                                    profileImagePath || "/resources/avatar.png"
-                                )}
+                                src={menuImgSrc}
+                                imgProps={{
+                                    onError: () =>
+                                        setMenuImgSrc(
+                                            generateResourceUrl("/resources/avatar.png")
+                                        )
+                                }}
                             />
                             <span>{loggedInMember?.email || ""}</span>
                         </MenuItem>

@@ -191,6 +191,16 @@ const EditProfileFormDialog: React.FC<EditProfileFormDialogProps> = ({isOpen, on
                     )}
                     <Avatar
                         src={profileBlobPath || generateResourceUrl(profileImageUrl || "/resources/avatar.png")}
+                        imgProps={{
+                            onError: (e) => {
+                                // Only fallback when not previewing a local blob
+                                if (!profileBlobPath) {
+                                    (e.target as HTMLImageElement).src = generateResourceUrl(
+                                        "/resources/avatar.png"
+                                    );
+                                }
+                            }
+                        }}
                         className="mb-4 mt-2 border-solid border-gray-400"
                         style={{width: 100, height: 100}}
                     />
