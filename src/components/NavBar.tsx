@@ -25,6 +25,7 @@ const loggedInTabs = [
     {label: "Links", href: "/links"},
     {label: "Members", href: "/members"},
     {label: "Gear", href: "/gear"},
+    {label: "Trips", href: "/trips"},
     {label: "Stats", href: "/stats"}
 ];
 

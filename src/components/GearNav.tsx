@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState, useEffect} from "react";
+import React, {ChangeEvent, FormEvent, KeyboardEvent, useState} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import GearRemoveDialog from "./GearRemoveDialog";
@@ -16,20 +16,28 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const [removeDialogOpen, setRemoveDialogOpen] = useState<boolean>(false);
     const [checkOutDialogOpen, setCheckOutDialogOpen] = useState<boolean>(false);
     const [checkInDialogOpen, setCheckInDialogOpen] = useState<boolean>(false);
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-    useEffect(() => {
-        const handleResize = () => {
-            setScreenWidth(window.innerWidth);
-        };
-
-        window.addEventListener("resize", handleResize);
-    }, [screenWidth]);
+    const [searchInput, setSearchInput] = useState("");
 
     const {validateRowSelection} = useGear();
 
     const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setSearchParams(event.currentTarget.value);
+        setSearchInput(event.currentTarget.value);
+    };
+
+    const submitSearch = () => {
+        setSearchParams(searchInput.trim());
+    };
+
+    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        submitSearch();
+    };
+
+    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            submitSearch();
+        }
     };
 
     const handleOpenDeleteDialog = () => {
@@ -80,10 +88,21 @@ export default function GearNav({setSearchParams}: GearNavProps) {
                         >
                             s
                         </Typography>
-                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black">
+                        <form
+                            className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black"
+                            onSubmit={handleSearchSubmit}
+                        >
                             <SearchIcon className="absolute left-2" color="inherit" />
-                            <InputBase onChange={updateSearch} className="pl-10" />
-                        </div>
+                            <InputBase
+                                value={searchInput}
+                                onChange={updateSearch}
+                                onKeyDown={handleSearchKeyDown}
+                                className="pl-10"
+                            />
+                            <Button type="submit" color="inherit">
+                                Search
+                            </Button>
+                        </form>
                         <Typography className="text-xs text-gray-200 italic">
                             Gear Name or RFID
                         </Typography>

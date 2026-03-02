@@ -11,6 +11,8 @@ import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
 import UnauthorizedPage from "./pages/UnauthorizedPage";
 import StatsPage from "./pages/StatsPage";
+import MemberProfilePage from "./pages/MemberProfilePage";
+import TripsPage from "./pages/TripsPage";
 
 // Providers
 import {GearProvider} from "./providers/GearProvider";
@@ -29,11 +31,14 @@ function updateDocumentMetadata(pathname: string) {
         "/links": root + "Links",
         "/members": root + "Members",
         "/gear": root + "Gear",
-    "/stats": root + "Stats",
+        "/stats": root + "Stats",
+        "/trips": root + "Trips",
         "/admin": root + "Admin"
     };
 
-    const title = titles[pathname] || null;
+    const title = pathname.startsWith("/members/")
+        ? root + "Member Profile"
+        : titles[pathname] || null;
 
     if (title) {
         document.title = title;
@@ -72,7 +77,9 @@ function App() {
                                     <>
                                         <Route path="links/*" element={<LinkPage />} />
                                         <Route path="members" element={<MembersPage />} />
+                                        <Route path="members/:memberId" element={<MemberProfilePage />} />
                                         <Route path="gear" element={<GearPage />} />
+                                        <Route path="trips" element={<TripsPage />} />
                                         <Route path="stats" element={<StatsPage />} />
                                         {/* Back-compat: keep /income working */}
                                         <Route path="income" element={<StatsPage />} />
