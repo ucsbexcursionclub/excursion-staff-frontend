@@ -13,7 +13,7 @@ import {
     useGridSelector
 } from "@mui/x-data-grid";
 import IconButton from "@mui/material/IconButton";
-import React, {useState} from "react";
+import React, {useMemo, useState} from "react";
 import {GearProps} from "../utils/types";
 import GearDetailsDialog from "./GearDetailsDialog";
 import {useGear} from "../providers/GearProvider";
@@ -239,6 +239,10 @@ export default function GearTable({searchParams}: GearTableProps) {
     };
 
     const filterItems = calculateFilterItems();
+    const quickFilterValues = useMemo(
+        () => (searchParams.trim() ? [searchParams.trim()] : []),
+        [searchParams]
+    );
 
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
@@ -257,7 +261,7 @@ export default function GearTable({searchParams}: GearTableProps) {
                 filterModel={{
                     items: filterItems,
                     quickFilterExcludeHiddenColumns: true,
-                    quickFilterValues: [searchParams]
+                    quickFilterValues
                 }}
                 initialState={{
                     columns: {

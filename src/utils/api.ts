@@ -1,14 +1,22 @@
 import {
     GearProps,
+    MemberProfileComment,
+    MemberProfileResponse,
     MemberProps,
     NewGearProps,
+    NewMemberProfileComment,
     NewReservationProps,
+    NewTripComment,
+    NewTripProps,
     ReservationProps,
     NewMemberProps,
     StaffProps,
     NewStaffProps,
     IdentityProps,
-    StaffProfile
+    StaffProfile,
+    TripComment,
+    TripProps,
+    UpdateTripProps
 } from "./types";
 import axios from "axios";
 
@@ -20,6 +28,92 @@ const cookies = new Cookies();
 const baseURL = import.meta.env.PROD
     ? import.meta.env.EXC_BACKEND_LIVE_URL
     : import.meta.env.EXC_BACKEND_LOCAL_URL;
+
+const authConfig = () => ({
+    headers: {
+        Authorization: `Bearer ${cookies.get("jwt")}`
+    }
+});
+
+const toUnixMs = (value: number | string | null | undefined): number | null => {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "number") return value;
+    const parsed = new Date(value).getTime();
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const normalizeTripComment = (comment: TripComment): TripComment => ({
+    ...comment,
+    category: comment.category || "general",
+    created_at: toUnixMs(comment.created_at) || 0,
+    updated_at: toUnixMs(comment.updated_at) || 0,
+    target_member_id: comment.target_member_id || null,
+    author_member_id: comment.author_member_id || null,
+    author_name: comment.author_name || null
+});
+
+const normalizeTrip = (trip: TripProps): TripProps => ({
+    ...trip,
+    trip_date: toUnixMs(trip.trip_date) || 0,
+    end_date: toUnixMs(trip.end_date),
+    created_at: toUnixMs(trip.created_at) || 0,
+    updated_at: toUnixMs(trip.updated_at) || 0,
+    location: trip.location || null,
+    description: trip.description || null,
+    member_participants: (trip.member_participants || []).map((participant) => ({
+        ...participant,
+        comment: participant.comment || null,
+        added_at: toUnixMs(participant.added_at) || 0,
+        memberDetails: participant.memberDetails
+            ? {
+                  ...participant.memberDetails,
+                  phone_number: participant.memberDetails.phone_number || null
+              }
+            : undefined
+    })),
+    staff_participants: (trip.staff_participants || []).map((participant) => ({
+        ...participant,
+        comment: participant.comment || null,
+        added_at: toUnixMs(participant.added_at) || 0
+    })),
+    comments: (trip.comments || []).map(normalizeTripComment)
+});
+
+const normalizeMemberProfileComment = (
+    comment: MemberProfileComment
+): MemberProfileComment => ({
+    ...comment,
+    category: comment.category || "general",
+    created_at: toUnixMs(comment.created_at) || 0,
+    updated_at: toUnixMs(comment.updated_at) || 0,
+    author_member_id: comment.author_member_id || null,
+    author_name: comment.author_name || null
+});
+
+const normalizeMemberProfileResponse = (
+    response: MemberProfileResponse
+): MemberProfileResponse => ({
+    ...response,
+    member: {
+        ...response.member,
+        phone_number: response.member.phone_number || null,
+        membership_expiration_date: toUnixMs(response.member.membership_expiration_date),
+        join_datetime: toUnixMs(response.member.join_datetime) || 0,
+        notes: response.member.notes || null,
+        profile_comments: (response.member.profile_comments || []).map(
+            normalizeMemberProfileComment
+        )
+    },
+    rental_history: (response.rental_history || []).map((item) => ({
+        ...item,
+        due_date: toUnixMs(item.due_date) || 0,
+        last_contacted: toUnixMs(item.last_contacted),
+        checked_out_gear_details: item.checked_out_gear_details || [],
+        checked_in_gear_details: item.checked_in_gear_details || []
+    })),
+    trip_history: (response.trip_history || []).map(normalizeTrip),
+    staff_profile: response.staff_profile || null
+});
 
 function handleApiErrors(item: string, error: any): void {
     if (error.response) {
@@ -80,6 +174,66 @@ export async function getMemberById(id: string): Promise<MemberProps> {
     } catch (error: any) {
         console.error("Error fetching member by ID:", error);
         throw error;
+    }
+}
+
+export async function getMemberProfile(memberId: string): Promise<MemberProfileResponse> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/members/${memberId}/profile`, authConfig());
+
+        if (response.data && response.data.data) {
+            return normalizeMemberProfileResponse(response.data.data as MemberProfileResponse);
+        }
+
+        throw new Error("No member profile data received from the server.");
+    } catch (error: any) {
+        handleApiErrors("member profile", error);
+        throw new Error("An unexpected error occurred in getMemberProfile.");
+    }
+}
+
+export async function addMemberProfileComment(
+    memberId: string,
+    newComment: NewMemberProfileComment
+): Promise<MemberProfileComment> {
+    try {
+        const response = await axios.post(
+            `${baseURL}/api/v1/members/${memberId}/comments`,
+            newComment,
+            authConfig()
+        );
+
+        if (response.data && response.data.data) {
+            return normalizeMemberProfileComment(response.data.data as MemberProfileComment);
+        }
+
+        throw new Error("No profile comment data received from the server.");
+    } catch (error: any) {
+        handleApiErrors("member profile comment", error);
+        throw new Error("An unexpected error occurred while adding a profile comment.");
+    }
+}
+
+export async function updateMemberProfileComment(
+    memberId: string,
+    commentId: string,
+    updates: Partial<NewMemberProfileComment>
+): Promise<MemberProfileComment> {
+    try {
+        const response = await axios.patch(
+            `${baseURL}/api/v1/members/${memberId}/comments/${commentId}`,
+            updates,
+            authConfig()
+        );
+
+        if (response.data && response.data.data) {
+            return normalizeMemberProfileComment(response.data.data as MemberProfileComment);
+        }
+
+        throw new Error("No profile comment data received from the server.");
+    } catch (error: any) {
+        handleApiErrors("member profile comment", error);
+        throw new Error("An unexpected error occurred while updating a profile comment.");
     }
 }
 
@@ -576,6 +730,92 @@ export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps
     } catch (error: any) {
         handleApiErrors("staff", error);
         throw new Error("An unexpected error occurred while adding staff.");
+    }
+}
+
+export async function getTrips(): Promise<TripProps[]> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/trips`, authConfig());
+
+        if (response.data && response.data.data) {
+            return (response.data.data as TripProps[]).map(normalizeTrip);
+        }
+
+        throw new Error("No trips data received from the server.");
+    } catch (error: any) {
+        handleApiErrors("trip", error);
+        throw new Error("An unexpected error occurred in getTrips.");
+    }
+}
+
+export async function getTripById(tripId: string): Promise<TripProps> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/trips/${tripId}`, authConfig());
+
+        if (response.data && response.data.data) {
+            return normalizeTrip(response.data.data as TripProps);
+        }
+
+        throw new Error("No trip data received from the server.");
+    } catch (error: any) {
+        handleApiErrors("trip", error);
+        throw new Error("An unexpected error occurred in getTripById.");
+    }
+}
+
+export async function addTrip(newTripData: NewTripProps): Promise<TripProps> {
+    try {
+        const response = await axios.post(`${baseURL}/api/v1/trips`, newTripData, authConfig());
+
+        if (response.data && response.data.data) {
+            return normalizeTrip(response.data.data as TripProps);
+        }
+
+        throw new Error("Trip data not received from the server.");
+    } catch (error: any) {
+        handleApiErrors("trip", error);
+        throw new Error("An unexpected error occurred while adding a trip.");
+    }
+}
+
+export async function updateTrip(tripId: string, updates: UpdateTripProps): Promise<TripProps> {
+    try {
+        const response = await axios.patch(
+            `${baseURL}/api/v1/trips/${tripId}`,
+            updates,
+            authConfig()
+        );
+
+        if (response.data && response.data.data) {
+            return normalizeTrip(response.data.data as TripProps);
+        }
+
+        throw new Error("Trip data not received from the server.");
+    } catch (error: any) {
+        handleApiErrors("trip", error);
+        throw new Error("An unexpected error occurred while updating a trip.");
+    }
+}
+
+export async function addTripComment(
+    tripId: string,
+    newComment: NewTripComment
+): Promise<TripComment> {
+    try {
+        const response = await axios.post(
+            `${baseURL}/api/v1/trips/${tripId}/comments`,
+            newComment,
+            authConfig()
+        );
+
+        if (response.data && response.data.data) {
+            return normalizeTripComment(response.data.data as TripComment);
+        }
+
+        throw new Error("Trip comment data not received from the server.");
+    } catch (error: any) {
+        handleApiErrors("trip comment", error);
+        throw new Error("An unexpected error occurred while adding a trip comment.");
     }
 }
 interface FeedbackProps {
