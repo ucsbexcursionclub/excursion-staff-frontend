@@ -14,6 +14,7 @@ import Select, {SelectChangeEvent} from "@mui/material/Select";
 import {MemberFilterOptions} from "../utils/constants";
 import {useMembers} from "../providers/MembersProvider";
 import {useReservations} from "../providers/ReservationProvider";
+import {useLogin} from "../providers/LoginProvider";
 
 function SelectedCount() {
     const {memberRowSelectionModel} = useMembers();
@@ -70,6 +71,7 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
 
 function AvailibilityView({searchParams}: AvailibilityViewProps) {
     const apiRef = useGridApiContext();
+    const {isAdmin} = useLogin();
 
     const visibleRows = gridFilteredSortedRowEntriesSelector(apiRef);
 
@@ -130,10 +132,12 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
                 {" Have Overdue Gear "}
             </Typography>
 
-            <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-gray-100">
-                <strong>{totalCount}</strong>
-                {" Total "}
-            </Typography>
+            {isAdmin && (
+                <Typography className="px-4 py-2 border-solid border-gray-300 rounded-2xl bg-gray-100">
+                    <strong>{totalCount}</strong>
+                    {" Total "}
+                </Typography>
+            )}
         </div>
     );
 }

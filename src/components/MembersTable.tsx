@@ -23,6 +23,7 @@ import {useReservations} from "../providers/ReservationProvider";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import FlagIcon from "@mui/icons-material/Flag";
+import {Link as RouterLink} from "react-router-dom";
 
 function Pagination({
     page,
@@ -155,11 +156,18 @@ const getColumns = (
             field: "name",
             headerName: "Name",
             width: 150,
-            valueFormatter: (params) => {
-                if (params.value) {
-                    return capitalizeFirstLetter(params.value);
-                }
-                return "N/A";
+            renderCell: (params) => {
+                const member = params.row as MemberProps;
+                const label = member.name ? capitalizeFirstLetter(member.name) : "N/A";
+                return (
+                    <RouterLink
+                        to={`/members/${member._id}`}
+                        onClick={(event) => event.stopPropagation()}
+                        className="text-blue-700 underline"
+                    >
+                        {label}
+                    </RouterLink>
+                );
             }
         },
         {
@@ -371,6 +379,10 @@ export default function MembersTable({searchParams}: MembersTableProps) {
             ...baseFilterItems
         ];
     }, [baseFilterItems, flaggedOnly]);
+    const quickFilterValues = useMemo(
+        () => (searchParams.trim() ? [searchParams.trim()] : []),
+        [searchParams]
+    );
 
     const handleCellClick = (params: any) => {
         if (params.field === "edit") {
@@ -408,7 +420,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 filterModel={{
                     items: filterItems,
                     quickFilterExcludeHiddenColumns: true,
-                    quickFilterValues: [searchParams]
+                    quickFilterValues
                 }}
                 initialState={{
                     columns: {

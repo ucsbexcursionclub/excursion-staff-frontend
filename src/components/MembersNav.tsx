@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState, useEffect} from "react";
+import React, {ChangeEvent, FormEvent, KeyboardEvent, useState, useEffect} from "react";
 import {
     AppBar,
     Toolbar,
@@ -24,6 +24,7 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [copyEmailOption, setCopyEmailOption] = useState("");
+    const [searchInput, setSearchInput] = useState("");
 
     useEffect(() => {
         const handleResize = () => {
@@ -31,7 +32,8 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
         };
 
         window.addEventListener("resize", handleResize);
-    }, [screenWidth]);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const {validateRowSelection} = useMembers();
 
@@ -57,7 +59,23 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     };
 
     const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setSearchParams(event.currentTarget.value);
+        setSearchInput(event.currentTarget.value);
+    };
+
+    const submitSearch = () => {
+        setSearchParams(searchInput.trim());
+    };
+
+    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        submitSearch();
+    };
+
+    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            submitSearch();
+        }
     };
 
     const handleOpenDeleteDialog = () => {
@@ -87,13 +105,25 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
                         >
                             s
                         </Typography>
-                        <div className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full ">
+                        <form
+                            className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full "
+                            onSubmit={handleSearchSubmit}
+                        >
                             <SearchIcon className="absolute left-2" color="inherit" />
-                            <InputBase onChange={updateSearch} className="pl-10 w-full" />
-                            <Button color="inherit" className="rounded-lg text-sm bg-lime-200">
+                            <InputBase
+                                value={searchInput}
+                                onChange={updateSearch}
+                                onKeyDown={handleSearchKeyDown}
+                                className="pl-10 w-full"
+                            />
+                            <Button
+                                type="submit"
+                                color="inherit"
+                                className="rounded-lg text-sm bg-lime-200"
+                            >
                                 Search
                             </Button>
-                        </div>
+                        </form>
                         <Typography className="text-xs text-gray-200 italic">
                             Name, Email, or Phone Number
                         </Typography>
