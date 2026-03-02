@@ -19,13 +19,14 @@ import {
     Typography
 } from "@mui/material";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {addTripComment, getTripById} from "../utils/api";
+import {addTripComment, deleteTrip, getTripById} from "../utils/api";
 import {useMembers} from "../providers/MembersProvider";
 import {useReservations} from "../providers/ReservationProvider";
 import {useSnackbar} from "../providers/SnackBarProvider";
 import {CommentCategory, TripProps} from "../utils/types";
 import CommentCategoryChip from "./CommentCategoryChip";
 import TripFormDialog from "./TripFormDialog";
+import {formatCommentCategoryLabel, formatEnumLabel, getTripType} from "../utils/utils";
 
 type TripDetailsDialogProps = {
     open: boolean;
@@ -50,6 +51,7 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
     const [targetMemberId, setTargetMemberId] = useState<string>("");
     const [isSavingComment, setIsSavingComment] = useState(false);
     const [isEditingTrip, setIsEditingTrip] = useState(false);
+    const [isDeletingTrip, setIsDeletingTrip] = useState(false);
 
     const {data, isLoading, error} = useQuery({
         queryKey: ["tripDetail", tripId],
@@ -77,6 +79,7 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
     const handleClose = () => {
         resetCommentForm();
         setIsEditingTrip(false);
+        setIsDeletingTrip(false);
         onClose();
     };
 
@@ -111,6 +114,30 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
         }
     };
 
+    const handleDeleteTrip = async () => {
+        if (!tripId || !window.confirm("Delete this trip? This cannot be undone.")) {
+            return;
+        }
+
+        setIsDeletingTrip(true);
+        try {
+            await deleteTrip(tripId);
+            await Promise.all([
+                queryClient.invalidateQueries({queryKey: ["tripDetail", tripId]}),
+                queryClient.invalidateQueries({queryKey: ["trips"]}),
+                queryClient.invalidateQueries({queryKey: ["memberProfile"]})
+            ]);
+            addNotification({message: "Trip deleted.", type: "success"});
+            handleClose();
+        } catch (mutationError: any) {
+            setIsDeletingTrip(false);
+            addNotification({
+                message: mutationError.message || "Failed to delete trip.",
+                type: "error"
+            });
+        }
+    };
+
     return (
         <>
             <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -131,9 +158,19 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
                             )}
                         </Box>
                         {trip && (
-                            <Button variant="outlined" onClick={() => setIsEditingTrip(true)}>
-                                Edit Trip
-                            </Button>
+                            <Stack direction="row" spacing={1}>
+                                <Button variant="outlined" onClick={() => setIsEditingTrip(true)}>
+                                    Edit Trip
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={handleDeleteTrip}
+                                    disabled={isDeletingTrip}
+                                >
+                                    Delete Trip
+                                </Button>
+                            </Stack>
                         )}
                     </Stack>
                 </DialogTitle>
@@ -155,6 +192,9 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
                             <Box>
                                 <Typography variant="subtitle1" fontWeight={700}>
                                     Overview
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Type: {formatEnumLabel(getTripType(trip))} Trip
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
                                     Location: {trip.location || "N/A"}
@@ -185,7 +225,10 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
                                                     secondary={
                                                         <>
                                                             <span>
-                                                                Status: {participant.attendance_status}
+                                                                Status:{" "}
+                                                                {formatEnumLabel(
+                                                                    participant.attendance_status
+                                                                )}
                                                             </span>
                                                             <br />
                                                             <span>
@@ -326,7 +369,7 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
                                         >
                                             {categoryOptions.map((category) => (
                                                 <MenuItem key={category} value={category}>
-                                                    {category}
+                                                    {formatCommentCategoryLabel(category)}
                                                 </MenuItem>
                                             ))}
                                         </TextField>

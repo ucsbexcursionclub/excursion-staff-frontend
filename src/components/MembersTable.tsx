@@ -223,7 +223,7 @@ const getColumns = (
                     };
                     return date.toLocaleDateString("en-US", options);
                 }
-                return "N/A";
+                return "Never Expires";
             },
             sortComparator: dateComparator,
             filterOperators: dateOperators

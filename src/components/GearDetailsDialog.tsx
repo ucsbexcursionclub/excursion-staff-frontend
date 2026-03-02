@@ -30,7 +30,6 @@ type GearDetailsDialogProps = {
 const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gear}) => {
     const [tabValue, setTabValue] = useState(0);
 
-    const [rfid, setRfid] = useState<string>(gear?.rfid || "");
     const [lastContacted, setLastContacted] = useState<number | null>(
         gear?.reservationDetails?.last_contacted || null
     );
@@ -38,6 +37,7 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     const [isBroken, setIsBroken] = useState<boolean>(gear?.is_broken || false);
     const [description, setDescription] = useState<string>(gear?.description || "");
     const [notes, setNotes] = useState<string>(gear?.notes || "");
+    const [isStaffGear, setIsStaffGear] = useState<boolean>(!!gear?.is_staff_gear);
 
     const {handleGearUpdate} = useGear();
     const {handleReservationUpdate} = useReservations();
@@ -53,10 +53,10 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
     useEffect(() => {
         setIsMissing(gear?.is_missing || false);
         setIsBroken(gear?.is_broken || false);
-        setRfid(gear?.rfid || "");
         setLastContacted(gear?.reservationDetails?.last_contacted || null);
         setDescription(gear?.description || "");
         setNotes(gear?.notes || "");
+        setIsStaffGear(!!gear?.is_staff_gear);
     }, [gear]);
 
     const handleFormSubmit = async () => {
@@ -78,11 +78,11 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
 
         const modifiedGear: GearProps = {
             ...gear,
-            rfid,
             is_missing: isMissing,
             is_broken: isBroken,
             description,
-            notes
+            notes,
+            is_staff_gear: isStaffGear
         };
 
         await handleGearUpdate(modifiedGear);
@@ -114,23 +114,16 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
             <DialogTitle sx={{px: 3, fontWeight: "bold"}}>{gear.gear_name} Details</DialogTitle>
             <Box sx={{borderBottom: 1, borderColor: "divider"}}>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="gear details tabs">
-                    <Tab label="Details" {...a11yProps(0)} />
+                    <Tab label="Information" {...a11yProps(0)} />
                     <Tab label="History" {...a11yProps(1)} />
                 </Tabs>
             </Box>
             <DialogContent dividers={true}>
                 <CustomTabPanel value={tabValue} index={0}>
                     <Typography variant="h6" sx={{marginBottom: "1rem"}}>
-                        <strong>Item Details</strong>
+                        <strong>Item Information</strong>
                     </Typography>
                     <FormControl className="w-full">
-                        <TextField
-                            label="RFID"
-                            value={rfid}
-                            onChange={(e) => setRfid(e.target.value)}
-                            variant="outlined"
-                            className="w-full mb-4"
-                        />
                         <TextField
                             label="Date Added"
                             type="date"
@@ -208,15 +201,27 @@ const GearDetailsDialog: React.FC<GearDetailsDialogProps> = ({open, onClose, gea
                                 label="Broken"
                                 className="mb-4"
                             />
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={isStaffGear}
+                                        onChange={(e) => setIsStaffGear(e.target.checked)}
+                                        name="isStaffGear"
+                                    />
+                                }
+                                label="Staff Gear"
+                                className="mb-4"
+                            />
                         </div>
                         <TextField
-                            label="Description"
+                            label="Information"
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                             variant="outlined"
                             rows={3}
                             className="w-full mb-4"
                             multiline
+                            placeholder="Size, tent type, model, or other quick details"
                         />
                         <TextField
                             label="Notes"

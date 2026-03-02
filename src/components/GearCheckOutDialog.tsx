@@ -109,8 +109,8 @@ const GearCheckOutDialog: React.FC<GearCheckOutDialogProps> = ({open, onClose}) 
             });
 
             if (
-                selectedMember.membership_expiration_date < currentDateTime &&
                 selectedMember.membership_expiration_date !== null
+                && selectedMember.membership_expiration_date < currentDateTime
             ) {
                 const alertMessage = `${selectedMember.name}'s membership expired on ${new Date(
                     selectedMember.membership_expiration_date
