@@ -28,6 +28,7 @@ import {
     TripProps
 } from "../utils/types";
 import CommentCategoryChip from "../components/CommentCategoryChip";
+import {formatCommentCategoryLabel, formatEnumLabel} from "../utils/utils";
 
 const categoryOptions: CommentCategory[] = ["general", "warning", "commendation"];
 
@@ -36,11 +37,8 @@ const formatDate = (timestamp: number | null) => {
     return new Date(timestamp).toLocaleString();
 };
 
-const readableGearList = (gearItems: Array<{_id: string; gear_name: string; rfid: number | null}>) => {
-    return gearItems
-        .map((gear) => `${gear.gear_name}${gear.rfid !== null ? ` (RFID: ${gear.rfid})` : ""}`)
-        .join(", ");
-};
+const readableGearList = (gearItems: Array<{_id: string; gear_name: string}>) =>
+    gearItems.map((gear) => gear.gear_name).join(", ");
 
 export default function MemberProfilePage() {
     const {memberId} = useParams();
@@ -70,6 +68,13 @@ export default function MemberProfilePage() {
                 (rental) =>
                     rental.due_date < Date.now() &&
                     (rental.checked_out_gear_details || []).length > 0
+            ),
+        [profile?.rental_history]
+    );
+    const currentRentals = useMemo(
+        () =>
+            (profile?.rental_history || []).filter(
+                (rental) => (rental.checked_out_gear_details || []).length > 0
             ),
         [profile?.rental_history]
     );
@@ -151,7 +156,10 @@ export default function MemberProfilePage() {
                         </Stack>
 
                         <Typography variant="body2">
-                            Attendance: {participant?.attendance_status || "Unknown"}
+                            Attendance:{" "}
+                            {participant?.attendance_status
+                                ? formatEnumLabel(participant.attendance_status)
+                                : "Unknown"}
                         </Typography>
 
                         {participant?.comment && (
@@ -246,7 +254,9 @@ export default function MemberProfilePage() {
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         Expiration Date:{" "}
-                                        {formatDate(profile.member.membership_expiration_date)}
+                                        {profile.member.membership_expiration_date
+                                            ? formatDate(profile.member.membership_expiration_date)
+                                            : "Never Expires"}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         New Member: {profile.member.is_new_member ? "Yes" : "No"}
@@ -311,7 +321,7 @@ export default function MemberProfilePage() {
                                         >
                                             {categoryOptions.map((category) => (
                                                 <MenuItem key={category} value={category}>
-                                                    {category}
+                                                    {formatCommentCategoryLabel(category)}
                                                 </MenuItem>
                                             ))}
                                         </TextField>
@@ -384,6 +394,38 @@ export default function MemberProfilePage() {
                                         </Typography>
                                     )}
                                 </Stack>
+                            </Stack>
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                                Currently Checked Out Gear
+                            </Typography>
+                            <Stack spacing={2}>
+                                {currentRentals.map((rental) => (
+                                    <Box
+                                        key={rental._id}
+                                        className="rounded-lg border border-gray-200 p-3"
+                                    >
+                                        <Typography variant="subtitle2">
+                                            Due: {formatDate(rental.due_date)}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Last Contacted: {formatDate(rental.last_contacted)}
+                                        </Typography>
+                                        <Typography variant="body2" className="mt-2">
+                                            Gear:{" "}
+                                            {readableGearList(rental.checked_out_gear_details || [])}
+                                        </Typography>
+                                    </Box>
+                                ))}
+                                {currentRentals.length === 0 && (
+                                    <Typography variant="body2" color="text.secondary">
+                                        No checked out gear found.
+                                    </Typography>
+                                )}
                             </Stack>
                         </CardContent>
                     </Card>

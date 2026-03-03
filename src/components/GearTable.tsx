@@ -74,6 +74,18 @@ const columns: GridColDef<GearProps, any, any>[] = [
     {field: "_id", headerName: "ID"},
     {field: "gear_name", headerName: "Gear Name", width: 150},
     {
+        field: "description",
+        headerName: "Information",
+        width: 220,
+        valueGetter: (params) => params.row.description || "N/A"
+    },
+    {
+        field: "gear_type",
+        headerName: "Type",
+        width: 140,
+        valueGetter: (params) => (params.row.is_staff_gear ? "Staff Gear" : "Member Rental")
+    },
+    {
         field: "view",
         width: 51,
         sortable: false,
@@ -143,8 +155,7 @@ const columns: GridColDef<GearProps, any, any>[] = [
         headerName: "Broken?",
         width: 100,
         type: "boolean"
-    },
-    {field: "rfid", headerName: "RFID", width: 100, getApplyQuickFilterFn: undefined}
+    }
 ];
 
 function Pagination({
@@ -174,9 +185,10 @@ function CustomPagination(props: any) {
 
 type GearTableProps = {
     searchParams: string;
+    rows?: GearProps[];
 };
 
-export default function GearTable({searchParams}: GearTableProps) {
+export default function GearTable({searchParams, rows}: GearTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedGear, setSelectedGear] = useState<GearProps | null>(null);
 
@@ -247,7 +259,7 @@ export default function GearTable({searchParams}: GearTableProps) {
     return (
         <div className="w-full h-full bg-gray-300 rounded-xl p-4">
             <DataGrid
-                rows={gearData}
+                rows={rows || gearData}
                 getRowHeight={() => "auto"}
                 onCellClick={handleCellClick}
                 columns={columns}

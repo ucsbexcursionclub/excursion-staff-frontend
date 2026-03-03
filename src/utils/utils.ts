@@ -1,10 +1,24 @@
 import {IdentityProps} from "./types";
+import {CommentCategory, TripProps, TripType} from "./types";
 
 export function capitalizeFirstLetter(str: string) {
     return str
         .split(" ") // Split string by space
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize the first letter of every word
         .join(" "); // Join the words back together
+}
+
+export function formatEnumLabel(value: string) {
+    return value
+        .split(/[\s_-]+/)
+        .filter(Boolean)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(" ");
+}
+
+export function formatCommentCategoryLabel(category: CommentCategory) {
+    if (category === "warning") return "WARNING";
+    return formatEnumLabel(category);
 }
 
 export function parseJwt(token: string) {
@@ -40,6 +54,22 @@ export function convertToMUIDate(datetime: number): string {
 
 
     return `${year}-${formattedMonth}-${formattedDay}`;
+}
+
+export function isSameCalendarDay(startTimestamp: number, endTimestamp: number) {
+    const start = new Date(startTimestamp);
+    const end = new Date(endTimestamp);
+
+    return (
+        start.getFullYear() === end.getFullYear() &&
+        start.getMonth() === end.getMonth() &&
+        start.getDate() === end.getDate()
+    );
+}
+
+export function getTripType(trip: Pick<TripProps, "trip_date" | "end_date">): TripType {
+    if (!trip.end_date) return "day";
+    return isSameCalendarDay(trip.trip_date, trip.end_date) ? "day" : "overnight";
 }
 
 export const generateResourceUrl = (resourcePath: string): string => {

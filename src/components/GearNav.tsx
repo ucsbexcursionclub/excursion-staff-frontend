@@ -6,6 +6,7 @@ import GearAddDialog from "./GearAddDialog";
 import GearCheckOutDialog from "./GearCheckOutDialog";
 import GearCheckInDialog from "./GearCheckInDialog";
 import {useGear} from "../providers/GearProvider";
+import {useSnackbar} from "../providers/SnackBarProvider";
 
 type GearNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
@@ -18,7 +19,8 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const [checkInDialogOpen, setCheckInDialogOpen] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState("");
 
-    const {validateRowSelection} = useGear();
+    const {validateRowSelection, gearRowSelectionModel, retrieveGearItem} = useGear();
+    const {addNotification} = useSnackbar();
 
     const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setSearchInput(event.currentTarget.value);
@@ -76,6 +78,45 @@ export default function GearNav({setSearchParams}: GearNavProps) {
         handleOpenDeleteDialog();
     };
 
+    const handleCopyContacts = async (field: "email" | "phone_number") => {
+        if (!validateRowSelection()) return;
+
+        const values = Array.from(
+            new Set(
+                gearRowSelectionModel
+                    .map((id) => retrieveGearItem(id.toString())?.memberDetails?.[field])
+                    .filter(Boolean) as string[]
+            )
+        );
+
+        if (values.length === 0) {
+            addNotification({
+                message:
+                    field === "email"
+                        ? "No checked out member emails found in the selected gear."
+                        : "No checked out member phone numbers found in the selected gear.",
+                type: "error"
+            });
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(values.join("\n"));
+            addNotification({
+                message:
+                    field === "email"
+                        ? "Copied selected member emails."
+                        : "Copied selected member phone numbers.",
+                type: "success"
+            });
+        } catch (_error) {
+            addNotification({
+                message: "Copy failed. Please check browser clipboard permissions.",
+                type: "error"
+            });
+        }
+    };
+
     return (
         <>
             <AppBar position="static" className="rounded-xl mb-4 bg-lime-100 px-4">
@@ -104,7 +145,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
                             </Button>
                         </form>
                         <Typography className="text-xs text-gray-200 italic">
-                            Gear Name or RFID
+                            Gear Name
                         </Typography>
                     </div>
                     <div className="flex justify-between items-center py-1">
@@ -119,6 +160,15 @@ export default function GearNav({setSearchParams}: GearNavProps) {
                         </Button>
                         <Button color="inherit" onClick={handleRemoveClick}>
                             Remove Gear
+                        </Button>
+                        <Button color="inherit" onClick={() => void handleCopyContacts("email")}>
+                            Copy Emails
+                        </Button>
+                        <Button
+                            color="inherit"
+                            onClick={() => void handleCopyContacts("phone_number")}
+                        >
+                            Copy Phones
                         </Button>
                     </div>
                 </Toolbar>

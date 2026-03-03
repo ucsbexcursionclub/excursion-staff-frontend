@@ -9,11 +9,12 @@ export type MemberProps = {
     local_living_address: string;
     is_new_member: boolean;
     signed_up_by: string;
-    membership_expiration_date: number;
+    membership_expiration_date: number | null;
     join_datetime: number;
     notes: string | null;
     flagged?: boolean;
     staff_id?: string;
+    exclude_from_stats?: boolean;
 };
 
 export type NotificationProps = {
@@ -49,7 +50,10 @@ export type StaffProps = {
 export type NewMemberProps = Omit<
     MemberProps,
     "_id" | "membership_expiration_date" | "join_datetime"
->;
+> & {
+    membership_expiration_date?: number | null;
+    join_datetime?: number;
+};
 
 export type NewStaffProps = Partial<StaffProps>;
 
@@ -62,6 +66,7 @@ export type GearProps = {
     date_added: number;
     description: string | null;
     notes: string | null;
+    is_staff_gear?: boolean;
     current_reservation: string | null;
     previous_reservations: string[];
     reservationDetails?: ReservationProps;
@@ -119,6 +124,7 @@ export type MemberProfileData = {
     is_new_member: boolean;
     notes: string | null;
     staff_id?: string;
+    exclude_from_stats?: boolean;
     profile_comments?: MemberProfileComment[];
 };
 
@@ -201,6 +207,8 @@ export type TripProps = {
     staff_participants?: TripStaffParticipant[];
     comments?: TripComment[];
 };
+
+export type TripType = "day" | "overnight";
 
 export type MemberProfileResponse = {
     member: MemberProfileData;
