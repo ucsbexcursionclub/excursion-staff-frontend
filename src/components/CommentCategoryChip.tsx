@@ -1,5 +1,7 @@
+import React from "react";
 import Chip from "@mui/material/Chip";
 import {CommentCategory} from "../utils/types";
+import {formatCommentCategoryLabel} from "../utils/utils";
 
 type CommentCategoryChipProps = {
     category: CommentCategory;
@@ -12,12 +14,15 @@ const categoryColorMap: Record<CommentCategory, "default" | "warning" | "success
     commendation: "success"
 };
 
-const formatCategory = (category: CommentCategory) =>
-    category.charAt(0).toUpperCase() + category.slice(1);
-
 export default function CommentCategoryChip({
     category,
     size = "small"
 }: CommentCategoryChipProps) {
-    return <Chip label={formatCategory(category)} color={categoryColorMap[category]} size={size} />;
+    return (
+        <Chip
+            label={formatCommentCategoryLabel(category)}
+            color={categoryColorMap[category]}
+            size={size}
+        />
+    );
 }

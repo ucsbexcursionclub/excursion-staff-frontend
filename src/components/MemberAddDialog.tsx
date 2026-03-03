@@ -13,6 +13,7 @@ import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
+import Switch from "@mui/material/Switch";
 import {useMembers} from "../providers/MembersProvider";
 import {MemberProps, ReservationProps, GearProps} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
@@ -20,6 +21,7 @@ import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
 import {MILLISECONDS_IN_DAY} from "../utils/constants";
 import {generateResourceUrl} from "../utils/utils";
+import {useLogin} from "../providers/LoginProvider";
 
 interface MemberAddDialog {
     open: boolean;
@@ -50,6 +52,10 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [hasWaiver, setHasWaiver] = React.useState<boolean>(false);
     const [hasPaid, setHasPaid] = React.useState<boolean>(false);
     const [localLivingAddress, setLocalLivingAddress] = React.useState("");
+    const [useCustomExpiration, setUseCustomExpiration] = React.useState(false);
+    const [customExpirationDate, setCustomExpirationDate] = React.useState("");
+    const [neverExpires, setNeverExpires] = React.useState(false);
+    const [excludeFromStats, setExcludeFromStats] = React.useState(false);
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -63,6 +69,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
     const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
+    const {isAdmin} = useLogin();
 
     if (!loggedInMember) return;
 
@@ -185,8 +192,10 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             throw new Error("Please enter a valid phone number.");
         } else if (!fullName) {
             throw new Error("Please enter your full name.");
-        } else if (!hasPaid) {
+        } else if (!hasPaid && !(isAdmin && excludeFromStats)) {
             throw new Error("Please ensure the new member has paid dues.");
+        } else if (useCustomExpiration && !neverExpires && !customExpirationDate) {
+            throw new Error("Please choose a custom expiration date.");
         } else if (!localLivingAddress) {
             throw new Error("Please fill in the address in which you live nearby.");
         }
@@ -203,7 +212,17 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setHasWaiver(false);
         setHasPaid(false);
         setLocalLivingAddress("");
+        setUseCustomExpiration(false);
+        setCustomExpirationDate("");
+        setNeverExpires(false);
+        setExcludeFromStats(false);
     };
+
+    const customExpirationTimestamp = neverExpires
+        ? null
+        : customExpirationDate
+          ? new Date(customExpirationDate).getTime()
+          : undefined;
 
     const handleSubmit = async () => {
         setValidationEnabled(true);
@@ -256,7 +275,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         }
 
         try {
-            handleMemberAdd({
+            await handleMemberAdd({
                 name: fullName,
                 email: email,
                 phone_number: phoneNumber,
@@ -264,7 +283,9 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 is_new_member: membershipStatus === "newMember",
                 signed_up_by: loggedInMember._id,
                 notes: "Stoked Level: " + stokedLevel,
-                local_living_address: localLivingAddress
+                local_living_address: localLivingAddress,
+                membership_expiration_date: useCustomExpiration ? customExpirationTimestamp : undefined,
+                exclude_from_stats: excludeFromStats
             });
         } catch (error: any) {
             console.error("Failed to add member:", error);
@@ -359,8 +380,14 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             let newMembershipExpiration = retrievedMemberData.membership_expiration_date;
 
             //Checking if member is not expired. If member is not expired than extend membership
-            if (newMembershipExpiration > Date.now()) {
-                newMembershipExpiration += membershipDuration * MILLISECONDS_IN_DAY;
+            if (useCustomExpiration && neverExpires) {
+                newMembershipExpiration = null;
+            } else if (useCustomExpiration) {
+                newMembershipExpiration =
+                    customExpirationTimestamp ?? retrievedMemberData.membership_expiration_date;
+            } else if ((newMembershipExpiration || 0) > Date.now()) {
+                newMembershipExpiration =
+                    (newMembershipExpiration || 0) + membershipDuration * MILLISECONDS_IN_DAY;
             } else {
                 newMembershipExpiration = Date.now() + membershipDuration * MILLISECONDS_IN_DAY;
             }
@@ -376,16 +403,19 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 membership_expiration_date: newMembershipExpiration,
                 join_datetime: Date.now(),
                 notes: retrievedMemberData.notes + "\nReturning Stoked Level: " + stokedLevel,
-                local_living_address: localLivingAddress
+                local_living_address: localLivingAddress,
+                exclude_from_stats: excludeFromStats
             };
 
             const updatedMember = await handleMemberUpdate(memberData);
 
             if (updatedMember) {
                 setSuccessMessage(
-                    `${fullName}'s membership extended to ${new Date(
-                        newMembershipExpiration
-                    ).toLocaleDateString()}`
+                    neverExpires
+                        ? `${fullName}'s membership now never expires.`
+                        : `${fullName}'s membership extended to ${new Date(
+                              newMembershipExpiration as number
+                          ).toLocaleDateString()}`
                 );
                 setErrorMessageTimeout();
 
@@ -539,11 +569,64 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                         value={membershipDuration}
                         onChange={handleMembershipDurationChange}
                     >
-                        <FormControlLabel value={90} control={<Radio />} label="90 days" />
-                        <FormControlLabel value={180} control={<Radio />} label="180 days" />
-                        <FormControlLabel value={365} control={<Radio />} label="365 days" />
+                        <FormControlLabel value={90} control={<Radio />} label="90 Days" />
+                        <FormControlLabel value={180} control={<Radio />} label="180 Days" />
+                        <FormControlLabel value={365} control={<Radio />} label="365 Days" />
                     </RadioGroup>
                 </FormControl>
+                {isAdmin && (
+                    <Box sx={{my: 2, border: "1px solid #d1d5db", p: 2, borderRadius: 1}}>
+                        <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
+                            Admin Options
+                        </DialogContentText>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={useCustomExpiration}
+                                    onChange={(event) => {
+                                        setUseCustomExpiration(event.target.checked);
+                                        if (!event.target.checked) {
+                                            setNeverExpires(false);
+                                            setCustomExpirationDate("");
+                                        }
+                                    }}
+                                />
+                            }
+                            label="Custom Expiration"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={neverExpires}
+                                    onChange={(event) => setNeverExpires(event.target.checked)}
+                                    disabled={!useCustomExpiration}
+                                />
+                            }
+                            label="Never Expires"
+                        />
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={excludeFromStats}
+                                    onChange={(event) => setExcludeFromStats(event.target.checked)}
+                                />
+                            }
+                            label="Exclude From Stats"
+                        />
+                        {useCustomExpiration && !neverExpires && (
+                            <TextField
+                                margin="dense"
+                                label="Expiration Date"
+                                type="date"
+                                fullWidth
+                                variant="standard"
+                                value={customExpirationDate}
+                                onChange={(event) => setCustomExpirationDate(event.target.value)}
+                                InputLabelProps={{shrink: true}}
+                            />
+                        )}
+                    </Box>
+                )}
                 <Box sx={{my: 2, border: "1px solid black", p: 2}}>
                     <DialogContentText sx={{color: "black", marginBottom: "1rem"}}>
                         For Staff Use Only:

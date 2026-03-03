@@ -1,11 +1,12 @@
 import React, {useMemo, useState} from "react";
-import {Alert, Box, Button, CircularProgress, Typography} from "@mui/material";
+import {Alert, Box, Button, CircularProgress, Tab, Tabs, Typography} from "@mui/material";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {useQuery} from "@tanstack/react-query";
 import {getTrips} from "../utils/api";
-import {TripProps} from "../utils/types";
+import {TripProps, TripType} from "../utils/types";
 import TripFormDialog from "../components/TripFormDialog";
 import TripDetailsDialog from "../components/TripDetailsDialog";
+import {formatEnumLabel, getTripType} from "../utils/utils";
 
 const formatDateTime = (timestamp: number) => new Date(timestamp).toLocaleString();
 
@@ -22,6 +23,13 @@ const columns: GridColDef<TripProps>[] = [
         flex: 1,
         minWidth: 170,
         valueFormatter: (params) => formatDateTime(params.value as number)
+    },
+    {
+        field: "tripType",
+        headerName: "Type",
+        width: 140,
+        valueGetter: (params) => getTripType(params.row),
+        valueFormatter: (params) => `${formatEnumLabel(params.value as TripType)} Trip`
     },
     {
         field: "location",
@@ -47,6 +55,7 @@ const columns: GridColDef<TripProps>[] = [
 export default function TripsPage() {
     const [createOpen, setCreateOpen] = useState(false);
     const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+    const [tripTab, setTripTab] = useState<"all" | TripType>("all");
 
     const {data, isLoading, error} = useQuery({
         queryKey: ["trips"],
@@ -58,6 +67,10 @@ export default function TripsPage() {
             [...(data || [])].sort((a, b) => (b.trip_date || 0) - (a.trip_date || 0)),
         [data]
     );
+    const filteredTrips = useMemo(() => {
+        if (tripTab === "all") return trips;
+        return trips.filter((trip) => getTripType(trip) === tripTab);
+    }, [tripTab, trips]);
 
     return (
         <div className="w-full h-full">
@@ -71,6 +84,20 @@ export default function TripsPage() {
                 <Button variant="contained" onClick={() => setCreateOpen(true)}>
                     Create Trip
                 </Button>
+            </Box>
+
+            <Box className="mb-4 rounded-xl bg-white px-2">
+                <Tabs value={tripTab} onChange={(_event, value) => setTripTab(value)}>
+                    <Tab value="all" label={`All Trips (${trips.length})`} />
+                    <Tab
+                        value="day"
+                        label={`Day Trips (${trips.filter((trip) => getTripType(trip) === "day").length})`}
+                    />
+                    <Tab
+                        value="overnight"
+                        label={`Overnight Trips (${trips.filter((trip) => getTripType(trip) === "overnight").length})`}
+                    />
+                </Tabs>
             </Box>
 
             {isLoading && (
@@ -88,7 +115,7 @@ export default function TripsPage() {
             {!isLoading && !error && (
                 <div className="w-full rounded-xl bg-gray-300 p-4">
                     <DataGrid
-                        rows={trips}
+                        rows={filteredTrips}
                         columns={columns}
                         getRowId={(row) => row._id}
                         autoHeight

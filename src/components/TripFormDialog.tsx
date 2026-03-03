@@ -29,6 +29,7 @@ import {
     TripProps,
     UpdateTripProps
 } from "../utils/types";
+import {formatEnumLabel} from "../utils/utils";
 
 type TripFormDialogProps = {
     open: boolean;
@@ -191,8 +192,8 @@ export default function TripFormDialog({open, onClose, trip, onSaved}: TripFormD
             hasOverdueGear,
             isFlagged,
             messages: [
-                ...(hasOverdueGear ? ["This member has overdue gear reservations."] : []),
-                ...(isFlagged ? ["This member is flagged by staff."] : [])
+                ...(hasOverdueGear ? ["WARNING: This member has overdue gear reservations."] : []),
+                ...(isFlagged ? ["WARNING: This member is flagged by staff."] : [])
             ]
         };
     };
@@ -384,9 +385,15 @@ export default function TripFormDialog({open, onClose, trip, onSaved}: TripFormD
                                                         }
                                                         fullWidth
                                                     >
-                                                        <MenuItem value="planned">Planned</MenuItem>
-                                                        <MenuItem value="attended">Attended</MenuItem>
-                                                        <MenuItem value="cancelled">Cancelled</MenuItem>
+                                                        <MenuItem value="planned">
+                                                            {formatEnumLabel("planned")}
+                                                        </MenuItem>
+                                                        <MenuItem value="attended">
+                                                            {formatEnumLabel("attended")}
+                                                        </MenuItem>
+                                                        <MenuItem value="cancelled">
+                                                            {formatEnumLabel("cancelled")}
+                                                        </MenuItem>
                                                     </TextField>
                                                     <TextField
                                                         label="Participant Comment"

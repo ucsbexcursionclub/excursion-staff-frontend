@@ -797,6 +797,21 @@ export async function updateTrip(tripId: string, updates: UpdateTripProps): Prom
     }
 }
 
+export async function deleteTrip(tripId: string): Promise<boolean> {
+    try {
+        const response = await axios.delete(`${baseURL}/api/v1/trips/${tripId}`, authConfig());
+
+        if (response.data && response.data.data !== undefined) {
+            return !!response.data.data;
+        }
+
+        return true;
+    } catch (error: any) {
+        handleApiErrors("trip", error);
+        throw new Error("An unexpected error occurred while deleting a trip.");
+    }
+}
+
 export async function addTripComment(
     tripId: string,
     newComment: NewTripComment

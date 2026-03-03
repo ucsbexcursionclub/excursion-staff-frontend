@@ -7,7 +7,9 @@ import {
     TextField,
     Alert,
     Stack,
-    Box
+    Box,
+    FormControlLabel,
+    Switch
 } from "@mui/material";
 import {useGear} from "../providers/GearProvider";
 import {BlurBackDrop} from "./HelperComponents";
@@ -19,9 +21,9 @@ type GearAddDialogProps = {
 
 const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
     const [gearName, setGearName] = useState("");
-    const [rfid, setRfid] = useState<string | null>(null);
     const [description, setDescription] = useState<string | null>(null);
     const [notes, setNotes] = useState<string | null>(null);
+    const [isStaffGear, setIsStaffGear] = useState(false);
     const [submitErrorMessage, setSubmitErrorMessage] = useState<string | null>(null);
     const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null);
 
@@ -29,7 +31,7 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
         onClose();
     };
 
-    const {handleGearAdd, retrieveGearItemByRFID, gearData} = useGear();
+    const {handleGearAdd, gearData} = useGear();
 
     const handleValidation = (): boolean => {
         if (!gearName) {
@@ -48,11 +50,6 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
             return false;
         }
 
-        if (rfid && retrieveGearItemByRFID(rfid)) {
-            setSubmitErrorMessage("A gear item with this RFID already exists.");
-            setErrorMessageTimeout();
-            return false;
-        }
         return true;
     };
 
@@ -62,15 +59,16 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
         try {
             await handleGearAdd({
                 gear_name: gearName.trim(),
-                rfid: rfid === "" ? null : rfid,
+                rfid: null,
                 description,
-                notes
+                notes,
+                is_staff_gear: isStaffGear
             });
             setSubmitSuccessMessage(`${gearName} added successfully`);
             setGearName("");
-            setRfid(null);
             setDescription("");
             setNotes("");
+            setIsStaffGear(false);
             // Close the alert after 5 seconds
             setTimeout(() => {
                 setSubmitSuccessMessage(null);
@@ -80,14 +78,6 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
             console.error(error);
             setSubmitErrorMessage("Adding gear failed. Contact tech support.");
             setErrorMessageTimeout();
-        }
-    };
-
-    const handleRfidChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-
-        if (value === "" || /^[0-9]+$/.test(value)) {
-            setRfid(value);
         }
     };
 
@@ -121,18 +111,11 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
                     className="m-2 pr-5"
                 />
                 <TextField
-                    label="RFID"
-                    value={rfid || ""}
-                    onChange={handleRfidChange}
-                    fullWidth
-                    className="m-2 pr-5"
-                />
-                <TextField
-                    label="Description (Brand, Size, Degrees, etc.)"
+                    label="Information"
                     value={description || ""}
                     onChange={(e) => setDescription(e.target.value)}
                     fullWidth
-                    placeholder="Brand, Size, Degrees, etc."
+                    placeholder="Brand, size, tent type, degrees, or other quick details"
                     className="m-2 pr-5"
                 />
                 <TextField
@@ -142,6 +125,16 @@ const GearAddDialog: React.FC<GearAddDialogProps> = ({open, onClose}) => {
                     fullWidth
                     placeholder="Missing, Broken, Person said they lost it, etc."
                     className="m-2 pr-5"
+                />
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={isStaffGear}
+                            onChange={(event) => setIsStaffGear(event.target.checked)}
+                        />
+                    }
+                    label="Staff Gear"
+                    className="m-2"
                 />
             </Box>
             <DialogActions>
