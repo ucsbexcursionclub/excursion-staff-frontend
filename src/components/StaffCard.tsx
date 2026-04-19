@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {StaffProfile} from "../utils/types";
 import {capitalizeFirstLetter, generateResourceUrl} from "../utils/utils";
-import {Avatar} from "@mui/material";
+import {Avatar, Chip} from "@mui/material";
 
 interface StaffCardProps {
     staff: StaffProfile;
@@ -18,30 +18,38 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
 
     return (
         <div className="w-full h-full p-2">
-            <div className="flex flex-col items-center w-full bg-gray-100 rounded-2xl shadow-sm p-4">
+            <div className="flex flex-col items-center w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 h-full hover:shadow-md transition-shadow">
                 <Avatar
                     src={imgSrc}
-                    imgProps={{
-                        onError: () =>
-                            setImgSrc(generateResourceUrl("/resources/avatar.png"))
-                    }}
+                    imgProps={{onError: () => setImgSrc(generateResourceUrl("/resources/avatar.png"))}}
                     alt={staff.name}
-                    className="w-full h-full sm:mx-1 sm:mx-2 md:mx-3 lg:mx-6 object-cover rounded-md my-2"
+                    sx={{width: 100, height: 100, mb: 1.5, border: "3px solid #bbf7d0"}}
                 />
-                <div className="w-full text-center">
-                    <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-black">
-                        {capitalizeFirstLetter(staff.name)}
-                    </h3>
-                    <p className="text-sm sm:text-base md:text-lg text-gray-700 mb-1">
-                        {staff.email}
-                    </p>
-                    <p className="text-sm sm:text-base md:text-lg font-bold text-gray-800 mb-3">
-                        {staff.positions.join(", ")}
-                    </p>
-                    <p className="text-sm sm:text-base md:text-lg text-gray-600 break-words">
+                <h3 className="text-base font-bold text-gray-900 text-center leading-tight mb-0.5">
+                    {capitalizeFirstLetter(staff.name)}
+                </h3>
+                <p className="text-xs text-gray-500 text-center mb-1 break-all">{staff.email}</p>
+                <div className="flex flex-wrap justify-center gap-1 mb-2">
+                    {staff.positions.map((pos) => (
+                        <Chip
+                            key={pos}
+                            label={pos}
+                            size="small"
+                            sx={{
+                                backgroundColor: "#d9f99d",
+                                color: "#14532d",
+                                fontWeight: 600,
+                                fontSize: "0.7rem",
+                                height: 20
+                            }}
+                        />
+                    ))}
+                </div>
+                {staff.bio && (
+                    <p className="text-xs text-gray-600 text-center break-words leading-relaxed">
                         {staff.bio}
                     </p>
-                </div>
+                )}
             </div>
         </div>
     );

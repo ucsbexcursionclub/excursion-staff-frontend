@@ -1,6 +1,8 @@
-import React, {ChangeEvent, FormEvent, KeyboardEvent, useState} from "react";
+import React, {ChangeEvent, useState, useEffect} from "react";
 import {AppBar, Toolbar, Typography, InputBase, Button} from "@mui/material";
+import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 import GearRemoveDialog from "./GearRemoveDialog";
 import GearAddDialog from "./GearAddDialog";
 import GearCheckOutDialog from "./GearCheckOutDialog";
@@ -22,61 +24,31 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const {validateRowSelection, gearRowSelectionModel, retrieveGearItem} = useGear();
     const {addNotification} = useSnackbar();
 
-    const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setSearchInput(event.currentTarget.value);
-    };
-
-    const submitSearch = () => {
-        setSearchParams(searchInput.trim());
-    };
-
-    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        submitSearch();
-    };
-
-    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            submitSearch();
-        }
-    };
+    // Debounced real-time search — fires 300 ms after the user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchParams(searchInput.trim());
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput, setSearchParams]);
 
     const handleOpenDeleteDialog = () => {
         validateRowSelection() && setRemoveDialogOpen(true);
     };
-
-    const handleCloseDeleteDialog = () => {
-        setRemoveDialogOpen(false);
-    };
+    const handleCloseDeleteDialog = () => setRemoveDialogOpen(false);
 
     const handleOpenCheckOutDialog = () => {
         validateRowSelection() && setCheckOutDialogOpen(true);
     };
-
-    const handleCloseCheckOutDialog = () => {
-        setCheckOutDialogOpen(false);
-    };
+    const handleCloseCheckOutDialog = () => setCheckOutDialogOpen(false);
 
     const handleOpenCheckInDialog = () => {
         validateRowSelection() && setCheckInDialogOpen(true);
     };
+    const handleCloseCheckInDialog = () => setCheckInDialogOpen(false);
 
-    const handleCloseCheckInDialog = () => {
-        setCheckInDialogOpen(false);
-    };
-
-    const handleOpenAddDialog = () => {
-        setAddDialogOpen(true);
-    };
-
-    const handleCloseAddDialog = () => {
-        setAddDialogOpen(false);
-    };
-
-    const handleRemoveClick = () => {
-        handleOpenDeleteDialog();
-    };
+    const handleOpenAddDialog = () => setAddDialogOpen(true);
+    const handleCloseAddDialog = () => setAddDialogOpen(false);
 
     const handleCopyContacts = async (field: "email" | "phone_number") => {
         if (!validateRowSelection()) return;
@@ -117,62 +89,92 @@ export default function GearNav({setSearchParams}: GearNavProps) {
         }
     };
 
+    const actionBtn = (label: string, onClick: () => void, variant: "contained" | "outlined" = "outlined") => (
+        <Button
+            key={label}
+            size="small"
+            variant={variant}
+            onClick={onClick}
+            sx={{
+                ...(variant === "contained"
+                    ? {
+                          backgroundColor: "#4ade80",
+                          color: "#14532d",
+                          "&:hover": {backgroundColor: "#22c55e"}
+                      }
+                    : {
+                          borderColor: "#86efac",
+                          color: "#166534",
+                          "&:hover": {borderColor: "#22c55e", backgroundColor: "#f0fdf4"}
+                      }),
+                borderRadius: "8px",
+                textTransform: "none",
+                fontWeight: 600,
+                boxShadow: "none"
+            }}
+        >
+            {label}
+        </Button>
+    );
+
     return (
         <>
-            <AppBar position="static" className="rounded-xl mb-4 bg-lime-100 px-4">
-                <Toolbar className="flex items-center flex-wrap py-1 px-0 justify-between max-[800px]:justify-center">
-                    <Typography variant="h4">Gear</Typography>
-                    <div className="flex flex-col items-center">
-                        <Typography
-                            style={{userSelect: "none"}}
-                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                        >
-                            s
-                        </Typography>
-                        <form
-                            className="relative flex items-center mx-2 bg-peel-100 rounded-lg text-black"
-                            onSubmit={handleSearchSubmit}
-                        >
-                            <SearchIcon className="absolute left-2" color="inherit" />
+            <AppBar
+                position="static"
+                elevation={0}
+                sx={{
+                    borderRadius: "12px",
+                    mb: 2,
+                    background: "linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)",
+                    color: "inherit"
+                }}
+            >
+                <Toolbar sx={{flexWrap: "wrap", gap: 1, py: 1.5}} className="justify-between">
+                    <Typography variant="h5" fontWeight={700} sx={{color: "#1a2e05", letterSpacing: "-0.5px"}}>
+                        Gear
+                    </Typography>
+
+                    {/* Live search */}
+                    <div className="flex flex-col items-center flex-1 min-w-[200px] max-w-sm mx-2">
+                        <div className="relative flex items-center w-full bg-white/70 backdrop-blur-sm rounded-xl border border-lime-300 shadow-sm focus-within:border-lime-500 focus-within:ring-2 focus-within:ring-lime-200 transition-all">
+                            <SearchIcon className="absolute left-3 text-lime-600" fontSize="small" />
                             <InputBase
                                 value={searchInput}
-                                onChange={updateSearch}
-                                onKeyDown={handleSearchKeyDown}
-                                className="pl-10"
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                    setSearchInput(e.currentTarget.value)
+                                }
+                                placeholder="Search gear by name…"
+                                className="pl-10 pr-8 py-1 w-full text-sm"
+                                inputProps={{"aria-label": "search gear"}}
                             />
-                            <Button type="submit" color="inherit">
-                                Search
-                            </Button>
-                        </form>
-                        <Typography className="text-xs text-gray-200 italic">
-                            Gear Name
+                            {searchInput && (
+                                <IconButton
+                                    size="small"
+                                    className="absolute right-1"
+                                    onClick={() => setSearchInput("")}
+                                    aria-label="clear search"
+                                >
+                                    <ClearIcon fontSize="small" />
+                                </IconButton>
+                            )}
+                        </div>
+                        <Typography className="text-xs mt-0.5" sx={{color: "#4d7c0f", opacity: 0.8}}>
+                            Results update as you type
                         </Typography>
                     </div>
-                    <div className="flex justify-between items-center py-1">
-                        <Button color="inherit" onClick={handleOpenCheckInDialog}>
-                            Check In
-                        </Button>
-                        <Button color="inherit" onClick={handleOpenCheckOutDialog}>
-                            Check Out
-                        </Button>
-                        <Button color="inherit" onClick={handleOpenAddDialog}>
-                            Add Gear
-                        </Button>
-                        <Button color="inherit" onClick={handleRemoveClick}>
-                            Remove Gear
-                        </Button>
-                        <Button color="inherit" onClick={() => void handleCopyContacts("email")}>
-                            Copy Emails
-                        </Button>
-                        <Button
-                            color="inherit"
-                            onClick={() => void handleCopyContacts("phone_number")}
-                        >
-                            Copy Phones
-                        </Button>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-1 items-center">
+                        {actionBtn("Check In", handleOpenCheckInDialog, "contained")}
+                        {actionBtn("Check Out", handleOpenCheckOutDialog, "contained")}
+                        {actionBtn("Add Gear", handleOpenAddDialog)}
+                        {actionBtn("Remove Gear", handleOpenDeleteDialog)}
+                        {actionBtn("Copy Emails", () => void handleCopyContacts("email"))}
+                        {actionBtn("Copy Phones", () => void handleCopyContacts("phone_number"))}
                     </div>
                 </Toolbar>
             </AppBar>
+
             <GearRemoveDialog open={removeDialogOpen} onClose={handleCloseDeleteDialog} />
             <GearAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <GearCheckOutDialog open={checkOutDialogOpen} onClose={handleCloseCheckOutDialog} />

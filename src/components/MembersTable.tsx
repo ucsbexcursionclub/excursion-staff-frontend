@@ -409,7 +409,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     );
 
     return (
-        <div className="w-full h-full bg-gray-300 rounded-xl p-4">
+        <div className="w-full h-full rounded-2xl overflow-hidden shadow-sm border border-gray-200">
             <DataGrid
                 rows={membersData}
                 getRowHeight={() => "auto"}
@@ -451,6 +451,48 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                         onFilterChange: setSelectedFilter,
                         flaggedOnly,
                         setFlaggedOnly
+                    }
+                }}
+                sx={{
+                    border: "none",
+                    "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: "#f0fdf4",
+                        color: "#166534",
+                        fontWeight: 700,
+                        fontSize: "0.82rem",
+                        letterSpacing: "0.02em",
+                        textTransform: "uppercase",
+                        borderBottom: "2px solid #bbf7d0"
+                    },
+                    "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
+                        outline: "none"
+                    },
+                    "& .MuiDataGrid-cell": {
+                        borderColor: "#f3f4f6",
+                        fontSize: "0.875rem",
+                        color: "#374151",
+                        alignItems: "center",
+                        py: 0.75
+                    },
+                    "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+                        outline: "none"
+                    },
+                    "& .MuiDataGrid-row": {
+                        transition: "background-color 0.1s"
+                    },
+                    "& .MuiDataGrid-row:hover": {
+                        backgroundColor: "#f0fdf4"
+                    },
+                    "& .MuiDataGrid-row.Mui-selected": {
+                        backgroundColor: "#dcfce7",
+                        "&:hover": {backgroundColor: "#bbf7d0"}
+                    },
+                    "& .MuiDataGrid-footerContainer": {
+                        borderTop: "1px solid #e5e7eb",
+                        backgroundColor: "#fafafa"
+                    },
+                    "& .MuiCheckbox-root.Mui-checked": {
+                        color: "#16a34a"
                     }
                 }}
             />

@@ -113,81 +113,39 @@ const StaffGrid: React.FC = () => {
             return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
         });
 
+    const renderSection = (title: string, members: typeof sortedStaff, extra?: typeof sortedStaff) => {
+        const all = extra ? [...extra, ...members] : members;
+        if (all.length === 0) return null;
+        return (
+            <div className="w-full mb-10">
+                <div className="flex items-center gap-3 mb-4">
+                    <Typography
+                        variant="h5"
+                        fontWeight={700}
+                        sx={{color: "#14532d", letterSpacing: "-0.3px"}}
+                    >
+                        {title}
+                    </Typography>
+                    <span className="flex-1 h-px bg-lime-200" />
+                    <Typography variant="caption" sx={{color: "#6b7280"}}>
+                        {all.length} member{all.length !== 1 ? "s" : ""}
+                    </Typography>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {all.map((staffProfile, index) => (
+                        <StaffCard staff={staffProfile} key={index} />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
     return (
-        <div className="flex flex-col items-center">
-            {/* Section for "Board" */}
-            <div className="text-center">
-                <Typography
-                    variant="body2"
-                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
-                >
-                    Board
-                </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {boardStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={index}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Section for "General Staff" */}
-            <div className="text-center">
-                <Typography
-                    variant="body2"
-                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
-                >
-                    Staff
-                </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {/* Render Web Developers first, then the rest of the general staff */}
-                    {webDevStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={`webdev-${index}`}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                    {generalStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={index}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Section for "Prospective Staff" */}
-            <div className="text-center">
-                <Typography
-                    variant="body2"
-                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
-                >
-                    Prospective Staff
-                </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {prospectiveStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={index}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* Add a section for "Emeriti" if needed */}
-            <div className="text-center">
-                <Typography
-                    variant="body2"
-                    className="my-2 text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-black"
-                >
-                    Emeritus Staff
-                </Typography>
-                <div className="grid ml-0 w-full justify-start grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
-                    {emeritusStaff.map((staffProfile, index) => (
-                        <div className="flex p-0 py-2 justify-center" key={index}>
-                            <StaffCard staff={staffProfile} />
-                        </div>
-                    ))}
-                </div>
-            </div>
+        <div className="w-full">
+            {renderSection("Board", boardStaff)}
+            {renderSection("Staff", generalStaff, webDevStaff)}
+            {renderSection("Prospective Staff", prospectiveStaff)}
+            {renderSection("Emeritus Staff", emeritusStaff)}
         </div>
     );
 };

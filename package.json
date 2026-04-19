@@ -48,6 +48,7 @@
         "react-router-dom": "^6.23.1",
         "react-social-media-embed": "^2.5.13",
         "react-window": "^1.8.10",
+        "recharts": "^3.8.1",
         "universal-cookie": "^6.1.3"
     }
 }
