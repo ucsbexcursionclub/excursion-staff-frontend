@@ -1,19 +1,19 @@
-import React, {ChangeEvent, FormEvent, KeyboardEvent, useState, useEffect} from "react";
+import React, {ChangeEvent, useState, useEffect} from "react";
 import {
     AppBar,
     Toolbar,
     Typography,
     InputBase,
-    Button,
-    ButtonGroup,
-    ToggleButton,
-    ToggleButtonGroup
+    Button
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+import IconButton from "@mui/material/IconButton";
 import MemberAddDialog from "./MemberAddDialog";
 import MemberRemoveDialog from "./MemberRemoveDialog";
 import {useMembers} from "../providers/MembersProvider";
 import MemberEmailDialog from "./MemberEmailDialog";
+
 type MembersNavProps = {
     setSearchParams: React.Dispatch<React.SetStateAction<string>>;
 };
@@ -27,152 +27,138 @@ export default function MembersNav({setSearchParams}: MembersNavProps) {
     const [searchInput, setSearchInput] = useState("");
 
     useEffect(() => {
-        const handleResize = () => {
-            setScreenWidth(window.innerWidth);
-        };
-
+        const handleResize = () => setScreenWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
+    // Debounced real-time search — fires 300 ms after the user stops typing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setSearchParams(searchInput.trim());
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchInput, setSearchParams]);
+
     const {validateRowSelection} = useMembers();
 
-    const handleOpenAddDialog = () => {
-        setAddDialogOpen(true);
-    };
+    const handleOpenAddDialog = () => setAddDialogOpen(true);
+    const handleCloseAddDialog = () => setAddDialogOpen(false);
 
-    const handleOpenCopyEmail = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        if (event.currentTarget.value === null) return;
+    const handleOpenCopyEmail = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (event.currentTarget.value === "copySelected" && !validateRowSelection()) return;
-
         setCopyEmailOption(event.currentTarget.value);
         setCopyEmailOpen(true);
     };
-
-    const handleCloseCopyEmail = () => {
-        // Display the Snackbar when the "Copy Email(s)" button is clicked
-        setCopyEmailOpen(false);
-    };
-
-    const handleCloseAddDialog = () => {
-        setAddDialogOpen(false);
-    };
-
-    const updateSearch = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setSearchInput(event.currentTarget.value);
-    };
-
-    const submitSearch = () => {
-        setSearchParams(searchInput.trim());
-    };
-
-    const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        submitSearch();
-    };
-
-    const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            submitSearch();
-        }
-    };
+    const handleCloseCopyEmail = () => setCopyEmailOpen(false);
 
     const handleOpenDeleteDialog = () => {
         validateRowSelection() && setRemoveDialogOpen(true);
     };
-
-    const handleCloseDeleteDialog = () => {
-        setRemoveDialogOpen(false);
-    };
-
-    const handleRemoveClick = () => {
-        handleOpenDeleteDialog();
-    };
-
-    const renderAppBar = () => {
-        return (
-            <AppBar position="static" className="rounded-xl mb-4 bg-lime-100">
-                <Toolbar className="flex justify-between items-center py-1 flex-row max-[800px]:flex-col">
-                    <Typography variant="h4" className="pr-3">
-                        Members
-                    </Typography>
-                    <div className="flex flex-col items-center w-full max-[800px]:my-4">
-                        {/* Placeholder Typography for spacing (remove if not needed) */}
-                        <Typography
-                            style={{ userSelect: "none" }}
-                            className="text-xs text-gray-300 text-opacity-0 pointer-events-none"
-                        >
-                            s
-                        </Typography>
-                        <form
-                            className="relative flex items-center mx-2 bg-peel-100 rounded-lg w-full "
-                            onSubmit={handleSearchSubmit}
-                        >
-                            <SearchIcon className="absolute left-2" color="inherit" />
-                            <InputBase
-                                value={searchInput}
-                                onChange={updateSearch}
-                                onKeyDown={handleSearchKeyDown}
-                                className="pl-10 w-full"
-                            />
-                            <Button
-                                type="submit"
-                                color="inherit"
-                                className="rounded-lg text-sm bg-lime-200"
-                            >
-                                Search
-                            </Button>
-                        </form>
-                        <Typography className="text-xs text-gray-200 italic">
-                            Name, Email, or Phone Number
-                        </Typography>
-                    </div>
-                    <div className="flex flex-col mx-4 md:flex-row items-center w-full md:w-auto">
-                        <Button color="inherit" className="mx-1" onClick={handleOpenAddDialog}>
-                            Add/Renew Member
-                        </Button>
-                        <Button color="inherit" className="mx-1" onClick={handleRemoveClick}>
-                            Remove Member(s)
-                        </Button>
-                        <div className="hidden md:block"> {/* Show on medium screens and above */}
-                            <ButtonGroup
-                                className="text-white"
-                                style={{ boxShadow: "none" }}
-                            >
-                                <Button
-                                    onClick={handleOpenCopyEmail}
-                                    value="copySelected"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Selected Members Emails
-                                </Button>
-                            </ButtonGroup>
-                        </div>
-                        <div className="md:hidden"> {/* Show only on smaller screens */}
-                            <ToggleButtonGroup
-                                exclusive
-                                value={copyEmailOption}
-                                className="text-white"
-                                style={{ boxShadow: "none" }}
-                            >
-                                <ToggleButton
-                                    value="copySelected"
-                                    className="text-white border-transparent"
-                                >
-                                    Copy Selected Members Emails
-                                </ToggleButton>
-                            </ToggleButtonGroup>
-                        </div>
-                    </div>
-                </Toolbar>
-            </AppBar>
-        );
-    };
+    const handleCloseDeleteDialog = () => setRemoveDialogOpen(false);
 
     return (
         <>
-            {renderAppBar()}
+            <AppBar
+                position="static"
+                elevation={0}
+                sx={{
+                    borderRadius: "12px",
+                    mb: 2,
+                    background: "linear-gradient(135deg, #d9f99d 0%, #bbf7d0 100%)",
+                    color: "inherit"
+                }}
+            >
+                <Toolbar
+                    sx={{flexWrap: "wrap", gap: 1, py: 1.5}}
+                    className="justify-between"
+                >
+                    <Typography variant="h5" fontWeight={700} sx={{color: "#1a2e05", letterSpacing: "-0.5px"}}>
+                        Members
+                    </Typography>
+
+                    {/* Live search */}
+                    <div className="flex flex-col items-center flex-1 min-w-[220px] max-w-md mx-2">
+                        <div className="relative flex items-center w-full bg-white/70 backdrop-blur-sm rounded-xl border border-lime-300 shadow-sm focus-within:border-lime-500 focus-within:ring-2 focus-within:ring-lime-200 transition-all">
+                            <SearchIcon className="absolute left-3 text-lime-600" fontSize="small" />
+                            <InputBase
+                                value={searchInput}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                    setSearchInput(e.currentTarget.value)
+                                }
+                                placeholder="Search by name, email, or phone…"
+                                className="pl-10 pr-8 py-1 w-full text-sm"
+                                inputProps={{"aria-label": "search members"}}
+                            />
+                            {searchInput && (
+                                <IconButton
+                                    size="small"
+                                    className="absolute right-1"
+                                    onClick={() => setSearchInput("")}
+                                    aria-label="clear search"
+                                >
+                                    <ClearIcon fontSize="small" />
+                                </IconButton>
+                            )}
+                        </div>
+                        <Typography className="text-xs mt-0.5" sx={{color: "#4d7c0f", opacity: 0.8}}>
+                            Results update as you type
+                        </Typography>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap gap-1 items-center">
+                        <Button
+                            size="small"
+                            variant="contained"
+                            onClick={handleOpenAddDialog}
+                            sx={{
+                                backgroundColor: "#4ade80",
+                                color: "#14532d",
+                                "&:hover": {backgroundColor: "#22c55e"},
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                fontWeight: 600,
+                                boxShadow: "none"
+                            }}
+                        >
+                            Add / Renew Member
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={handleOpenDeleteDialog}
+                            sx={{
+                                borderColor: "#86efac",
+                                color: "#166534",
+                                "&:hover": {borderColor: "#22c55e", backgroundColor: "#f0fdf4"},
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                fontWeight: 600
+                            }}
+                        >
+                            Remove Member(s)
+                        </Button>
+                        <Button
+                            size="small"
+                            variant="outlined"
+                            value="copySelected"
+                            onClick={handleOpenCopyEmail}
+                            sx={{
+                                borderColor: "#86efac",
+                                color: "#166534",
+                                "&:hover": {borderColor: "#22c55e", backgroundColor: "#f0fdf4"},
+                                borderRadius: "8px",
+                                textTransform: "none",
+                                fontWeight: 600
+                            }}
+                        >
+                            Copy Emails
+                        </Button>
+                    </div>
+                </Toolbar>
+            </AppBar>
+
             <MemberAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <MemberRemoveDialog open={removeDialogOpen} onClose={handleCloseDeleteDialog} />
             <MemberEmailDialog

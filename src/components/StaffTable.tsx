@@ -78,7 +78,7 @@ export default function StaffTable({searchParams}: StaffTableProps) {
     );
 
     return (
-        <div className="w-full h-full bg-gray-300 rounded-xl p-4">
+        <div className="w-full h-full rounded-2xl overflow-hidden shadow-sm border border-gray-200">
             <DataGrid
                 rows={staffData}
                 getRowHeight={() => "auto"}
@@ -105,6 +105,45 @@ export default function StaffTable({searchParams}: StaffTableProps) {
                     setStaffRowSelectionModel(newRowSelectionModel);
                 }}
                 rowSelectionModel={staffRowSelectionModel}
+                sx={{
+                    border: "none",
+                    "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: "#eef2ff",
+                        color: "#3730a3",
+                        fontWeight: 700,
+                        fontSize: "0.82rem",
+                        letterSpacing: "0.02em",
+                        textTransform: "uppercase",
+                        borderBottom: "2px solid #c7d2fe"
+                    },
+                    "& .MuiDataGrid-columnHeader:focus, & .MuiDataGrid-columnHeader:focus-within": {
+                        outline: "none"
+                    },
+                    "& .MuiDataGrid-cell": {
+                        borderColor: "#f3f4f6",
+                        fontSize: "0.875rem",
+                        color: "#374151",
+                        alignItems: "center",
+                        py: 0.75
+                    },
+                    "& .MuiDataGrid-cell:focus, & .MuiDataGrid-cell:focus-within": {
+                        outline: "none"
+                    },
+                    "& .MuiDataGrid-row:hover": {
+                        backgroundColor: "#eef2ff"
+                    },
+                    "& .MuiDataGrid-row.Mui-selected": {
+                        backgroundColor: "#e0e7ff",
+                        "&:hover": {backgroundColor: "#c7d2fe"}
+                    },
+                    "& .MuiDataGrid-footerContainer": {
+                        borderTop: "1px solid #e5e7eb",
+                        backgroundColor: "#fafafa"
+                    },
+                    "& .MuiCheckbox-root.Mui-checked": {
+                        color: "#4f46e5"
+                    }
+                }}
             />
         </div>
     );

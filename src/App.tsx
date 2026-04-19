@@ -5,7 +5,6 @@ import {Route, useLocation, Routes} from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import StaffPage from "./pages/StaffPage";
 import EditStaffPage from "./pages/EditStaffPage";
-import LinkPage from "./pages/LinksPage";
 import Layout from "./components/Layout";
 import MembersPage from "./pages/MembersPage";
 import GearPage from "./pages/GearPage";
@@ -13,6 +12,8 @@ import UnauthorizedPage from "./pages/UnauthorizedPage";
 import StatsPage from "./pages/StatsPage";
 import MemberProfilePage from "./pages/MemberProfilePage";
 import TripsPage from "./pages/TripsPage";
+import GuidePage from "./pages/GuidePage";
+import {Navigate} from "react-router-dom";
 
 // Providers
 import {GearProvider} from "./providers/GearProvider";
@@ -28,12 +29,12 @@ function updateDocumentMetadata(pathname: string) {
     const titles: Record<string, string> = {
         "/": root + "Home",
         "/staff": root + "Staff",
-        "/links": root + "Links",
         "/members": root + "Members",
         "/gear": root + "Gear",
         "/stats": root + "Stats",
         "/trips": root + "Trips",
-        "/admin": root + "Admin"
+        "/guide": root + "Staff Guide",
+        "/editstaff": root + "Admin"
     };
 
     const title = pathname.startsWith("/members/")
@@ -75,7 +76,8 @@ function App() {
 
                                 {isStaffOrAdmin && (
                                     <>
-                                        <Route path="links/*" element={<LinkPage />} />
+                                        {/* /links redirects to /guide (Resources tab) */}
+                                        <Route path="links/*" element={<Navigate to="/guide" replace />} />
                                         <Route path="members" element={<MembersPage />} />
                                         <Route path="members/:memberId" element={<MemberProfilePage />} />
                                         <Route path="gear" element={<GearPage />} />
@@ -83,6 +85,7 @@ function App() {
                                         <Route path="stats" element={<StatsPage />} />
                                         {/* Back-compat: keep /income working */}
                                         <Route path="income" element={<StatsPage />} />
+                                        <Route path="guide" element={<GuidePage />} />
                                     </>
                                 )}
 
