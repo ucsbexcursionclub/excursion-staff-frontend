@@ -1,6 +1,7 @@
 import React from "react";
 import Typography from "@mui/material/Typography";
-import StaffCard from "./StaffCard"; // Import your StaffCard component
+import Skeleton from "@mui/material/Skeleton";
+import StaffCard from "./StaffCard";
 import {useQuery} from "@tanstack/react-query";
 import {getStaffProfiles} from "../utils/api";
 
@@ -13,105 +14,87 @@ const StaffGrid: React.FC = () => {
         refetchIntervalInBackground: true
     });
 
-    if (!staffProfiles) return;
+    if (!staffProfiles) {
+        return (
+            <div className="w-full">
+                <div className="flex items-center gap-3 mb-4">
+                    <Skeleton variant="text" width={120} height={32} />
+                    <span className="flex-1 h-px bg-lime-200" />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                    {Array.from({length: 10}).map((_, i) => (
+                        <div key={i} className="p-2">
+                            <div className="flex flex-col items-center bg-white rounded-2xl border border-gray-100 p-4">
+                                <Skeleton variant="circular" width={100} height={100} />
+                                <Skeleton variant="text" width="70%" className="mt-2" />
+                                <Skeleton variant="text" width="90%" />
+                                <Skeleton variant="rounded" width={80} height={20} className="mt-1" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // Safe accessor — returns empty string for staff with no positions set
+    const pos0 = (s: typeof staffProfiles[0]) => (s.positions?.[0] ?? "").toLowerCase();
 
     // Sort staff by position
-    const sortedStaff = [...staffProfiles].sort((a, b) => {
-        // Define the order of positions
-        const positionOrder: {[position: string]: number} = {
-            Director: 10,
-            Treasurer: 4,
-            "General Board": 4,
-            "Web Developer": 3,
-            "Camping Gear Head": 3,
-            "Climbing Gear Head": 3,
-            "Head of Water Sports": 3,
-            "Head of Medicine": 3,
-            "Social Media Head": 3,
-            "Gear Fairy": 3,
-            "Full Staff": 2,
-            "Prospective Staff": 1,
-            "Emeritus Staff": 0
-        };
+    const positionOrder: {[position: string]: number} = {
+        Director: 10,
+        Treasurer: 4,
+        "General Board": 4,
+        "Web Developer": 3,
+        "Camping Gear Head": 3,
+        "Climbing Gear Head": 3,
+        "Head of Water Sports": 3,
+        "Head of Medicine": 3,
+        "Social Media Head": 3,
+        "Gear Fairy": 3,
+        "Full Staff": 2,
+        "Prospective Staff": 1,
+        "Emeritus Staff": 0
+    };
 
-        const positionA = a.positions[0].toLowerCase();
-        const positionB = b.positions[0].toLowerCase();
+    const sortedStaff = [...staffProfiles].sort(
+        (a, b) => (positionOrder[pos0(a)] ?? 0) - (positionOrder[pos0(b)] ?? 0)
+    );
 
-        return positionOrder[positionA] - positionOrder[positionB];
-    });
+    const boardPositionOrder: {[position: string]: number} = {director: 1, treasurer: 2, "general board": 3};
 
-    // Separate staff into "Board" and "General Staff" sections
     const boardStaff = sortedStaff
-        .filter(
-            (staffMember) =>
-                staffMember.positions[0].toLowerCase() === "director" ||
-                staffMember.positions[0].toLowerCase() === "treasurer" ||
-                staffMember.positions[0].toLowerCase() === "general board"
-        )
-        .sort((a, b) => {
-            // Define the specific order for board positions
-            const boardPositionOrder: {[position: string]: number} = {
-                director: 1,
-                treasurer: 2,
-                "general board": 3
-            };
-
-            // Get the order for each staff member's primary position
-            const positionA = boardPositionOrder[a.positions[0].toLowerCase()] || 4;
-            const positionB = boardPositionOrder[b.positions[0].toLowerCase()] || 4;
-
-            // Sort based on the defined order
-            return positionA - positionB;
-        });
+        .filter((s) => ["director", "treasurer", "general board"].includes(pos0(s)))
+        .sort((a, b) => (boardPositionOrder[pos0(a)] ?? 4) - (boardPositionOrder[pos0(b)] ?? 4));
 
     const generalStaff = sortedStaff
-        .filter(
-            (staffMember) =>
-                staffMember.positions[0].toLowerCase() !== "director" &&
-                staffMember.positions[0].toLowerCase() !== "treasurer" &&
-                staffMember.positions[0].toLowerCase() !== "general board" &&
-                staffMember.positions[0].toLowerCase() !== "prospective staff" &&
-                staffMember.positions[0].toLowerCase() !== "emeritus"
-        )
+        .filter((s) => !["director", "treasurer", "general board", "prospective staff", "emeritus"].includes(pos0(s)))
         .sort((a, b) => {
-            // Sort by bio presence, then by bio length
             const hasBioA = a.bio ? 1 : 0;
             const hasBioB = b.bio ? 1 : 0;
-            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
-            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
+            if (hasBioA !== hasBioB) return hasBioB - hasBioA;
+            return (b.bio?.length || 0) - (a.bio?.length || 0);
         });
 
-    // Ensure Web Developer(s) appear at the front of the Staff section.
-    // Extract Web Developer entries (case-insensitive) from the general staff list
-    // and render them first. This keeps the original sorting for the remainder.
-    const webDevStaff = sortedStaff.filter((staffMember) =>
-        staffMember.positions?.find((pos) => pos.toLowerCase() === "web developer") || staffMember.positions[0].length === 0
+    const webDevStaff = sortedStaff.filter((s) =>
+        s.positions?.some((p) => p.toLowerCase() === "web developer")
     );
 
 
+    const bioSort = (a: typeof sortedStaff[0], b: typeof sortedStaff[0]) => {
+        const hasBioA = a.bio ? 1 : 0;
+        const hasBioB = b.bio ? 1 : 0;
+        if (hasBioA !== hasBioB) return hasBioB - hasBioA;
+        return (b.bio?.length || 0) - (a.bio?.length || 0);
+    };
+
     const prospectiveStaff = sortedStaff
-        .filter(
-            (staffMember) => 
-                staffMember.positions[0].toLowerCase() === "prospective staff" &&
-                staffMember.positions[0].toLowerCase() !== "emeritus"
-        )
-        .sort((a, b) => {
-            // Sort by bio presence, then by bio length
-            const hasBioA = a.bio ? 1 : 0;
-            const hasBioB = b.bio ? 1 : 0;
-            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
-            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
-        });
+        .filter((s) => pos0(s) === "prospective staff")
+        .sort(bioSort);
 
     const emeritusStaff = sortedStaff
-        .filter((staffMember) => staffMember.positions[0].toLowerCase() === "emeritus")
-        .sort((a, b) => {
-            // Sort by bio presence, then by bio length
-            const hasBioA = a.bio ? 1 : 0;
-            const hasBioB = b.bio ? 1 : 0;
-            if (hasBioA !== hasBioB) return hasBioB - hasBioA; // Place staff with bios first
-            return (b.bio?.length || 0) - (a.bio?.length || 0); // Sort by bio length if both have bios
-        });
+        .filter((s) => pos0(s) === "emeritus")
+        .sort(bioSort);
 
     const renderSection = (title: string, members: typeof sortedStaff, extra?: typeof sortedStaff) => {
         const all = extra ? [...extra, ...members] : members;
