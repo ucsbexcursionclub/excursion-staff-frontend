@@ -18,17 +18,17 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
 
     return (
         <div className="w-full h-full p-2">
-            <div className="flex flex-col items-center w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 h-full hover:shadow-md transition-shadow">
+            <div className="flex flex-col items-center w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-full hover:shadow-md transition-shadow">
                 <Avatar
                     src={imgSrc}
-                    imgProps={{onError: () => setImgSrc(generateResourceUrl("/resources/avatar.png"))}}
+                    slotProps={{img: {onError: () => setImgSrc(generateResourceUrl("/resources/avatar.png"))}}}
                     alt={staff.name}
-                    sx={{width: 100, height: 100, mb: 1.5, border: "3px solid #bbf7d0"}}
+                    sx={{width: 160, height: 160, mb: 2, border: "4px solid #bbf7d0"}}
                 />
-                <h3 className="text-base font-bold text-gray-900 text-center leading-tight mb-0.5">
+                <h3 className="text-lg font-bold text-gray-900 text-center leading-tight mb-1">
                     {capitalizeFirstLetter(staff.name)}
                 </h3>
-                <p className="text-xs text-gray-500 text-center mb-1 break-all">{staff.email}</p>
+                <p className="text-sm text-gray-500 text-center mb-1.5 break-all">{staff.email}</p>
                 <div className="flex flex-wrap justify-center gap-1 mb-2">
                     {staff.positions.map((pos) => (
                         <Chip
@@ -39,14 +39,14 @@ const StaffCard: React.FC<StaffCardProps> = ({staff}) => {
                                 backgroundColor: "#d9f99d",
                                 color: "#14532d",
                                 fontWeight: 600,
-                                fontSize: "0.7rem",
-                                height: 20
+                                fontSize: "0.75rem",
+                                height: 22
                             }}
                         />
                     ))}
                 </div>
                 {staff.bio && (
-                    <p className="text-xs text-gray-600 text-center break-words leading-relaxed">
+                    <p className="text-sm text-gray-600 text-center break-words leading-relaxed">
                         {staff.bio}
                     </p>
                 )}

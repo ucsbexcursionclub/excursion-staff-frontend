@@ -21,7 +21,7 @@ const StaffGrid: React.FC = () => {
                     <Skeleton variant="text" width={120} height={32} />
                     <span className="flex-1 h-px bg-lime-200" />
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {Array.from({length: 10}).map((_, i) => (
                         <div key={i} className="p-2">
                             <div className="flex flex-col items-center bg-white rounded-2xl border border-gray-100 p-4">
@@ -114,7 +114,7 @@ const StaffGrid: React.FC = () => {
                         {all.length} member{all.length !== 1 ? "s" : ""}
                     </Typography>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {all.map((staffProfile, index) => (
                         <StaffCard staff={staffProfile} key={index} />
                     ))}

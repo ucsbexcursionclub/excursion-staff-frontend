@@ -3,7 +3,7 @@ import React from "react";
 import {Outlet} from "react-router-dom";
 import {CircularProgress, Divider, Typography} from "@mui/material";
 
-const KILL = true;
+const KILL = false;
 
 function SiteFooter() {
     return (
