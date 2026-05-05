@@ -1,7 +1,9 @@
 import NavBar from "./NavBar";
 import React from "react";
 import {Outlet} from "react-router-dom";
-import {Divider, Typography} from "@mui/material";
+import {CircularProgress, Divider, Typography} from "@mui/material";
+
+const KILL = false;
 
 function SiteFooter() {
     return (
@@ -27,7 +29,13 @@ export default function Layout() {
         <div className="flex flex-col min-h-screen">
             <NavBar />
             <div className="p-4 flex-1">
-                <Outlet />
+                {KILL ? (
+                    <div className="flex items-center justify-center min-h-[60vh]">
+                        <CircularProgress />
+                    </div>
+                ) : (
+                    <Outlet />
+                )}
             </div>
             <SiteFooter />
         </div>
