@@ -64,6 +64,9 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
                 <MenuItem value={MemberFilterOptions.SHOW_HAS_OVERDUE_GEAR}>
                     Has Overdue Gear
                 </MenuItem>
+                <MenuItem value={MemberFilterOptions.SHOW_HAS_STAFF_COMMENTS}>
+                    Has Staff Comments
+                </MenuItem>
             </Select>
         </FormControl>
     );
