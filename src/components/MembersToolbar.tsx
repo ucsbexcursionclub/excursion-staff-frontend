@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from "react";
+import React, {useMemo} from "react";
 import {
     GridToolbarContainer,
     gridFilteredSortedRowEntriesSelector,
@@ -36,15 +36,11 @@ type AvailibilityViewProps = {
 };
 
 type FilterSelectProps = {
-    onFilterChange: React.Dispatch<React.SetStateAction<MemberFilterOptions>>;
+    value: MemberFilterOptions;
+    onFilterChange: (filter: MemberFilterOptions) => void;
 };
-function FilterSelect({onFilterChange}: FilterSelectProps) {
-    const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
-        MemberFilterOptions.SHOW_ALL
-    );
-
+function FilterSelect({value, onFilterChange}: FilterSelectProps) {
     const handleFilterChange = (event: SelectChangeEvent<MemberFilterOptions>) => {
-        setSelectedFilter(event.target.value as MemberFilterOptions);
         onFilterChange(event.target.value as MemberFilterOptions);
     };
 
@@ -54,7 +50,7 @@ function FilterSelect({onFilterChange}: FilterSelectProps) {
             <Select
                 sx={{"& .MuiSelect-select": {padding: 1.1}}}
                 className="rounded-2xl bg-gray-100 shadow-md border-none pl-4"
-                value={selectedFilter}
+                value={value}
                 onChange={handleFilterChange}
                 label="Select Filter"
             >
@@ -147,19 +143,20 @@ function AvailibilityView({searchParams}: AvailibilityViewProps) {
 
 type GearToolBarProps = {
     searchParams: string;
-    onFilterChange: React.Dispatch<React.SetStateAction<MemberFilterOptions>>;
+    selectedFilter: MemberFilterOptions;
+    onFilterChange: (filter: MemberFilterOptions) => void;
     flaggedOnly: boolean;
     setFlaggedOnly: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function MembersToolBar({searchParams, onFilterChange, flaggedOnly, setFlaggedOnly}: GearToolBarProps) {
+export default function MembersToolBar({searchParams, selectedFilter, onFilterChange, flaggedOnly, setFlaggedOnly}: GearToolBarProps) {
     return (
         <GridToolbarContainer
             sx={{padding: "1rem"}}
             className="bg-gray-200 rounded-2xl rounded-b-none"
         >
             <div className="flex grow space-x-4 justify-evenly items-center flex-wrap">
-                <FilterSelect onFilterChange={onFilterChange} />
+                <FilterSelect value={selectedFilter} onFilterChange={onFilterChange} />
                 <Button
                     variant={flaggedOnly ? "contained" : "outlined"}
                     color="warning"

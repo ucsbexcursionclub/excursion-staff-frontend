@@ -1,4 +1,4 @@
-import React, {useState, useMemo, useEffect, useRef} from "react";
+import React, {useState, useMemo} from "react";
 import {
     DataGrid,
     GridColDef,
@@ -12,7 +12,6 @@ import {
     useGridSelector
 } from "@mui/x-data-grid";
 import {MemberProps} from "../utils/types";
-import {getMemberProfile} from "../utils/api";
 import {useMembers} from "../providers/MembersProvider";
 import MemberDetailsDialog from "./MemberDetailsDialog";
 import {capitalizeFirstLetter} from "../utils/utils";
@@ -24,7 +23,7 @@ import {useReservations} from "../providers/ReservationProvider";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import FlagIcon from "@mui/icons-material/Flag";
-import {Link as RouterLink} from "react-router-dom";
+import {Link as RouterLink, useSearchParams} from "react-router-dom";
 
 function Pagination({
     page,
@@ -86,8 +85,7 @@ const dateOperators: GridFilterOperator<MemberProps, any, any>[] | undefined = [
 
 const getIdOperators = (
     retrieveMemberById: (memberId: string) => MemberProps | null,
-    doesMemberIdHaveOverdueReservation: (id: string) => boolean,
-    hasStaffComment: (id: string) => boolean
+    doesMemberIdHaveOverdueReservation: (id: string) => boolean
 ): GridFilterOperator<MemberProps, any, any>[] | undefined => {
     const idOperators: GridFilterOperator<MemberProps, any, any>[] = [
         {
@@ -127,7 +125,10 @@ const getIdOperators = (
             getApplyFilterFnV7: () => {
                 return (params: string | null) => {
                     if (!params) return false;
-                    return hasStaffComment(params);
+                    const member = retrieveMemberById(params);
+                    if (!member) return false;
+                    if (member.staff_id) return false;
+                    return (member.profile_comments?.length ?? 0) > 0;
                 };
             },
             InputComponent: GridFilterInputValue,
@@ -156,15 +157,14 @@ const dateComparator: GridComparatorFn<number> = (v1, v2) => (v1 || Infinity) - 
 const getColumns = (
     retrieveMemberById: (memberId: string) => MemberProps | null,
     doesMemberIdHaveOverdueReservation: (id: string) => boolean,
-    onToggleFlag: (member: MemberProps) => void,
-    hasStaffComment: (id: string) => boolean
+    onToggleFlag: (member: MemberProps) => void
 ) => {
     const columns: GridColDef[] = [
         {
             field: "_id",
             headerName: "ID",
             width: 90,
-            filterOperators: getIdOperators(retrieveMemberById, doesMemberIdHaveOverdueReservation, hasStaffComment)
+            filterOperators: getIdOperators(retrieveMemberById, doesMemberIdHaveOverdueReservation)
         },
 
         {
@@ -322,40 +322,20 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         handleMemberUpdate
     } = useMembers();
     const {doesMemberIdHaveOverdueReservation} = useReservations();
-    const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
-        MemberFilterOptions.SHOW_ALL
-    );
+    const [urlSearchParamsState, setUrlSearchParamsState] = useSearchParams();
+    const selectedFilter =
+        (urlSearchParamsState.get("filter") as MemberFilterOptions) ||
+        MemberFilterOptions.SHOW_ALL;
+    const setSelectedFilter = (filter: MemberFilterOptions) => {
+        const next = new URLSearchParams(urlSearchParamsState);
+        if (filter === MemberFilterOptions.SHOW_ALL) {
+            next.delete("filter");
+        } else {
+            next.set("filter", filter);
+        }
+        setUrlSearchParamsState(next, {replace: true});
+    };
     const [flaggedOnly, setFlaggedOnly] = useState<boolean>(false);
-    const [commentedMemberIds, setCommentedMemberIds] = useState<Set<string> | null>(null);
-    const [loadingComments, setLoadingComments] = useState(false);
-    const fetchedRef = useRef(false);
-
-    useEffect(() => {
-        if (selectedFilter !== MemberFilterOptions.SHOW_HAS_STAFF_COMMENTS) return;
-        if (fetchedRef.current) return;
-        fetchedRef.current = true;
-        setLoadingComments(true);
-        Promise.allSettled(membersData.map((m) => getMemberProfile(m._id)))
-            .then((results) => {
-                const ids = new Set<string>();
-                results.forEach((r) => {
-                    if (r.status === "fulfilled") {
-                        const comments = r.value.member.profile_comments ?? [];
-                        const hasRelevant = comments.some(
-                            (c) => c.category === "general" || c.category === "warning"
-                        );
-                        if (hasRelevant) ids.add(r.value.member._id);
-                    }
-                });
-                setCommentedMemberIds(ids);
-            })
-            .finally(() => setLoadingComments(false));
-    }, [selectedFilter, membersData]);
-
-    const hasStaffComment = useMemo(
-        () => (id: string) => !!commentedMemberIds?.has(id),
-        [commentedMemberIds]
-    );
 
     const getRowId = (row: MemberProps) => row._id;
     const calculateFilterItems = () => {
@@ -459,8 +439,8 @@ export default function MembersTable({searchParams}: MembersTableProps) {
     );
 
     const columns = useMemo(
-        () => getColumns(retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag, hasStaffComment),
-        [retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag, hasStaffComment]
+        () => getColumns(retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag),
+        [retrieveMemberById, doesMemberIdHaveOverdueReservation, onToggleFlag]
     );
 
     return (
@@ -471,7 +451,6 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 onCellClick={handleCellClick}
                 columns={columns}
                 getRowId={getRowId}
-                loading={loadingComments}
                 disableRowSelectionOnClick
                 filterModel={{
                     items: filterItems,
@@ -504,6 +483,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 slotProps={{
                     toolbar: {
                         searchParams: searchParams,
+                        selectedFilter,
                         onFilterChange: setSelectedFilter,
                         flaggedOnly,
                         setFlaggedOnly

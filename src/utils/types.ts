@@ -15,6 +15,7 @@ export type MemberProps = {
     flagged?: boolean;
     staff_id?: string;
     exclude_from_stats?: boolean;
+    profile_comments?: MemberProfileComment[];
 };
 
 export type NotificationProps = {
