@@ -247,6 +247,12 @@ export default function MemberProfilePage() {
                                             ? profile.member.local_living_address || "N/A"
                                             : "Board access only"}
                                     </Typography>
+                                    <Typography variant="body1">
+                                        Emergency Contact:{" "}
+                                        {profile.member.emergency_contact
+                                            ? `${profile.member.emergency_contact.name} (${profile.member.emergency_contact.relationship}) · ${profile.member.emergency_contact.phone_number}`
+                                            : "None on file"}
+                                    </Typography>
                                 </Stack>
                                 <Stack direction={{xs: "column", md: "row"}} spacing={3} flexWrap="wrap">
                                     <Typography variant="body2" color="text.secondary">

@@ -471,6 +471,10 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
             throw new Error("Member data not received from the server.");
         }
     } catch (error: any) {
+        // Surface backend validation messages (e.g. missing emergency contact)
+        if (error.response?.status === 400 && error.response?.data?.error) {
+            throw new Error(error.response.data.error);
+        }
         handleApiErrors("member", error);
         throw new Error("An unexpected error occured.");
     }
@@ -833,6 +837,38 @@ export async function addTripComment(
         throw new Error("An unexpected error occurred while adding a trip comment.");
     }
 }
+const getFilenameFromContentDisposition = (header: string | undefined): string | null => {
+    if (!header) return null;
+    const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utf8Match) return decodeURIComponent(utf8Match[1].trim());
+    const match = header.match(/filename="?([^";]+)"?/i);
+    return match ? match[1].trim() : null;
+};
+
+export async function downloadTripContacts(tripId: string): Promise<void> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/trips/${tripId}/export`, {
+            ...authConfig(),
+            responseType: "blob"
+        });
+
+        const blob = response.data as Blob;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+            getFilenameFromContentDisposition(response.headers["content-disposition"]) ||
+            "trip-contacts.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (error: any) {
+        handleApiErrors("trip contact", error);
+        throw new Error("Failed to export trip contacts.");
+    }
+}
+
 interface FeedbackProps {
     name: string;
     email: string;

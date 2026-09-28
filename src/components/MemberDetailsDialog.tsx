@@ -14,11 +14,18 @@ import {
     MenuItem,
     Switch
 } from "@mui/material";
-import {MemberProps} from "../utils/types";
+import {EmergencyContact, MemberProps} from "../utils/types";
 import {useMembers} from "../providers/MembersProvider";
 import {BlurBackDrop} from "./HelperComponents";
 import {capitalizeFirstLetter, convertToMUIDate} from "../utils/utils";
 import {useSnackbar} from "../providers/SnackBarProvider";
+import EmergencyContactFields, {
+    isEmergencyContactComplete,
+    isEmergencyContactEmpty,
+    isSameEmergencyContact,
+    toEmergencyContactDraft,
+    trimEmergencyContact
+} from "./EmergencyContactFields";
 
 type MemberDetailsDialogProps = {
     open: boolean;
@@ -39,6 +46,9 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
     );
     const [neverExpires, setNeverExpires] = useState(!member?.membership_expiration_date);
     const [excludeFromStats, setExcludeFromStats] = useState(!!member?.exclude_from_stats);
+    const [emergencyContact, setEmergencyContact] = useState<EmergencyContact>(
+        toEmergencyContactDraft(member?.emergency_contact)
+    );
     const {handleMemberUpdate, retrieveMemberById} = useMembers();
 
     const {addNotification} = useSnackbar();
@@ -60,6 +70,7 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
         );
         setNeverExpires(!member?.membership_expiration_date);
         setExcludeFromStats(!!member?.exclude_from_stats);
+        setEmergencyContact(toEmergencyContactDraft(member?.emergency_contact));
     }, [member]);
 
     const handleNotesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,19 +91,52 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
             return;
         }
 
+        const originalExpirationInput = member.membership_expiration_date
+            ? convertToMUIDate(member.membership_expiration_date)
+            : "";
+        // Keep the original timestamp when the date is untouched so an unrelated edit
+        // isn't treated as a renewal by the backend
+        const newExpirationDate = neverExpires
+            ? null
+            : membershipExpirationDate && membershipExpirationDate !== originalExpirationInput
+              ? new Date(membershipExpirationDate).getTime()
+              : member.membership_expiration_date;
+
+        const contactEmpty = isEmergencyContactEmpty(emergencyContact);
+        if (!contactEmpty && !isEmergencyContactComplete(emergencyContact)) {
+            addNotification({
+                message:
+                    "Emergency contact requires a name, phone number, and relationship (or clear all fields to remove it).",
+                type: "error"
+            });
+            return;
+        }
+
+        const isRenewal =
+            membershipDuration !== member.membership_duration ||
+            newExpirationDate !== member.membership_expiration_date;
+        if (isRenewal && contactEmpty) {
+            addNotification({
+                message: "An emergency contact is required to change the membership term.",
+                type: "error"
+            });
+            return;
+        }
+
+        const {emergency_contact: existingContact, ...memberWithoutContact} = member;
         const modifiedMember: MemberProps = {
-            ...member,
+            ...memberWithoutContact,
             name,
             email,
             phone_number: phoneNumber,
             notes,
             membership_duration: membershipDuration,
-            membership_expiration_date: neverExpires
-                ? null
-                : membershipExpirationDate
-                  ? new Date(membershipExpirationDate).getTime()
-                  : member.membership_expiration_date,
-            exclude_from_stats: excludeFromStats
+            membership_expiration_date: newExpirationDate,
+            exclude_from_stats: excludeFromStats,
+            // Only send emergency_contact when it changed; null clears it
+            ...(!isSameEmergencyContact(existingContact, emergencyContact) && {
+                emergency_contact: contactEmpty ? null : trimEmergencyContact(emergencyContact)
+            })
         };
         const updatedMember = await handleMemberUpdate(modifiedMember);
 
@@ -146,6 +190,34 @@ const MemberDetailsDialog: React.FC<MemberDetailsDialogProps> = ({open, onClose,
                             onChange={(e) => setPhone(e.target.value)}
                             variant="outlined"
                             className="w-full mb-4"
+                        />
+                    </ListItem>
+                    <ListItem sx={{flexDirection: "column", alignItems: "stretch"}}>
+                        <Box className="flex items-center justify-between">
+                            <Typography>
+                                <strong>Emergency Contact</strong>
+                                {!member.emergency_contact && (
+                                    <Typography component="span" color="text.secondary">
+                                        {" "}
+                                        — None on file
+                                    </Typography>
+                                )}
+                            </Typography>
+                            {!isEmergencyContactEmpty(emergencyContact) && (
+                                <Button
+                                    size="small"
+                                    color="error"
+                                    onClick={() => setEmergencyContact(toEmergencyContactDraft(null))}
+                                >
+                                    Clear
+                                </Button>
+                            )}
+                        </Box>
+                        <EmergencyContactFields
+                            value={emergencyContact}
+                            onChange={setEmergencyContact}
+                            variant="outlined"
+                            showErrors={true}
                         />
                     </ListItem>
                     <ListItem>
