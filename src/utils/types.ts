@@ -1,5 +1,11 @@
 import {AlertColor} from "@mui/material";
 
+export type EmergencyContact = {
+    name: string;
+    phone_number: string;
+    relationship: string;
+};
+
 export type MemberProps = {
     _id: string;
     name: string;
@@ -15,6 +21,8 @@ export type MemberProps = {
     flagged?: boolean;
     staff_id?: string;
     exclude_from_stats?: boolean;
+    profile_comments?: MemberProfileComment[];
+    emergency_contact?: EmergencyContact | null;
 };
 
 export type NotificationProps = {
@@ -126,6 +134,7 @@ export type MemberProfileData = {
     staff_id?: string;
     exclude_from_stats?: boolean;
     profile_comments?: MemberProfileComment[];
+    emergency_contact?: EmergencyContact | null;
 };
 
 export type RentalHistoryGearDetail = {

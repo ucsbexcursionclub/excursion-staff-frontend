@@ -23,7 +23,7 @@ import {useReservations} from "../providers/ReservationProvider";
 import IconButton from "@mui/material/IconButton";
 import EditIcon from "@mui/icons-material/Edit";
 import FlagIcon from "@mui/icons-material/Flag";
-import {Link as RouterLink} from "react-router-dom";
+import {Link as RouterLink, useSearchParams} from "react-router-dom";
 
 function Pagination({
     page,
@@ -114,6 +114,21 @@ const getIdOperators = (
                     const member = retrieveMemberById(params);
                     if (!member) return false;
                     return !!member.flagged;
+                };
+            },
+            InputComponent: GridFilterInputValue,
+            InputComponentProps: {type: "text"}
+        },
+        {
+            value: MemberFilterOptions.SHOW_HAS_STAFF_COMMENTS,
+            getApplyFilterFn: () => null,
+            getApplyFilterFnV7: () => {
+                return (params: string | null) => {
+                    if (!params) return false;
+                    const member = retrieveMemberById(params);
+                    if (!member) return false;
+                    if (member.staff_id) return false;
+                    return (member.profile_comments?.length ?? 0) > 0;
                 };
             },
             InputComponent: GridFilterInputValue,
@@ -307,9 +322,19 @@ export default function MembersTable({searchParams}: MembersTableProps) {
         handleMemberUpdate
     } = useMembers();
     const {doesMemberIdHaveOverdueReservation} = useReservations();
-    const [selectedFilter, setSelectedFilter] = useState<MemberFilterOptions>(
-        MemberFilterOptions.SHOW_ALL
-    );
+    const [urlSearchParamsState, setUrlSearchParamsState] = useSearchParams();
+    const selectedFilter =
+        (urlSearchParamsState.get("filter") as MemberFilterOptions) ||
+        MemberFilterOptions.SHOW_ALL;
+    const setSelectedFilter = (filter: MemberFilterOptions) => {
+        const next = new URLSearchParams(urlSearchParamsState);
+        if (filter === MemberFilterOptions.SHOW_ALL) {
+            next.delete("filter");
+        } else {
+            next.set("filter", filter);
+        }
+        setUrlSearchParamsState(next, {replace: true});
+    };
     const [flaggedOnly, setFlaggedOnly] = useState<boolean>(false);
 
     const getRowId = (row: MemberProps) => row._id;
@@ -355,6 +380,16 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                         id: 1,
                         field: "_id",
                         operator: MemberFilterOptions.SHOW_FLAGGED,
+                        value: today
+                    }
+                ];
+
+            case MemberFilterOptions.SHOW_HAS_STAFF_COMMENTS:
+                return [
+                    {
+                        id: 1,
+                        field: "_id",
+                        operator: MemberFilterOptions.SHOW_HAS_STAFF_COMMENTS,
                         value: today
                     }
                 ];
@@ -448,6 +483,7 @@ export default function MembersTable({searchParams}: MembersTableProps) {
                 slotProps={{
                     toolbar: {
                         searchParams: searchParams,
+                        selectedFilter,
                         onFilterChange: setSelectedFilter,
                         flaggedOnly,
                         setFlaggedOnly

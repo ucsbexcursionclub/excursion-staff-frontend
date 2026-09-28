@@ -15,13 +15,19 @@ import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Switch from "@mui/material/Switch";
 import {useMembers} from "../providers/MembersProvider";
-import {MemberProps, ReservationProps, GearProps} from "../utils/types";
+import {MemberProps, ReservationProps, GearProps, EmergencyContact} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
 import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
 import {MILLISECONDS_IN_DAY} from "../utils/constants";
 import {generateResourceUrl} from "../utils/utils";
 import {useLogin} from "../providers/LoginProvider";
+import EmergencyContactFields, {
+    EMPTY_EMERGENCY_CONTACT,
+    isEmergencyContactComplete,
+    isEmergencyContactEmpty,
+    trimEmergencyContact
+} from "./EmergencyContactFields";
 
 interface MemberAddDialog {
     open: boolean;
@@ -56,6 +62,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [customExpirationDate, setCustomExpirationDate] = React.useState("");
     const [neverExpires, setNeverExpires] = React.useState(false);
     const [excludeFromStats, setExcludeFromStats] = React.useState(false);
+    const [emergencyContact, setEmergencyContact] =
+        React.useState<EmergencyContact>(EMPTY_EMERGENCY_CONTACT);
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -72,6 +80,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const {isAdmin} = useLogin();
 
     if (!loggedInMember) return;
+
+    const isReturning = membershipStatus === MembershipType.RETURNING_MEMBER;
+    const renewingMemberContact = isReturning
+        ? membersData.find((member) => member.email.toLowerCase() === email.trim().toLowerCase())
+              ?.emergency_contact
+        : null;
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value === "true";
@@ -216,6 +230,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setCustomExpirationDate("");
         setNeverExpires(false);
         setExcludeFromStats(false);
+        setEmergencyContact(EMPTY_EMERGENCY_CONTACT);
     };
 
     const customExpirationTimestamp = neverExpires
@@ -267,6 +282,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
 
             validateForm();
+
+            if (!isEmergencyContactComplete(emergencyContact)) {
+                throw new Error(
+                    "Please enter an emergency contact name, phone number, and relationship."
+                );
+            }
         } catch (error: any) {
             console.error("Failed to check member existence:", error);
             setSubmitErrorMessage(error.message);
@@ -285,7 +306,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 notes: "Stoked Level: " + stokedLevel,
                 local_living_address: localLivingAddress,
                 membership_expiration_date: useCustomExpiration ? customExpirationTimestamp : undefined,
-                exclude_from_stats: excludeFromStats
+                exclude_from_stats: excludeFromStats,
+                emergency_contact: trimEmergencyContact(emergencyContact)
             });
         } catch (error: any) {
             console.error("Failed to add member:", error);
@@ -334,6 +356,22 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             if (membershipStatus === MembershipType.NEW_MEMBER) {
                 throw new Error(
                     "Please select returning member if you are not a new member or press 'Sign Up' if you are."
+                );
+            }
+
+            // Renewal is where legacy members backfill a missing emergency contact
+            const hasContactOnFile = !!retrievedMemberData.emergency_contact;
+            if (
+                !isEmergencyContactEmpty(emergencyContact) &&
+                !isEmergencyContactComplete(emergencyContact)
+            ) {
+                throw new Error(
+                    "Please fill in all emergency contact fields (name, phone number, relationship)."
+                );
+            }
+            if (!hasContactOnFile && !isEmergencyContactComplete(emergencyContact)) {
+                throw new Error(
+                    "An emergency contact is required to renew membership. Please enter a name, phone number, and relationship."
                 );
             }
 
@@ -404,7 +442,11 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 join_datetime: Date.now(),
                 notes: retrievedMemberData.notes + "\nReturning Stoked Level: " + stokedLevel,
                 local_living_address: localLivingAddress,
-                exclude_from_stats: excludeFromStats
+                exclude_from_stats: excludeFromStats,
+                // Omitted when blank so the backend keeps the contact already on file
+                ...(isEmergencyContactComplete(emergencyContact) && {
+                    emergency_contact: trimEmergencyContact(emergencyContact)
+                })
             };
 
             const updatedMember = await handleMemberUpdate(memberData);
@@ -530,6 +572,22 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     value={localLivingAddress}
                     onChange={handleLocalLivingAddressChange}
                 />
+                <Box sx={{mt: 3}}>
+                    <FormLabel>Emergency Contact</FormLabel>
+                    {isReturning && (
+                        <DialogContentText variant="body2" sx={{mt: 0.5}}>
+                            {renewingMemberContact
+                                ? `On file: ${renewingMemberContact.name} (${renewingMemberContact.relationship}). Leave blank to keep it, or fill in all fields to replace it.`
+                                : "Required to renew if none is on file."}
+                        </DialogContentText>
+                    )}
+                    <EmergencyContactFields
+                        value={emergencyContact}
+                        onChange={setEmergencyContact}
+                        required={!isReturning || !renewingMemberContact}
+                        showErrors={validationEnabled}
+                    />
+                </Box>
                 <TextField
                     margin="dense"
                     id="stokedLevel"
