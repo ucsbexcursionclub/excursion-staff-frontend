@@ -8,6 +8,7 @@ import {GoogleOAuthProvider} from "@react-oauth/google";
 import React from "react";
 import App from "./App";
 import {getGearById, getMemberById, getReservationById, getStaffById} from "./utils/api";
+import {SessionExpiredError} from "./utils/auth";
 
 import "./index.css";
 import {LoginProvider} from "./providers/LoginProvider";
@@ -41,7 +42,10 @@ const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: true, // default: true
-            queryFn: defaultQueryFunction
+            queryFn: defaultQueryFunction,
+            // Retrying won't fix an expired session; the app logs out instead
+            retry: (failureCount, error) =>
+                !(error instanceof SessionExpiredError) && failureCount < 3
         }
     }
 });
