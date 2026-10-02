@@ -16,7 +16,9 @@ import {
     StaffProfile,
     TripComment,
     TripProps,
-    UpdateTripProps
+    UpdateTripProps,
+    EmailTemplate,
+    WelcomeEmailSettings
 } from "./types";
 import axios from "axios";
 
@@ -439,7 +441,7 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
             const addedMember: MemberProps = response.data.data;
 
             try {
-                await sendWelcomeEmail(addedMember.email);
+                await sendWelcomeEmail(addedMember.email, addedMember.name);
             } catch (error: any) {
                 console.error("Error sending welcome email:", error.message);
             }
@@ -829,15 +831,73 @@ export async function sendFeedback(feedbackData: FeedbackProps): Promise<void> {
     }
 }
 
-async function sendWelcomeEmail(email: string): Promise<void> {
+async function sendWelcomeEmail(email: string, name: string): Promise<void> {
     try {
         // Customize this part to send a welcome email to the provided email address
         // You can use axios.post or any other method suitable for your API
         console.log(`Sending welcome email to ${email}...`);
-        await axios.post(`${baseURL}/api/v1/mail/send-welcome-email`, {email});
+        await axios.post(`${baseURL}/api/v1/mail/send-welcome-email`, {email, name});
         console.log(`Welcome email sent successfully to ${email}!`);
     } catch (error: any) {
         console.error(`Error sending welcome email to ${email}:`, error);
+    }
+}
+
+const settingsError = (error: any, fallback: string): Error => {
+    if (error instanceof SessionExpiredError) return error;
+    if (error.response?.status === 403) {
+        return new Error("Only board members can edit the welcome email.");
+    }
+    return new Error(error.response?.data?.error || fallback);
+};
+
+export async function getWelcomeEmailSettings(): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/settings/welcome-email`, authConfig());
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to load the welcome email.");
+    }
+}
+
+export async function saveWelcomeEmailSettings(
+    template: EmailTemplate
+): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.put(
+            `${baseURL}/api/v1/settings/welcome-email`,
+            template,
+            authConfig()
+        );
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to save the welcome email.");
+    }
+}
+
+export async function resetWelcomeEmailSettings(): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.delete(
+            `${baseURL}/api/v1/settings/welcome-email`,
+            authConfig()
+        );
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to reset the welcome email.");
+    }
+}
+
+/** Sends the given (possibly unsaved) template to the logged-in admin; returns the recipient. */
+export async function sendTestWelcomeEmail(template: EmailTemplate): Promise<string> {
+    try {
+        const response = await axios.post(
+            `${baseURL}/api/v1/settings/welcome-email/test`,
+            template,
+            authConfig()
+        );
+        return response.data.data.sent_to as string;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to send the test email.");
     }
 }
 

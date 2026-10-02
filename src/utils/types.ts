@@ -266,3 +266,17 @@ export type NewTripProps = {
 };
 
 export type UpdateTripProps = Partial<NewTripProps>;
+
+export type EmailTemplate = {
+    subject: string;
+    html: string;
+};
+
+export type WelcomeEmailSettings = EmailTemplate & {
+    is_default: boolean;
+    updated_at: number | null;
+    updated_by_name: string | null;
+    default: EmailTemplate;
+    placeholders: string[];
+    logo_url: string;
+};

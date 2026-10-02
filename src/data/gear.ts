@@ -27,10 +27,6 @@ export const sampleGearItems: sampleGearProps[] = [
         title: "Backpacking Stoves"
     },
     {
-        imageUrl: generateResourceUrl("/resources/Waterfilter.jpg"),
-        title: "Water Filters"
-    },
-    {
         imageUrl: generateResourceUrl("/resources/Paddleboards.jpg"),
         title: "Stand up Paddleboards"
     },

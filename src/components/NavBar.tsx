@@ -15,6 +15,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import LoginButton from "./LoginButton";
 import {useLogin} from "../providers/LoginProvider";
 import {generateResourceUrl} from "../utils/utils";
+import {useBoardAccess} from "../providers/useBoardAccess";
 
 // --- Tab definitions ---
 
@@ -36,21 +37,24 @@ const rightLoggedInTabs = [
 
 const adminTabs = [{label: "Admin", href: "/editstaff"}];
 
+const boardTabs = [{label: "Welcome Email", href: "/welcome-email"}];
+
 function determineLeftTabs(role: string | undefined) {
     let tabs = [...leftBaseTabs];
     if (role === "staff" || role === "admin") tabs = [...tabs, ...leftLoggedInTabs];
     return tabs;
 }
 
-function determineRightTabs(role: string | undefined) {
+function determineRightTabs(role: string | undefined, isBoardMember: boolean) {
     let tabs: typeof rightLoggedInTabs = [];
     if (role === "staff" || role === "admin") tabs = [...rightLoggedInTabs];
     if (role === "admin") tabs = [...tabs, ...adminTabs];
+    if ((role === "staff" || role === "admin") && isBoardMember) tabs = [...tabs, ...boardTabs];
     return tabs;
 }
 
-function allTabs(role: string | undefined) {
-    return [...determineLeftTabs(role), ...determineRightTabs(role)];
+function allTabs(role: string | undefined, isBoardMember: boolean) {
+    return [...determineLeftTabs(role), ...determineRightTabs(role, isBoardMember)];
 }
 
 // --- Desktop nav button ---
@@ -97,11 +101,12 @@ const NavMenu: React.FC<{tabs: {label: string; href: string}[]}> = ({tabs}) => {
 function NavBar() {
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const {identity} = useLogin();
+    const {isBoardMember} = useBoardAccess();
 
     const role = identity?.role;
     const leftTabs = determineLeftTabs(role);
-    const rightTabs = determineRightTabs(role);
-    const mobileTabs = allTabs(role);
+    const rightTabs = determineRightTabs(role, isBoardMember);
+    const mobileTabs = allTabs(role, isBoardMember);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);

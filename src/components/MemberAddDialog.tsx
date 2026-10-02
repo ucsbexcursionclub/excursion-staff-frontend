@@ -167,7 +167,9 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
     const isReturning = membershipStatus === MembershipType.RETURNING_MEMBER;
     const renewingMemberContact = isReturning
-        ? membersData.find((member) => member.email.toLowerCase() === email.trim().toLowerCase())
+        ? membersData.find(
+              (member) => member.email.trim().toLowerCase() === email.trim().toLowerCase()
+          )
               ?.emergency_contact
         : null;
 
@@ -425,7 +427,7 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             validateForm();
 
             const memberWithEmail = membersData.find(
-                (member) => member.email.toLowerCase() === email.toLowerCase()
+                (member) => member.email.trim().toLowerCase() === email.trim().toLowerCase()
             );
 
             if (!memberWithEmail) {
@@ -482,9 +484,11 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
                     await Promise.all(
                         reservation.checked_out_gear.map(async (gearId) => {
-                            const gearItem = retrieveGearItem(gearId)!;
+                            // Old reservations can reference gear that has since been deleted
+                            const gearItem = retrieveGearItem(gearId);
 
                             if (
+                                gearItem &&
                                 gearItem.current_reservation === reservation._id &&
                                 dueDate <= today
                             ) {
@@ -529,13 +533,16 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 _id: retrievedMemberData._id,
                 name: fullName,
                 phone_number: phoneNumber,
-                email: email.toLowerCase(),
+                email: email.trim().toLowerCase(),
                 membership_duration: membershipDuration,
                 is_new_member: false,
                 signed_up_by: loggedInMember._id,
                 membership_expiration_date: newMembershipExpiration,
                 join_datetime: Date.now(),
-                notes: retrievedMemberData.notes + "\nReturning Stoked Level: " + stokedLevel,
+                notes:
+                    (retrievedMemberData.notes ? retrievedMemberData.notes + "\n" : "") +
+                    "Returning Stoked Level: " +
+                    stokedLevel,
                 local_living_address: localLivingAddress,
                 exclude_from_stats: excludeFromStats,
                 // Omitted when blank so the backend keeps the contact already on file
