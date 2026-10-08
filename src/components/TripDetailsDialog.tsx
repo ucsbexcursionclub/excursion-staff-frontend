@@ -19,7 +19,7 @@ import {
     Typography
 } from "@mui/material";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {addTripComment, deleteTrip, getTripById} from "../utils/api";
+import {addTripComment, deleteTrip, downloadTripContacts, getTripById} from "../utils/api";
 import {useMembers} from "../providers/MembersProvider";
 import {useReservations} from "../providers/ReservationProvider";
 import {useSnackbar} from "../providers/SnackBarProvider";
@@ -52,6 +52,7 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
     const [isSavingComment, setIsSavingComment] = useState(false);
     const [isEditingTrip, setIsEditingTrip] = useState(false);
     const [isDeletingTrip, setIsDeletingTrip] = useState(false);
+    const [isExporting, setIsExporting] = useState(false);
 
     const {data, isLoading, error} = useQuery({
         queryKey: ["tripDetail", tripId],
@@ -114,6 +115,22 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
         }
     };
 
+    const handleExportContacts = async () => {
+        if (!tripId) return;
+
+        setIsExporting(true);
+        try {
+            await downloadTripContacts(tripId);
+        } catch (exportError: any) {
+            addNotification({
+                message: exportError.message || "Failed to export trip contacts.",
+                type: "error"
+            });
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const handleDeleteTrip = async () => {
         if (!tripId || !window.confirm("Delete this trip? This cannot be undone.")) {
             return;
@@ -159,6 +176,13 @@ export default function TripDetailsDialog({open, tripId, onClose}: TripDetailsDi
                         </Box>
                         {trip && (
                             <Stack direction="row" spacing={1}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleExportContacts}
+                                    disabled={isExporting}
+                                >
+                                    {isExporting ? "Exporting..." : "Export Contacts"}
+                                </Button>
                                 <Button variant="outlined" onClick={() => setIsEditingTrip(true)}>
                                     Edit Trip
                                 </Button>

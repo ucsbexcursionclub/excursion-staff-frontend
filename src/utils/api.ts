@@ -16,24 +16,49 @@ import {
     StaffProfile,
     TripComment,
     TripProps,
-    UpdateTripProps
+    UpdateTripProps,
+    EmailTemplate,
+    WelcomeEmailSettings
 } from "./types";
 import axios from "axios";
 
-import Cookies from "universal-cookie";
 import {isIdentityProps, parseJwt} from "./utils";
 import {LinkGroupType} from "src/data/links";
-const cookies = new Cookies();
+import {
+    expireSession,
+    getStoredToken,
+    isValidJwtFormat,
+    SessionExpiredError,
+    setStoredToken
+} from "./auth";
 
 const baseURL = import.meta.env.PROD
     ? import.meta.env.EXC_BACKEND_LIVE_URL
     : import.meta.env.EXC_BACKEND_LOCAL_URL;
 
-const authConfig = () => ({
-    headers: {
-        Authorization: `Bearer ${cookies.get("jwt")}`
+// Any 401 means the session is no longer valid: clear it and log out globally.
+// The Google login exchange is excluded since there is no session yet at that point.
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        const url: string = error.config?.url || "";
+        if (error.response?.status === 401 && !url.includes("/api/v1/auth/google")) {
+            expireSession();
+            return Promise.reject(new SessionExpiredError());
+        }
+        return Promise.reject(error);
     }
-});
+);
+
+// Never send a request with a missing or malformed token ("Bearer undefined").
+const authConfig = () => {
+    const token = getStoredToken();
+    if (!token) {
+        expireSession();
+        throw new SessionExpiredError();
+    }
+    return {headers: {Authorization: `Bearer ${token}`}};
+};
 
 const toUnixMs = (value: number | string | null | undefined): number | null => {
     if (value === null || value === undefined) return null;
@@ -116,6 +141,7 @@ const normalizeMemberProfileResponse = (
 });
 
 function handleApiErrors(item: string, error: any): void {
+    if (error instanceof SessionExpiredError) throw error;
     if (error.response) {
         switch (error.response.status) {
             case 403:
@@ -140,11 +166,7 @@ function handleApiErrors(item: string, error: any): void {
 
 export async function getMembers(): Promise<MemberProps[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/members`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/members`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -159,11 +181,7 @@ export async function getMembers(): Promise<MemberProps[]> {
 
 export async function getMemberById(id: string): Promise<MemberProps> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/members/${id}`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/members/${id}`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -239,11 +257,7 @@ export async function updateMemberProfileComment(
 
 export async function getReservations(): Promise<ReservationProps[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/reservations`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/reservations`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -258,11 +272,7 @@ export async function getReservations(): Promise<ReservationProps[]> {
 
 export async function getGear(): Promise<GearProps[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/gear`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/gear`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -277,11 +287,7 @@ export async function getGear(): Promise<GearProps[]> {
 
 export async function getGearById(id: string): Promise<GearProps> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/gear/${id}`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/gear/${id}`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data as GearProps;
@@ -296,11 +302,7 @@ export async function getGearById(id: string): Promise<GearProps> {
 
 export async function getReservationById(id: string): Promise<ReservationProps> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/reservations/${id}`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/reservations/${id}`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data as ReservationProps;
@@ -321,11 +323,7 @@ export async function updateGear(updatedGear: GearProps): Promise<GearProps> {
     const url = `${baseURL}/api/v1/gear/${copiedGear._id}`;
 
     try {
-        const response = await axios.patch(url, copiedGear, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.patch(url, copiedGear, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -348,11 +346,7 @@ export async function updateReservation(
     const url = `${baseURL}/api/v1/reservations/${copiedReservation._id}`;
 
     try {
-        const response = await axios.patch(url, copiedReservation, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.patch(url, copiedReservation, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -361,6 +355,7 @@ export async function updateReservation(
         }
     } catch (error: any) {
         // Rethrow the error with a meaningful message, possibly including server-provided error information
+        if (error instanceof SessionExpiredError) throw error;
         throw new Error(error.response?.data?.error || "Failed to update reservation.");
     }
 }
@@ -371,11 +366,7 @@ export async function updateMember(updatedMember: MemberProps): Promise<MemberPr
     const url = `${baseURL}/api/v1/members/${copiedMember._id}`;
 
     try {
-        const response = await axios.patch(url, copiedMember, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.patch(url, copiedMember, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -384,6 +375,7 @@ export async function updateMember(updatedMember: MemberProps): Promise<MemberPr
         }
     } catch (error: any) {
         // Rethrow the error with a meaningful message, possibly including server-provided error information
+        if (error instanceof SessionExpiredError) throw error;
         throw new Error(error.response?.data?.error || "Failed to update member.");
     }
 }
@@ -392,9 +384,7 @@ export async function deleteGearItems(ids: string[]): Promise<number> {
     try {
         const response = await axios.delete(`${baseURL}/api/v1/gear/bulk-delete`, {
             data: {ids},
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
+            ...authConfig()
         });
 
         if (response.data && response.data.data) {
@@ -413,9 +403,7 @@ export async function deleteMembers(ids: string[]): Promise<number> {
     try {
         const response = await axios.delete(`${baseURL}/api/v1/members/bulk-delete`, {
             data: {ids},
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
+            ...authConfig()
         });
 
         if (response.data && response.data.data) {
@@ -432,11 +420,7 @@ export async function deleteMembers(ids: string[]): Promise<number> {
 
 export async function addGear(newGearData: NewGearProps): Promise<GearProps> {
     try {
-        const response = await axios.post(`${baseURL}/api/v1/gear`, newGearData, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.post(`${baseURL}/api/v1/gear`, newGearData, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -451,17 +435,13 @@ export async function addGear(newGearData: NewGearProps): Promise<GearProps> {
 
 export async function addMember(newMemberData: NewMemberProps): Promise<MemberProps> {
     try {
-        const response = await axios.post(`${baseURL}/api/v1/members`, newMemberData, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.post(`${baseURL}/api/v1/members`, newMemberData, authConfig());
 
-        if (response.data && response.data.data) {
+        if (response.data?.data?._id) {
             const addedMember: MemberProps = response.data.data;
 
             try {
-                await sendWelcomeEmail(addedMember.email);
+                await sendWelcomeEmail(addedMember.email, addedMember.name);
             } catch (error: any) {
                 console.error("Error sending welcome email:", error.message);
             }
@@ -471,6 +451,11 @@ export async function addMember(newMemberData: NewMemberProps): Promise<MemberPr
             throw new Error("Member data not received from the server.");
         }
     } catch (error: any) {
+        if (error instanceof SessionExpiredError) throw error;
+        // Surface the backend's message (e.g. missing emergency contact, duplicate member)
+        if (error.response?.data?.error) {
+            throw new Error(error.response.data.error);
+        }
         handleApiErrors("member", error);
         throw new Error("An unexpected error occured.");
     }
@@ -480,11 +465,7 @@ export async function addReservation(
     newReservationData: NewReservationProps
 ): Promise<ReservationProps> {
     try {
-        const response = await axios.post(`${baseURL}/api/v1/reservations`, newReservationData, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.post(`${baseURL}/api/v1/reservations`, newReservationData, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -504,11 +485,7 @@ export async function checkInGear(gearIds: string[]): Promise<boolean> {
             {
                 ids: gearIds
             },
-            {
-                headers: {
-                    Authorization: `Bearer ${cookies.get("jwt")}`
-                }
-            }
+            authConfig()
         );
 
         if (response.data && response.data.data) {
@@ -530,8 +507,8 @@ export const verifyAccessToken = async (accessToken: string): Promise<IdentityPr
 
         const jwtToken = response.data.data;
 
-        if (!jwtToken) {
-            throw new Error("No Token Returned from Server.");
+        if (!isValidJwtFormat(jwtToken)) {
+            throw new Error("No valid token returned from server. Please try logging in again.");
         }
 
         const decodedJWT: any = parseJwt(jwtToken);
@@ -541,13 +518,7 @@ export const verifyAccessToken = async (accessToken: string): Promise<IdentityPr
                 throw new Error("Invalid Permissions");
             }
 
-            const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
-
-            new Cookies().set("jwt", jwtToken, {
-                path: "/",
-                secure: isSecure,
-                sameSite: "strict"
-            });
+            setStoredToken(jwtToken);
 
             return decodedJWT;
         } else {
@@ -564,11 +535,7 @@ export const uploadFileToS3 = async (uploadedFile: File): Promise<string> => {
     formData.append("profilePic", uploadedFile);
 
     try {
-        const response = await axios.post(`${baseURL}/api/v1/upload`, formData, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.post(`${baseURL}/api/v1/upload`, formData, authConfig());
         if (response.data && response.data.data) {
             return response.data.data;
         } else {
@@ -580,49 +547,45 @@ export const uploadFileToS3 = async (uploadedFile: File): Promise<string> => {
     }
 };
 
+/**
+ * Verifies (and refreshes) the stored session. Throws SessionExpiredError on 401 / bad token;
+ * any other failure (5xx, network) throws a regular Error so the caller can surface it.
+ */
 export async function verifyJWTToken(jwt: string): Promise<IdentityProps> {
+    let response;
     try {
-        const response = await axios.post(`${baseURL}/api/v1/auth/verify`, {
+        response = await axios.post(`${baseURL}/api/v1/auth/verify`, {
             jwtToken: jwt // Send token to backend for verification
         });
-
-        const jwtToken = response.data.data;
-
-        if (!jwtToken) {
-            throw new Error("No token response from server.");
-        }
-
-        const isSecure = import.meta.env.PROD || window.location.protocol === "https:";
-
-        new Cookies().set("jwt", jwtToken, {
-            path: "/",
-            secure: isSecure,
-            sameSite: "strict"
-        });
-
-        const decodedJWT: any = parseJwt(jwtToken);
-
-        if (isIdentityProps(decodedJWT)) {
-            if ((decodedJWT as IdentityProps).role === "user") {
-                throw new Error("Invalid Permissions");
-            }
-            return decodedJWT;
-        } else {
-            throw new Error("Invalid Token Response");
-        }
     } catch (error: any) {
-        handleApiErrors("authentication", error);
-        throw new Error("Unexpected error occured while verifying JWT token");
+        if (error instanceof SessionExpiredError) throw error;
+        if (error.response) {
+            throw new Error(
+                `Couldn't verify your session (server error ${error.response.status}). Please try again shortly.`
+            );
+        }
+        throw new Error("Couldn't reach the server to verify your session. Check your connection.");
     }
+
+    const jwtToken = response.data?.data;
+    if (!isValidJwtFormat(jwtToken)) {
+        expireSession();
+        throw new SessionExpiredError();
+    }
+
+    const decodedJWT: any = parseJwt(jwtToken);
+    if (!isIdentityProps(decodedJWT) || decodedJWT.role === "user") {
+        expireSession();
+        throw new SessionExpiredError("Invalid permissions. Please log in with a staff account.");
+    }
+
+    setStoredToken(jwtToken);
+    return decodedJWT;
 }
 
 export async function getStaff(): Promise<StaffProps[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/staff`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/staff`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -652,11 +615,7 @@ export async function getStaffProfiles(): Promise<StaffProfile[]> {
 
 export async function getStaffById(staffId: string): Promise<StaffProps> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/staff/${staffId}`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/staff/${staffId}`, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data as StaffProps;
@@ -676,11 +635,7 @@ export async function updateStaff(updatedStaff: StaffProps): Promise<StaffProps>
     const url = `${baseURL}/api/v1/staff/${copiedStaff._id}`;
 
     try {
-        const response = await axios.patch(url, copiedStaff, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.patch(url, copiedStaff, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -697,9 +652,7 @@ export async function deleteStaff(ids: string[]): Promise<number> {
     try {
         const response = await axios.delete(`${baseURL}/api/v1/staff/bulk-delete`, {
             data: {ids},
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
+            ...authConfig()
         });
 
         if (response.data && response.data.data) {
@@ -716,11 +669,7 @@ export async function deleteStaff(ids: string[]): Promise<number> {
 
 export async function addStaff(newStaffProps: NewStaffProps): Promise<StaffProps> {
     try {
-        const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffProps, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.post(`${baseURL}/api/v1/staff`, newStaffProps, authConfig());
 
         if (response.data && response.data.data) {
             return response.data.data;
@@ -833,6 +782,38 @@ export async function addTripComment(
         throw new Error("An unexpected error occurred while adding a trip comment.");
     }
 }
+const getFilenameFromContentDisposition = (header: string | undefined): string | null => {
+    if (!header) return null;
+    const utf8Match = header.match(/filename\*=UTF-8''([^;]+)/i);
+    if (utf8Match) return decodeURIComponent(utf8Match[1].trim());
+    const match = header.match(/filename="?([^";]+)"?/i);
+    return match ? match[1].trim() : null;
+};
+
+export async function downloadTripContacts(tripId: string): Promise<void> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/trips/${tripId}/export`, {
+            ...authConfig(),
+            responseType: "blob"
+        });
+
+        const blob = response.data as Blob;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download =
+            getFilenameFromContentDisposition(response.headers["content-disposition"]) ||
+            "trip-contacts.csv";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (error: any) {
+        handleApiErrors("trip contact", error);
+        throw new Error("Failed to export trip contacts.");
+    }
+}
+
 interface FeedbackProps {
     name: string;
     email: string;
@@ -850,25 +831,79 @@ export async function sendFeedback(feedbackData: FeedbackProps): Promise<void> {
     }
 }
 
-async function sendWelcomeEmail(email: string): Promise<void> {
+async function sendWelcomeEmail(email: string, name: string): Promise<void> {
     try {
         // Customize this part to send a welcome email to the provided email address
         // You can use axios.post or any other method suitable for your API
         console.log(`Sending welcome email to ${email}...`);
-        await axios.post(`${baseURL}/api/v1/mail/send-welcome-email`, {email});
+        await axios.post(`${baseURL}/api/v1/mail/send-welcome-email`, {email, name});
         console.log(`Welcome email sent successfully to ${email}!`);
     } catch (error: any) {
         console.error(`Error sending welcome email to ${email}:`, error);
     }
 }
 
+const settingsError = (error: any, fallback: string): Error => {
+    if (error instanceof SessionExpiredError) return error;
+    if (error.response?.status === 403) {
+        return new Error("Only board members can edit the welcome email.");
+    }
+    return new Error(error.response?.data?.error || fallback);
+};
+
+export async function getWelcomeEmailSettings(): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.get(`${baseURL}/api/v1/settings/welcome-email`, authConfig());
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to load the welcome email.");
+    }
+}
+
+export async function saveWelcomeEmailSettings(
+    template: EmailTemplate
+): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.put(
+            `${baseURL}/api/v1/settings/welcome-email`,
+            template,
+            authConfig()
+        );
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to save the welcome email.");
+    }
+}
+
+export async function resetWelcomeEmailSettings(): Promise<WelcomeEmailSettings> {
+    try {
+        const response = await axios.delete(
+            `${baseURL}/api/v1/settings/welcome-email`,
+            authConfig()
+        );
+        return response.data.data as WelcomeEmailSettings;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to reset the welcome email.");
+    }
+}
+
+/** Sends the given (possibly unsaved) template to the logged-in admin; returns the recipient. */
+export async function sendTestWelcomeEmail(template: EmailTemplate): Promise<string> {
+    try {
+        const response = await axios.post(
+            `${baseURL}/api/v1/settings/welcome-email/test`,
+            template,
+            authConfig()
+        );
+        return response.data.data.sent_to as string;
+    } catch (error: any) {
+        throw settingsError(error, "Failed to send the test email.");
+    }
+}
+
 export async function getLinkResources(): Promise<LinkGroupType[]> {
     try {
-        const response = await axios.get(`${baseURL}/api/v1/resources/links`, {
-            headers: {
-                Authorization: `Bearer ${cookies.get("jwt")}`
-            }
-        });
+        const response = await axios.get(`${baseURL}/api/v1/resources/links`, authConfig());
         if (response.data && response.data.data) {
             return response.data.data as LinkGroupType[];
         } else {

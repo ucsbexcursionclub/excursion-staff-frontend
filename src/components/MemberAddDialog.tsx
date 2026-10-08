@@ -14,14 +14,28 @@ import FormLabel from "@mui/material/FormLabel";
 import Alert from "@mui/material/Alert";
 import Box from "@mui/material/Box";
 import Switch from "@mui/material/Switch";
+import CircularProgress from "@mui/material/CircularProgress";
 import {useMembers} from "../providers/MembersProvider";
-import {MemberProps, ReservationProps, GearProps} from "../utils/types";
+import {MemberProps, ReservationProps, GearProps, EmergencyContact} from "../utils/types";
 import {BlurBackDrop} from "./HelperComponents";
 import {useReservations} from "../providers/ReservationProvider";
 import {useGear} from "../providers/GearProvider";
 import {MILLISECONDS_IN_DAY} from "../utils/constants";
 import {generateResourceUrl} from "../utils/utils";
 import {useLogin} from "../providers/LoginProvider";
+import EmergencyContactFields, {
+    EMPTY_EMERGENCY_CONTACT,
+    isEmergencyContactComplete,
+    isEmergencyContactEmpty,
+    trimEmergencyContact
+} from "./EmergencyContactFields";
+import {getStoredToken, SessionExpiredError} from "../utils/auth";
+import {
+    clearSignupDraft,
+    loadSignupDraft,
+    saveSignupDraft,
+    SignupDraft
+} from "../utils/signupDraft";
 
 interface MemberAddDialog {
     open: boolean;
@@ -56,6 +70,14 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
     const [customExpirationDate, setCustomExpirationDate] = React.useState("");
     const [neverExpires, setNeverExpires] = React.useState(false);
     const [excludeFromStats, setExcludeFromStats] = React.useState(false);
+    const [emergencyContact, setEmergencyContact] =
+        React.useState<EmergencyContact>(EMPTY_EMERGENCY_CONTACT);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [sessionStatus, setSessionStatus] = React.useState<"checking" | "ok" | "error">(
+        "checking"
+    );
+    const [sessionCheckError, setSessionCheckError] = React.useState<string | null>(null);
+    const [restoredDraft, setRestoredDraft] = React.useState(false);
 
     const handleClose = () => {
         setValidationEnabled(false);
@@ -69,9 +91,87 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
     const {retrieveReservationsByMemberId} = useReservations();
     const {retrieveGearItem} = useGear();
-    const {isAdmin} = useLogin();
+    const {isAdmin, checkSession} = useLogin();
+
+    // Restore a signup that was interrupted by an expired session
+    React.useEffect(() => {
+        const draft = loadSignupDraft();
+        if (!draft) return;
+        clearSignupDraft();
+        setMembershipStatus(draft.membershipStatus as MembershipType);
+        setMembershipDuration(draft.membershipDuration);
+        setStokedLevel(draft.stokedLevel);
+        setEmail(draft.email);
+        setReEnterEmail(draft.reEnterEmail);
+        setPhoneNumber(draft.phoneNumber);
+        setFullName(draft.fullName);
+        setHasWaiver(draft.hasWaiver);
+        setHasPaid(draft.hasPaid);
+        setLocalLivingAddress(draft.localLivingAddress);
+        setUseCustomExpiration(draft.useCustomExpiration);
+        setCustomExpirationDate(draft.customExpirationDate);
+        setNeverExpires(draft.neverExpires);
+        setExcludeFromStats(draft.excludeFromStats);
+        setEmergencyContact(draft.emergencyContact);
+        setRestoredDraft(true);
+    }, []);
+
+    // Confirm the session is valid before staff start signing people up
+    const runSessionCheck = React.useCallback(async () => {
+        setSessionStatus("checking");
+        setSessionCheckError(null);
+        try {
+            await checkSession();
+            setSessionStatus("ok");
+        } catch (error: any) {
+            // A 401 logs the user out globally; anything else blocks the form here
+            setSessionStatus("error");
+            setSessionCheckError(
+                error instanceof SessionExpiredError
+                    ? error.message
+                    : `${error.message} Signups are paused until your session is verified.`
+            );
+        }
+    }, [checkSession]);
+
+    React.useEffect(() => {
+        if (open) runSessionCheck();
+    }, [open, runSessionCheck]);
 
     if (!loggedInMember) return;
+
+    const collectDraft = (): SignupDraft => ({
+        membershipStatus,
+        membershipDuration,
+        stokedLevel,
+        email,
+        reEnterEmail,
+        phoneNumber,
+        fullName,
+        hasWaiver,
+        hasPaid,
+        localLivingAddress,
+        useCustomExpiration,
+        customExpirationDate,
+        neverExpires,
+        excludeFromStats,
+        emergencyContact
+    });
+
+    // Saved before the request so the form survives the forced re-login on a 401
+    const persistDraftWhileSubmitting = () => saveSignupDraft(collectDraft());
+    const settleDraftAfterFailure = () => {
+        // Keep the draft only if the session was lost; otherwise the form is still on screen
+        if (getStoredToken()) clearSignupDraft();
+    };
+
+    const isReturning = membershipStatus === MembershipType.RETURNING_MEMBER;
+    const renewingMemberContact = isReturning
+        ? membersData.find(
+              (member) => member.email.trim().toLowerCase() === email.trim().toLowerCase()
+          )
+              ?.emergency_contact
+        : null;
 
     const handleHasWaiver = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value === "true";
@@ -216,6 +316,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setCustomExpirationDate("");
         setNeverExpires(false);
         setExcludeFromStats(false);
+        setEmergencyContact(EMPTY_EMERGENCY_CONTACT);
+        setRestoredDraft(false);
     };
 
     const customExpirationTimestamp = neverExpires
@@ -267,6 +369,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             }
 
             validateForm();
+
+            if (!isEmergencyContactComplete(emergencyContact)) {
+                throw new Error(
+                    "Please enter an emergency contact name, phone number, and relationship."
+                );
+            }
         } catch (error: any) {
             console.error("Failed to check member existence:", error);
             setSubmitErrorMessage(error.message);
@@ -274,6 +382,8 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
             return;
         }
 
+        setIsSubmitting(true);
+        persistDraftWhileSubmitting();
         try {
             await handleMemberAdd({
                 name: fullName,
@@ -285,14 +395,22 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 notes: "Stoked Level: " + stokedLevel,
                 local_living_address: localLivingAddress,
                 membership_expiration_date: useCustomExpiration ? customExpirationTimestamp : undefined,
-                exclude_from_stats: excludeFromStats
+                exclude_from_stats: excludeFromStats,
+                emergency_contact: trimEmergencyContact(emergencyContact)
             });
         } catch (error: any) {
+            // Keep the form filled in so the signup can be fixed and resubmitted
             console.error("Failed to add member:", error);
-            setSubmitErrorMessage(error.message);
+            setSubmitErrorMessage(
+                `Signup NOT saved: ${error.message || "Unknown error. Please try again."}`
+            );
+            settleDraftAfterFailure();
             return;
+        } finally {
+            setIsSubmitting(false);
         }
 
+        clearSignupDraft();
         setSuccessMessage(`Welcome, ${fullName}! You have successfully signed up.`);
         setErrorMessageTimeout();
 
@@ -304,11 +422,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
         setSuccessMessage(null);
         setSubmitErrorMessage(null);
 
+        let isRequestError = false;
         try {
             validateForm();
 
             const memberWithEmail = membersData.find(
-                (member) => member.email.toLowerCase() === email.toLowerCase()
+                (member) => member.email.trim().toLowerCase() === email.trim().toLowerCase()
             );
 
             if (!memberWithEmail) {
@@ -337,6 +456,22 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 );
             }
 
+            // Renewal is where legacy members backfill a missing emergency contact
+            const hasContactOnFile = !!retrievedMemberData.emergency_contact;
+            if (
+                !isEmergencyContactEmpty(emergencyContact) &&
+                !isEmergencyContactComplete(emergencyContact)
+            ) {
+                throw new Error(
+                    "Please fill in all emergency contact fields (name, phone number, relationship)."
+                );
+            }
+            if (!hasContactOnFile && !isEmergencyContactComplete(emergencyContact)) {
+                throw new Error(
+                    "An emergency contact is required to renew membership. Please enter a name, phone number, and relationship."
+                );
+            }
+
             // TODO Convert to get overdue gear from member function
             const reservations: ReservationProps[] = retrieveReservationsByMemberId(memberId);
             const today = new Date();
@@ -349,9 +484,11 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
 
                     await Promise.all(
                         reservation.checked_out_gear.map(async (gearId) => {
-                            const gearItem = retrieveGearItem(gearId)!;
+                            // Old reservations can reference gear that has since been deleted
+                            const gearItem = retrieveGearItem(gearId);
 
                             if (
+                                gearItem &&
                                 gearItem.current_reservation === reservation._id &&
                                 dueDate <= today
                             ) {
@@ -396,20 +533,31 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 _id: retrievedMemberData._id,
                 name: fullName,
                 phone_number: phoneNumber,
-                email: email.toLowerCase(),
+                email: email.trim().toLowerCase(),
                 membership_duration: membershipDuration,
                 is_new_member: false,
                 signed_up_by: loggedInMember._id,
                 membership_expiration_date: newMembershipExpiration,
                 join_datetime: Date.now(),
-                notes: retrievedMemberData.notes + "\nReturning Stoked Level: " + stokedLevel,
+                notes:
+                    (retrievedMemberData.notes ? retrievedMemberData.notes + "\n" : "") +
+                    "Returning Stoked Level: " +
+                    stokedLevel,
                 local_living_address: localLivingAddress,
-                exclude_from_stats: excludeFromStats
+                exclude_from_stats: excludeFromStats,
+                // Omitted when blank so the backend keeps the contact already on file
+                ...(isEmergencyContactComplete(emergencyContact) && {
+                    emergency_contact: trimEmergencyContact(emergencyContact)
+                })
             };
 
-            const updatedMember = await handleMemberUpdate(memberData);
+            isRequestError = true;
+            setIsSubmitting(true);
+            persistDraftWhileSubmitting();
+            const updatedMember = await handleMemberUpdate(memberData, {throwOnError: true});
 
             if (updatedMember) {
+                clearSignupDraft();
                 setSuccessMessage(
                     neverExpires
                         ? `${fullName}'s membership now never expires.`
@@ -424,11 +572,23 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 throw new Error("Error retrieving updated member");
             }
         } catch (error: any) {
-            setSubmitErrorMessage(error.message);
-            setErrorMessageTimeout();
+            if (isRequestError) {
+                // Server-side failures stay on screen; the form is left filled in
+                setSubmitErrorMessage(
+                    `Renewal NOT saved: ${error.message || "Unknown error. Please try again."}`
+                );
+                settleDraftAfterFailure();
+            } else {
+                setSubmitErrorMessage(error.message);
+                setErrorMessageTimeout();
+            }
             return;
+        } finally {
+            setIsSubmitting(false);
         }
     };
+
+    const actionsDisabled = isSubmitting || sessionStatus !== "ok";
 
     return (
         <Dialog
@@ -452,6 +612,30 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 </Button>
             </DialogTitle>
             <DialogContent>
+                {sessionStatus === "checking" && (
+                    <Alert severity="info" icon={<CircularProgress size={18} />} sx={{mb: 2}}>
+                        Checking your session...
+                    </Alert>
+                )}
+                {sessionStatus === "error" && (
+                    <Alert
+                        severity="error"
+                        sx={{mb: 2}}
+                        action={
+                            <Button color="inherit" size="small" onClick={runSessionCheck}>
+                                Retry
+                            </Button>
+                        }
+                    >
+                        {sessionCheckError}
+                    </Alert>
+                )}
+                {restoredDraft && (
+                    <Alert severity="warning" sx={{mb: 2}} onClose={() => setRestoredDraft(false)}>
+                        Restored an unsaved signup from before your session expired. Review it and
+                        submit again.
+                    </Alert>
+                )}
                 <DialogContentText>Have you filled out the waiver?</DialogContentText>
                 <img
                     alt="QR Code"
@@ -530,6 +714,22 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                     value={localLivingAddress}
                     onChange={handleLocalLivingAddressChange}
                 />
+                <Box sx={{mt: 3}}>
+                    <FormLabel>Emergency Contact</FormLabel>
+                    {isReturning && (
+                        <DialogContentText variant="body2" sx={{mt: 0.5}}>
+                            {renewingMemberContact
+                                ? `On file: ${renewingMemberContact.name} (${renewingMemberContact.relationship}). Leave blank to keep it, or fill in all fields to replace it.`
+                                : "Required to renew if none is on file."}
+                        </DialogContentText>
+                    )}
+                    <EmergencyContactFields
+                        value={emergencyContact}
+                        onChange={setEmergencyContact}
+                        required={!isReturning || !renewingMemberContact}
+                        showErrors={validationEnabled}
+                    />
+                </Box>
                 <TextField
                     margin="dense"
                     id="stokedLevel"
@@ -652,8 +852,12 @@ const AddMemberDialogue: React.FC<MemberAddDialog> = ({open, onClose}) => {
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={handleRenew}>Renew</Button>
-                <Button onClick={handleSubmit}>Sign Up</Button>
+                <Button onClick={handleRenew} disabled={actionsDisabled}>
+                    Renew
+                </Button>
+                <Button onClick={handleSubmit} disabled={actionsDisabled}>
+                    {isSubmitting ? "Saving..." : "Sign Up"}
+                </Button>
             </DialogActions>
         </Dialog>
     );

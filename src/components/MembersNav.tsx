@@ -10,6 +10,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import ClearIcon from "@mui/icons-material/Clear";
 import IconButton from "@mui/material/IconButton";
 import MemberAddDialog from "./MemberAddDialog";
+import {hasSignupDraft} from "../utils/signupDraft";
 import MemberRemoveDialog from "./MemberRemoveDialog";
 import {useMembers} from "../providers/MembersProvider";
 import MemberEmailDialog from "./MemberEmailDialog";
@@ -19,7 +20,8 @@ type MembersNavProps = {
 };
 
 export default function MembersNav({setSearchParams}: MembersNavProps) {
-    const [addDialogOpen, setAddDialogOpen] = useState<boolean>(false);
+    // Reopen the signup form if one was interrupted by an expired session
+    const [addDialogOpen, setAddDialogOpen] = useState<boolean>(hasSignupDraft);
     const [removeDialogOpen, setRemoveDialogOpen] = useState<boolean>(false);
     const [copyEmailOpen, setCopyEmailOpen] = useState<boolean>(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);

@@ -11,10 +11,13 @@ interface MembersContextProps {
     membersData: MemberProps[];
     loggedInMember: MemberProps | null;
     setMembersData: React.Dispatch<React.SetStateAction<MemberProps[]>>;
-    handleMemberUpdate: (modifiedMember: MemberProps) => Promise<MemberProps | null>;
+    handleMemberUpdate: (
+        modifiedMember: MemberProps,
+        options?: {throwOnError?: boolean}
+    ) => Promise<MemberProps | null>;
     retrieveMemberById: (id: string) => MemberProps | null;
     handleMemberDelete: (selectedMember: MemberProps[]) => Promise<void>;
-    handleMemberAdd: (newMemberData: NewMemberProps) => Promise<void>;
+    handleMemberAdd: (newMemberData: NewMemberProps) => Promise<MemberProps>;
     memberRowSelectionModel: GridRowSelectionModel;
     setMemberRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
     validateRowSelection: () => boolean;
@@ -75,7 +78,10 @@ const useMembersOperations = (
         setMembersData(aggregatedMembers);
     };
 
-    const handleMemberUpdate = async (modifiedMember: MemberProps): Promise<MemberProps | null> => {
+    const handleMemberUpdate = async (
+        modifiedMember: MemberProps,
+        options?: {throwOnError?: boolean}
+    ): Promise<MemberProps | null> => {
         try {
             const updatedMember = await updateMember(modifiedMember);
 
@@ -85,6 +91,7 @@ const useMembersOperations = (
             addNotification({message: "Successfully updated member!", type: "success"});
             return updatedMember;
         } catch (error: any) {
+            if (options?.throwOnError) throw error;
             addNotification({message: error.message, type: "error"});
             return null;
         }
@@ -156,25 +163,20 @@ const useMembersOperations = (
         }
     };
 
-    const handleMemberAdd = async (newMemberData: NewMemberProps) => {
-        try {
-            const addedMember = await addMember(newMemberData);
+    // Throws on failure so the caller can't mistake a failed signup for a success
+    const handleMemberAdd = async (newMemberData: NewMemberProps): Promise<MemberProps> => {
+        const addedMember = await addMember(newMemberData);
 
-            queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
-            await queryClient.prefetchQuery({
-                queryKey: ["memberItem", addedMember._id],
-                initialData: addedMember,
-                staleTime: Infinity
-            });
+        queryClient.setQueryData(["memberItem", addedMember._id], addedMember);
+        await queryClient.prefetchQuery({
+            queryKey: ["memberItem", addedMember._id],
+            initialData: addedMember,
+            staleTime: Infinity
+        });
 
-            recomputeAggregatedMembers();
-            addNotification({message: "Member successfully added!", type: "success"});
-        } catch (error: any) {
-            addNotification({
-                message: error.message || "Error adding member. Try again later.",
-                type: "error"
-            });
-        }
+        recomputeAggregatedMembers();
+        addNotification({message: "Member successfully added!", type: "success"});
+        return addedMember;
     };
 
     const refetchMembers = async (ids: string[]) => {

@@ -21,7 +21,7 @@ import {useMembers} from "../providers/MembersProvider";
 import {useReservations} from "../providers/ReservationProvider";
 import {useStaff} from "../providers/StaffProvider";
 import {useSnackbar} from "../providers/SnackBarProvider";
-import {addTrip, updateTrip} from "../utils/api";
+import {addTrip, downloadTripContacts, updateTrip} from "../utils/api";
 import {
     MemberProps,
     NewTripProps,
@@ -253,6 +253,18 @@ export default function TripFormDialog({open, onClose, trip, onSaved}: TripFormD
             });
             onSaved?.(savedTrip._id);
             resetAndClose();
+
+            if (!isEditMode) {
+                // Auto-export the contact roster for newly created trips
+                try {
+                    await downloadTripContacts(savedTrip._id);
+                } catch (exportError: any) {
+                    addNotification({
+                        message: `Trip created, but contact export failed: ${exportError.message} Use "Export Contacts" on the trip to retry.`,
+                        type: "warning"
+                    });
+                }
+            }
         } catch (error: any) {
             setIsSaving(false);
             addNotification({

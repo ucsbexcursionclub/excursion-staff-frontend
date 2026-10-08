@@ -13,6 +13,7 @@ import StatsPage from "./pages/StatsPage";
 import MemberProfilePage from "./pages/MemberProfilePage";
 import TripsPage from "./pages/TripsPage";
 import GuidePage from "./pages/GuidePage";
+import WelcomeEmailPage from "./pages/WelcomeEmailPage";
 import {Navigate} from "react-router-dom";
 
 // Providers
@@ -34,7 +35,8 @@ function updateDocumentMetadata(pathname: string) {
         "/stats": root + "Stats",
         "/trips": root + "Trips",
         "/guide": root + "Staff Guide",
-        "/editstaff": root + "Admin"
+        "/editstaff": root + "Admin",
+        "/welcome-email": root + "Welcome Email"
     };
 
     const title = pathname.startsWith("/members/")
@@ -90,6 +92,10 @@ function App() {
                                 )}
 
                                 {isAdmin && <Route path="editstaff" element={<EditStaffPage />} />}
+                                {isStaffOrAdmin && (
+                                    // Board-only; WelcomeEmailPage checks the staff position itself
+                                    <Route path="welcome-email" element={<WelcomeEmailPage />} />
+                                )}
 
                                 <Route path="*" element={<UnauthorizedPage />} />
                             </Route>

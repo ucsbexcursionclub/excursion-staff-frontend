@@ -1,4 +1,4 @@
-import React, {createContext, useContext, ReactNode, useState} from "react";
+import React, {createContext, useCallback, useContext, ReactNode, useState} from "react";
 import {NotificationProps} from "../utils/types";
 
 interface SnackbarContextType {
@@ -16,13 +16,13 @@ interface SnackbarProviderProps {
 export const SnackbarProvider: React.FC<SnackbarProviderProps> = ({children}) => {
     const [notifications, setNotifications] = useState<NotificationProps[]>([]);
 
-    const addNotification = (notif: NotificationProps) => {
+    const addNotification = useCallback((notif: NotificationProps) => {
         setNotifications((prev) => [...prev, {...notif, key: Math.random() * Date.now()}]);
-    };
+    }, []);
 
-    const removeNotification = (key: number) => {
+    const removeNotification = useCallback((key: number) => {
         setNotifications((prev) => prev.filter((notif) => notif.key !== key));
-    };
+    }, []);
 
     return (
         <SnackbarContext.Provider value={{notifications, addNotification, removeNotification}}>

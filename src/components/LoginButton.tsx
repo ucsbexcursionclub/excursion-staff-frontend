@@ -7,7 +7,6 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import GoogleIcon from "@mui/icons-material/Google";
 import Avatar from "@mui/material/Avatar";
 import Logout from "@mui/icons-material/Logout";
-import Cookies from "universal-cookie";
 import {CircularProgress} from "@mui/material";
 import {useLogin} from "../providers/LoginProvider";
 import EditProfileFormDialog from "./EditProfileFormDialog"; // Import your EditProfileFormDialog component
@@ -15,8 +14,7 @@ import {Edit} from "@mui/icons-material";
 import {useMembers} from "../providers/MembersProvider";
 import {useStaff} from "../providers/StaffProvider";
 import {generateResourceUrl} from "../utils/utils";
-
-const cookies = new Cookies();
+import {clearStoredToken} from "../utils/auth";
 
 type tokenResponseProps = Omit<TokenResponse, "error" | "error_description" | "error_uri">;
 
@@ -57,7 +55,7 @@ function LoginButton() {
 
     const handleLogout = () => {
         if (isLoggedIn) {
-            cookies.remove("jwt");
+            clearStoredToken();
             window.location.reload();
         }
     };
