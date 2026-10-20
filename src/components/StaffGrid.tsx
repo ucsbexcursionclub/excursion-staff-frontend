@@ -76,8 +76,12 @@ const StaffGrid: React.FC = () => {
             return (b.bio?.length || 0) - (a.bio?.length || 0);
         });
 
-    const webDevStaff = sortedStaff.filter((s) =>
-        s.positions?.some((p) => p.toLowerCase() === "web developer")
+    // Web devs whose first position would otherwise hide them from Staff; board members stay in Board only
+    const webDevStaff = sortedStaff.filter(
+        (s) =>
+            s.positions?.some((p) => p.toLowerCase() === "web developer") &&
+            !boardStaff.includes(s) &&
+            !generalStaff.includes(s)
     );
 
 
