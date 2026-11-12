@@ -179,6 +179,16 @@ const sections: Section[] = [
                 title: "Copy member contacts",
                 detail:
                     'Select checked-out gear and use "Copy Emails" or "Copy Phones" to copy the contact info for the members who have that gear.'
+            },
+            {
+                title: "Mark members as contacted",
+                detail:
+                    'After reaching out about overdue gear, select the gear items and click "Mark Contacted". Confirm to set Last Contacted to today for all of them at once. Selected items that are not checked out are skipped.'
+            },
+            {
+                title: "View rental history",
+                detail:
+                    "Click the edit icon on a gear item and open the History tab to see every member who has rented it, when they checked it out, when it was returned, and how many days they had it. Click \"View Reservation\" on an entry for its due date, last contacted date and the other gear on that reservation, or \"View Member\" to open the member's profile. Returns from before this was tracked show as not recorded."
             }
         ],
         tips: [

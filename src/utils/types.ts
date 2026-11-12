@@ -100,6 +100,10 @@ export type ReservationProps = {
     reserving_member: string;
     due_date: number;
     last_contacted: number | null;
+    // Epoch ms the reservation was created. Missing on reservations made before this was tracked.
+    checked_out_at?: number;
+    // Gear id -> epoch ms that item was checked back in. Missing for older returns.
+    gear_returned_at?: Record<string, number>;
     memberDetails?: MemberProps;
 };
 
