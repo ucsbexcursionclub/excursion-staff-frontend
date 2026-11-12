@@ -188,7 +188,7 @@ const sections: Section[] = [
             {
                 title: "View rental history",
                 detail:
-                    "Click the edit icon on a gear item and open the History tab to see every member who has rented it, when they checked it out, when it was returned, and how many days they had it. Returns from before this was tracked show as not recorded."
+                    "Click the edit icon on a gear item and open the History tab to see every member who has rented it, when they checked it out, when it was returned, and how many days they had it. Click \"View Reservation\" on an entry for its due date, last contacted date and the other gear on that reservation, or \"View Member\" to open the member's profile. Returns from before this was tracked show as not recorded."
             }
         ],
         tips: [
