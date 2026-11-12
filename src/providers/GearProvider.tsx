@@ -1,7 +1,14 @@
 import {GridRowSelectionModel} from "@mui/x-data-grid";
 import React, {createContext, useContext, useEffect, useState} from "react";
 import {useQuery, useQueryClient} from "@tanstack/react-query";
-import {addGear, checkInGear, deleteGearItems, getGear, updateGear} from "../utils/api";
+import {
+    addGear,
+    checkInGear,
+    deleteGearItems,
+    getGear,
+    markReservationsContacted,
+    updateGear
+} from "../utils/api";
 import {GearProps, MemberProps, NewGearProps, NotificationProps} from "../utils/types";
 import {useReservations} from "./ReservationProvider";
 import {useLogin} from "./LoginProvider";
@@ -16,6 +23,7 @@ interface GearContextProps {
     handleGearDelete: (selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckout: (selectedMember: MemberProps, selectedGear: GearProps[]) => Promise<void>;
     handleGearCheckin: (selectedGear: GearProps[]) => Promise<void>;
+    handleGearMarkContacted: (selectedGear: GearProps[]) => Promise<void>;
     handleGearAdd: (newGearData: NewGearProps) => Promise<void>;
     refetchGears: (ids: string[]) => Promise<void>;
     setGearRowSelectionModel: React.Dispatch<React.SetStateAction<GridRowSelectionModel>>;
@@ -184,6 +192,39 @@ const useGearOperations = (
         }
     };
 
+    // Sets "last contacted" to today on the current reservation of every selected, checked out gear
+    const handleGearMarkContacted = async (selectedGear: GearProps[]) => {
+        const checkedOutGear = selectedGear.filter((gear) => gear.current_reservation);
+        const reservationIds = Array.from(
+            new Set(checkedOutGear.map((gear) => gear.current_reservation as string))
+        );
+
+        if (reservationIds.length === 0) {
+            addNotification({message: "None of the selected gear is checked out.", type: "error"});
+            return;
+        }
+
+        try {
+            await markReservationsContacted(reservationIds);
+
+            await refetchReservations(reservationIds);
+            await refetchGears(checkedOutGear.map((gear) => gear._id));
+
+            setGearRowSelectionModel([]);
+            addNotification({
+                message: `Marked ${reservationIds.length} ${
+                    reservationIds.length === 1 ? "reservation" : "reservations"
+                } as contacted today.`,
+                type: "success"
+            });
+        } catch (error: any) {
+            addNotification({
+                message: error.message || "Error updating last contacted. Try again later.",
+                type: "error"
+            });
+        }
+    };
+
     const refetchGears = async (ids: string[]) => {
         await Promise.all(
             ids.map((id) => {
@@ -218,6 +259,7 @@ const useGearOperations = (
         handleGearAdd,
         handleGearCheckout,
         handleGearCheckin,
+        handleGearMarkContacted,
         validateRowSelection
     };
 };

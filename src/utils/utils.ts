@@ -1,5 +1,5 @@
 import {IdentityProps} from "./types";
-import {CommentCategory, TripProps, TripType} from "./types";
+import {CommentCategory, ReservationProps, TripProps, TripType} from "./types";
 
 export function capitalizeFirstLetter(str: string) {
     return str
@@ -65,6 +65,15 @@ export function isSameCalendarDay(startTimestamp: number, endTimestamp: number) 
         start.getMonth() === end.getMonth() &&
         start.getDate() === end.getDate()
     );
+}
+
+// Reservations made before checked_out_at was tracked fall back to the creation time
+// encoded in the first 4 bytes of their Mongo ObjectId.
+export function getReservationCheckoutTime(
+    reservation: Pick<ReservationProps, "_id" | "checked_out_at">
+): number {
+    if (reservation.checked_out_at) return reservation.checked_out_at;
+    return parseInt(reservation._id.substring(0, 8), 16) * 1000;
 }
 
 export function getTripType(trip: Pick<TripProps, "trip_date" | "end_date">): TripType {

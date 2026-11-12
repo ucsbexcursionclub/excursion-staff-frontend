@@ -83,7 +83,7 @@ const useReservationsOperations = (
 
     const retrieveReservationsByGearId = (id: string) => {
         return reservationsData.filter((reservation) =>
-            [...reservation.checked_in_gear, reservation.checked_out_gear].includes(id)
+            [...reservation.checked_in_gear, ...reservation.checked_out_gear].includes(id)
         );
     };
 
