@@ -360,6 +360,28 @@ export async function updateReservation(
     }
 }
 
+// Sets last_contacted to now (server time) on every given reservation
+export async function markReservationsContacted(
+    reservationIds: string[]
+): Promise<{modifiedCount: number; last_contacted: number}> {
+    try {
+        const response = await axios.patch(
+            `${baseURL}/api/v1/reservations/bulk-last-contacted`,
+            {ids: reservationIds},
+            authConfig()
+        );
+
+        if (response.data && response.data.data) {
+            return response.data.data;
+        } else {
+            throw new Error("Server error while updating last contacted.");
+        }
+    } catch (error: any) {
+        if (error instanceof SessionExpiredError) throw error;
+        throw new Error(error.response?.data?.error || "Failed to update last contacted.");
+    }
+}
+
 export async function updateMember(updatedMember: MemberProps): Promise<MemberProps> {
     const copiedMember = {...updatedMember};
 

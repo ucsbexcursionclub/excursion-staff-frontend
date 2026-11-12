@@ -7,6 +7,7 @@ import GearRemoveDialog from "./GearRemoveDialog";
 import GearAddDialog from "./GearAddDialog";
 import GearCheckOutDialog from "./GearCheckOutDialog";
 import GearCheckInDialog from "./GearCheckInDialog";
+import GearMarkContactedDialog from "./GearMarkContactedDialog";
 import {useGear} from "../providers/GearProvider";
 import {useSnackbar} from "../providers/SnackBarProvider";
 
@@ -19,6 +20,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
     const [removeDialogOpen, setRemoveDialogOpen] = useState<boolean>(false);
     const [checkOutDialogOpen, setCheckOutDialogOpen] = useState<boolean>(false);
     const [checkInDialogOpen, setCheckInDialogOpen] = useState<boolean>(false);
+    const [markContactedDialogOpen, setMarkContactedDialogOpen] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState("");
 
     const {validateRowSelection, gearRowSelectionModel, retrieveGearItem} = useGear();
@@ -46,6 +48,25 @@ export default function GearNav({setSearchParams}: GearNavProps) {
         validateRowSelection() && setCheckInDialogOpen(true);
     };
     const handleCloseCheckInDialog = () => setCheckInDialogOpen(false);
+
+    const handleOpenMarkContactedDialog = () => {
+        if (!validateRowSelection()) return;
+
+        const hasCheckedOutGear = gearRowSelectionModel.some(
+            (id) => retrieveGearItem(id.toString())?.current_reservation
+        );
+
+        if (!hasCheckedOutGear) {
+            addNotification({
+                message: "None of the selected gear is checked out.",
+                type: "error"
+            });
+            return;
+        }
+
+        setMarkContactedDialogOpen(true);
+    };
+    const handleCloseMarkContactedDialog = () => setMarkContactedDialogOpen(false);
 
     const handleOpenAddDialog = () => setAddDialogOpen(true);
     const handleCloseAddDialog = () => setAddDialogOpen(false);
@@ -169,6 +190,7 @@ export default function GearNav({setSearchParams}: GearNavProps) {
                         {actionBtn("Check Out", handleOpenCheckOutDialog, "contained")}
                         {actionBtn("Add Gear", handleOpenAddDialog)}
                         {actionBtn("Remove Gear", handleOpenDeleteDialog)}
+                        {actionBtn("Mark Contacted", handleOpenMarkContactedDialog)}
                         {actionBtn("Copy Emails", () => void handleCopyContacts("email"))}
                         {actionBtn("Copy Phones", () => void handleCopyContacts("phone_number"))}
                     </div>
@@ -179,6 +201,10 @@ export default function GearNav({setSearchParams}: GearNavProps) {
             <GearAddDialog open={addDialogOpen} onClose={handleCloseAddDialog} />
             <GearCheckOutDialog open={checkOutDialogOpen} onClose={handleCloseCheckOutDialog} />
             <GearCheckInDialog open={checkInDialogOpen} onClose={handleCloseCheckInDialog} />
+            <GearMarkContactedDialog
+                open={markContactedDialogOpen}
+                onClose={handleCloseMarkContactedDialog}
+            />
         </>
     );
 }
