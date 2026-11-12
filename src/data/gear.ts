@@ -35,10 +35,6 @@ export const sampleGearItems: sampleGearProps[] = [
         title: "Surfboards"
     },
     {
-        imageUrl: generateResourceUrl("/resources/Kayak.jpg"),
-        title: "Ocean Kayaks"
-    },
-    {
         imageUrl: generateResourceUrl("/resources/Wetsuits_square_image.jpg"),
         title: "Wetsuits"
     },
